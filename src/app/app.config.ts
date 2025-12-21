@@ -3,8 +3,15 @@ import {
   inject,
   PLATFORM_ID,
   provideAppInitializer,
-  provideZoneChangeDetection
+  provideZoneChangeDetection,
+  LOCALE_ID
 } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
+import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+import { CustomDateAdapter, MY_DATE_FORMATS } from './core/providers/custom-date-adapter';
+
+registerLocaleData(localePt);
 import { provideRouter, TitleStrategy, withViewTransitions } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -29,7 +36,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(withFetch()),
     provideStore(),
-    provideNativeDateAdapter(),
+    provideStore(),
     {
       provide: ENVIRONMENT,
       useValue: environment
@@ -61,6 +68,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
       useValue: { appearance: 'outline' }
-    }
+    },
+    { provide: LOCALE_ID, useValue: 'pt-BR' },
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
   ]
 };

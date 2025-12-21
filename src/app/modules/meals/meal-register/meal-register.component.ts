@@ -34,9 +34,6 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
     MatTableModule,
     MatCardModule
   ],
-  providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }
-  ],
   template: `
     <div class="p-6 h-[calc(100vh-64px)] flex flex-col">
       <!-- Header / Controls -->

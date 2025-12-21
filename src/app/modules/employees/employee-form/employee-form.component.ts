@@ -27,9 +27,6 @@ import { AuthService } from '../../../core/services/auth.service';
     MatSnackBarModule,
     RouterLink
   ],
-  providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }
-  ],
   template: `
     <div class="p-6 max-w-4xl mx-auto">
       <div class="mb-6">

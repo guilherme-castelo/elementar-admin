@@ -30,9 +30,6 @@ import { forkJoin } from 'rxjs';
     MatTableModule,
     MatSelectModule
   ],
-  providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }
-  ],
   template: `
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
@@ -47,7 +44,7 @@ import { forkJoin } from 'rxjs';
            <input matInput [matDatepicker]="picker" [formControl]="dateControl" (dateChange)="onDateChange()">
            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
            <mat-datepicker #picker></mat-datepicker>
-           <mat-hint class="dark:text-neutral-400">Período: {{ periodStart | date:'dd/MM' }} a {{ periodEnd | date:'dd/MM' }}</mat-hint>
+           <mat-hint class="dark:text-neutral-400">Período: {{ periodStart | date:'dd/MM/yyyy' }} a {{ periodEnd | date:'dd/MM/yyyy' }}</mat-hint>
         </mat-form-field>
       </div>
 
@@ -77,7 +74,7 @@ import { forkJoin } from 'rxjs';
                       <!-- Dynamic Weeks Headers -->
                       <th *ngFor="let week of matrix?.weeks" class="px-4 py-3 border-b dark:border-gray-600 text-center">
                         {{ week.label }}<br>
-                        <span class="text-[10px] lowercase font-normal">{{ week.start | date:'dd/MM' }} - {{ week.end | date:'dd/MM' }}</span>
+                        <span class="text-[10px] lowercase font-normal">{{ week.start | date:'dd/MM/yyyy' }} - {{ week.end | date:'dd/MM/yyyy' }}</span>
                       </th>
                       <th class="px-4 py-3 border-b dark:border-gray-600 text-right">Total Mês</th>
                     </tr>
