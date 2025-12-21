@@ -138,7 +138,7 @@
     </button>
   </div>
   <mat-divider/>
-  <a mat-menu-item>
+  <a mat-menu-item routerLink="/account/settings/my-profile">
     <mat-icon>tune</mat-icon>
     <span>Settings</span>
   </a>
@@ -160,10 +160,10 @@
     <span>Add Account</span>
   </a>
   <mat-divider></mat-divider>
-  <a mat-menu-item>
+  <button mat-menu-item (click)="logout()">
     <mat-icon>logout</mat-icon>
     <span>Logout</span>
-  </a>
+  </button>
 </mat-menu>
 
 <emr-drawer #chatDrawer="emrDrawer">

@@ -18,6 +18,7 @@ import {
   ColorSchemeLightDirective,
   ColorSchemeSwitcherComponent
 } from '@elementar-ui/components/color-scheme';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -52,8 +53,9 @@ import {
 })
 export class HeaderComponent {
   private _layoutApi = inject(LayoutApiService);
+  private _authService = inject(AuthService); // Inject Auth Service
 
-  sidebarShown= computed(() => {
+  sidebarShown = computed(() => {
     return this._layoutApi.isSidebarShown('root')
   });
 
@@ -63,5 +65,9 @@ export class HeaderComponent {
     } else {
       this._layoutApi.showSidebar('root');
     }
+  }
+
+  logout(): void {
+    this._authService.logout();
   }
 }

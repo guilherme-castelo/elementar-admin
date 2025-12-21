@@ -246,7 +246,7 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Sign In',
-          link: '/auth/sign-in'
+          link: '/auth/signin'
         },
         {
           key: uuid(),

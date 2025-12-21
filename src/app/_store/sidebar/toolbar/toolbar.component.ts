@@ -6,6 +6,9 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { HorizontalDividerComponent } from '@elementar-ui/components/divider';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 
+import { AuthService } from '../../../core/services/auth.service';
+import { inject } from '@angular/core';
+
 @Component({
   selector: 'emr-sidebar-toolbar',
   imports: [
@@ -20,7 +23,12 @@ import { DicebearComponent } from '@elementar-ui/components/avatar';
   styleUrl: './toolbar.component.scss'
 })
 export class ToolbarComponent {
+  private _authService = inject(AuthService);
   subscription = 'Free';
   email = 'elementarlabs@gmail.com';
   name = 'Pavel Salauyou';
+
+  logout() {
+    this._authService.logout();
+  }
 }
