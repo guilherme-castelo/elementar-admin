@@ -1,11 +1,11 @@
 <div class="h-full relative rounded-lg group p-4">
-  <div class="font-semibold pb-2.5 border-b-2 border-b-amber-300">Total Projects</div>
+  <div class="font-semibold pb-2.5 border-b-2 border-b-amber-300">Total Companies</div>
   <div class="mt-4 flex items-center justify-between">
     <div class="flex items-center gap-1.5">
-      <div class="text-sm">Mar-Aug</div>
-      <div class="text-2xs text-neutral-450">2024</div>
+      <div class="text-sm">Current</div>
+      <div class="text-2xs text-neutral-450">Active</div>
     </div>
-    <div class="font-bold text-sm">8 Projects</div>
+    <div class="font-bold text-sm">{{ companyCount }} Companies</div>
   </div>
   <emr-mchart-line [data]="data"
                    [labels]="labels"

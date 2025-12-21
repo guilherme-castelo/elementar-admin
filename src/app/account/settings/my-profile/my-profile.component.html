@@ -1,131 +1,174 @@
 <div class="py-9 px-10">
   <div class="max-w-[960px] mx-auto">
-    <h1 class="text-lg font-bold mb-7">My Profile</h1>
-    <div class="flex flex-col gap-12">
-      <div class="border border-default  rounded-2xl p-8 group">
-        <div class="relative">
-          <div class="absolute end-0 top-0 opacity-0 group-hover:opacity-100">
-            <button mat-stroked-button>
-              <mat-icon>edit</mat-icon>Edit
-            </button>
-          </div>
-          <div class="flex items-center gap-6">
-            <emr-avatar class="size-28" label="ps"/>
-            <div>
-              <div class="flex items-center gap-3">
-                <div class="text-base">{{ myProfile.firstName }} {{ myProfile.lastName }}</div>
-              </div>
-              <div class="text-neutral-500 text-sm mt-1">
-                <div>{{ myProfile.username }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="border border-default  rounded-2xl p-8 group">
-        <div class="relative">
-          <div class="font-bold mb-5 text-sm">Personal Information</div>
-          <div class="absolute end-0 top-0 opacity-0 group-hover:opacity-100">
-            <button mat-stroked-button>
-              <mat-icon>edit</mat-icon>Edit
-            </button>
-          </div>
-          <div class="grid grid-cols-2 text-sm w-max gap-y-7 gap-x-14">
-            <div class="col-span-1">
-              <div class="text-neutral-500">First Name</div>
-              <div class="mt-1">{{ myProfile.firstName }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Last Name</div>
-              <div class="mt-1">{{ myProfile.lastName }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Email Address</div>
-              <div class="mt-1">{{ myProfile.email }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Phone Number</div>
-              <div class="mt-1">{{ myProfile.phoneNumber }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Job Title</div>
-              <div class="mt-1">{{ myProfile.jobTitle }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Bio</div>
-              <div class="mt-1">{{ myProfile.bio }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="border border-default  rounded-2xl p-8 group">
-        <div class="relative">
-          <div class="font-bold mb-5 text-sm">Address</div>
-          <div class="absolute end-0 top-0 opacity-0 group-hover:opacity-100">
-            <button mat-stroked-button>
-              <mat-icon>edit</mat-icon>Edit
-            </button>
-          </div>
-          <div class="grid grid-cols-2 text-sm w-max gap-y-7 gap-x-14">
-            <div class="col-span-1">
-              <div class="text-neutral-500">Country</div>
-              <div class="mt-1">{{ myProfile.address.country }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">City</div>
-              <div class="mt-1">{{ myProfile.address.city }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Street</div>
-              <div class="mt-1">{{ myProfile.address.street }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Building</div>
-              <div class="mt-1">{{ myProfile.address.building }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Apartment</div>
-              <div class="mt-1">{{ myProfile.address.apartment }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Postal Code</div>
-              <div class="mt-1">{{ myProfile.address.postalCode }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="border border-default  rounded-2xl p-8 group">
-        <div class="relative">
-          <div class="font-bold mb-5 text-sm">Preferences</div>
-          <div class="absolute end-0 top-0 opacity-0 group-hover:opacity-100">
-            <button mat-stroked-button>
-              <mat-icon>edit</mat-icon>Edit
-            </button>
-          </div>
-          <div class="grid grid-cols-2 text-sm w-max gap-y-7 gap-x-14">
-            <div class="col-span-1">
-              <div class="text-neutral-500">Language</div>
-              <div class="mt-1">{{ myProfile.preferences.language.name }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Date Format</div>
-              <div class="mt-1">{{ myProfile.preferences.dateFormat }}</div>
-            </div>
-            <div class="col-span-1">
-              <div class="text-neutral-500">Automatic time zone</div>
-              <div class="mt-1">
-                {{ myProfile.preferences.automaticTimeZone.name }}
-
-                @if (myProfile.preferences.automaticTimeZone.isEnabled) {
-                  (On)
-                } @else {
-                  (Off)
-                }
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="flex justify-between items-center mb-7">
+      <h1 class="text-lg font-bold">My Profile</h1>
+      <div *ngIf="isLoading" class="text-sm text-neutral-500">Loading...</div>
     </div>
+
+    <form [formGroup]="profileForm" class="flex flex-col gap-12">
+      <!-- Header Profile Card -->
+      <div class="border border-neutral-200 dark:border-neutral-700 rounded-xl p-8 bg-white dark:bg-neutral-800">
+        <div class="flex items-center gap-6">
+          <emr-avatar class="size-28 text-2xl" [label]="initials"></emr-avatar>
+          <div>
+            <div class="text-xl font-bold text-neutral-900 dark:text-neutral-100">{{ firstName }} {{ lastName }}</div>
+            <div class="text-neutral-500 text-sm mt-1">{{ username }}</div>
+            <div class="text-neutral-400 text-xs mt-1">{{ currentUser?.jobTitle || 'No Title' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Information -->
+      <div class="border border-neutral-200 dark:border-neutral-700 rounded-xl p-8 bg-white dark:bg-neutral-800 group relative">
+        <div class="flex justify-between items-start mb-6">
+          <div class="font-bold text-sm uppercase tracking-wider text-neutral-500">Personal Information</div>
+          <div class="flex gap-2">
+            <button *ngIf="isEditingMap['personal']" mat-flat-button color="primary" (click)="save()">Save</button>
+            <button mat-stroked-button (click)="toggleEdit('personal')">
+              <mat-icon>{{ isEditingMap['personal'] ? 'close' : 'edit' }}</mat-icon>
+              {{ isEditingMap['personal'] ? 'Cancel' : 'Edit' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+            <!-- Name -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Full Name</div>
+               <div *ngIf="!isEditingMap['personal']" class="text-sm font-medium">{{ currentUser?.name }}</div>
+               <mat-form-field *ngIf="isEditingMap['personal']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="name">
+               </mat-form-field>
+            </div>
+
+            <!-- Email -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Email</div>
+               <div *ngIf="!isEditingMap['personal']" class="text-sm font-medium">{{ currentUser?.email }}</div>
+               <mat-form-field *ngIf="isEditingMap['personal']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="email">
+                 <mat-hint>Email change is disabled</mat-hint>
+               </mat-form-field>
+            </div>
+
+            <!-- Phone -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Phone</div>
+               <div *ngIf="!isEditingMap['personal']" class="text-sm font-medium">{{ currentUser?.phone || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['personal']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="phone" placeholder="(00) 00000-0000">
+               </mat-form-field>
+            </div>
+
+            <!-- Job Title -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Job Title</div>
+               <div *ngIf="!isEditingMap['personal']" class="text-sm font-medium">{{ currentUser?.jobTitle || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['personal']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="jobTitle">
+               </mat-form-field>
+            </div>
+
+            <!-- Bio -->
+            <div class="col-span-1 md:col-span-2">
+               <div class="text-neutral-500 text-xs mb-1">Bio</div>
+               <div *ngIf="!isEditingMap['personal']" class="text-sm font-medium">{{ currentUser?.bio || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['personal']" appearance="outline" class="w-full -mb-5">
+                 <textarea matInput formControlName="bio" rows="3"></textarea>
+               </mat-form-field>
+            </div>
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="border border-neutral-200 dark:border-neutral-700 rounded-xl p-8 bg-white dark:bg-neutral-800 group relative" formGroupName="address">
+        <div class="flex justify-between items-start mb-6">
+          <div class="font-bold text-sm uppercase tracking-wider text-neutral-500">Address</div>
+           <div class="flex gap-2">
+            <button *ngIf="isEditingMap['address']" mat-flat-button color="primary" (click)="save()">Save</button>
+            <button mat-stroked-button (click)="toggleEdit('address')">
+              <mat-icon>{{ isEditingMap['address'] ? 'close' : 'edit' }}</mat-icon>
+              {{ isEditingMap['address'] ? 'Cancel' : 'Edit' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+            <!-- Street -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Street</div>
+               <div *ngIf="!isEditingMap['address']" class="text-sm font-medium">{{ currentUser?.address?.street || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['address']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="street">
+               </mat-form-field>
+            </div>
+
+            <!-- City -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">City</div>
+               <div *ngIf="!isEditingMap['address']" class="text-sm font-medium">{{ currentUser?.address?.city || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['address']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="city">
+               </mat-form-field>
+            </div>
+            
+            <!-- Country -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Country</div>
+               <div *ngIf="!isEditingMap['address']" class="text-sm font-medium">{{ currentUser?.address?.country || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['address']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="country">
+               </mat-form-field>
+            </div>
+
+            <!-- Zip -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Postal Code</div>
+               <div *ngIf="!isEditingMap['address']" class="text-sm font-medium">{{ currentUser?.address?.postalCode || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['address']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="postalCode">
+               </mat-form-field>
+            </div>
+        </div>
+      </div>
+      
+      <!-- Preferences -->
+       <div class="border border-neutral-200 dark:border-neutral-700 rounded-xl p-8 bg-white dark:bg-neutral-800 group relative" formGroupName="preferences">
+        <div class="flex justify-between items-start mb-6">
+          <div class="font-bold text-sm uppercase tracking-wider text-neutral-500">Preferences</div>
+           <div class="flex gap-2">
+            <button *ngIf="isEditingMap['preferences']" mat-flat-button color="primary" (click)="save()">Save</button>
+            <button mat-stroked-button (click)="toggleEdit('preferences')">
+              <mat-icon>{{ isEditingMap['preferences'] ? 'close' : 'edit' }}</mat-icon>
+              {{ isEditingMap['preferences'] ? 'Cancel' : 'Edit' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+            <!-- Date Format -->
+            <div>
+               <div class="text-neutral-500 text-xs mb-1">Date Format</div>
+               <div *ngIf="!isEditingMap['preferences']" class="text-sm font-medium">{{ currentUser?.preferences?.dateFormat || '-' }}</div>
+               <mat-form-field *ngIf="isEditingMap['preferences']" appearance="outline" class="w-full -mb-5">
+                 <mat-select formControlName="dateFormat">
+                    <mat-option value="DD/MM/YYYY">DD/MM/YYYY</mat-option>
+                    <mat-option value="MM/DD/YYYY">MM/DD/YYYY</mat-option>
+                 </mat-select>
+               </mat-form-field>
+            </div>
+            
+            <!-- Language (Mock) -->
+             <div formGroupName="language">
+               <div class="text-neutral-500 text-xs mb-1">Language</div>
+               <div *ngIf="!isEditingMap['preferences']" class="text-sm font-medium">{{ currentUser?.preferences?.language?.name || '-' }}</div>
+                <mat-form-field *ngIf="isEditingMap['preferences']" appearance="outline" class="w-full -mb-5">
+                 <input matInput formControlName="name" placeholder="Language Name">
+               </mat-form-field>
+            </div>
+        </div>
+      </div>
+
+    </form>
   </div>
 </div>

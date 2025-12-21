@@ -25,6 +25,7 @@ import { LogoComponent } from '@elementar-ui/components/logo';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { OrderByPipe } from '@elementar-ui/components/core';
 import { ToolbarComponent } from '../../_store/sidebar';
+import { PermissionService } from '../../core/services/permission.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -62,12 +63,64 @@ import { ToolbarComponent } from '../../_store/sidebar';
 export class SidebarComponent implements OnInit {
   router = inject(Router);
   location = inject(Location);
+  private _permissionService = inject(PermissionService);
+
   height: string | null = '200px';
   compact = false;
 
   readonly navigation = viewChild.required<any>('navigation');
 
-  navItems: any[] = [
+  // Defined as private source
+  private _allNavItems: any[] = [
+    {
+      type: 'group',
+      name: 'Management',
+      icon: 'admin_panel_settings',
+      children: [
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Users',
+          link: '/users',
+          permissions: ['users:read']
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Companies',
+          link: '/companies',
+          permissions: ['companies:manage']
+        }
+      ]
+    },
+    {
+      type: 'group',
+      name: 'Departamento Pessoal',
+      icon: 'groups',
+      children: [
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Funcionários',
+          link: '/employees',
+          permissions: ['employees:read']
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Refeições',
+          link: '/meals/register',
+          permissions: ['meals:read', 'meals:register']
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Relatórios',
+          link: '/meals/reports',
+          permissions: ['meals:reports']
+        }
+      ]
+    },
     {
       type: 'group',
       name: 'Dashboard',
@@ -361,10 +414,27 @@ export class SidebarComponent implements OnInit {
       ]
     },
   ];
+
+  navItems: any[] = [];
   navItemLinks: any[] = [];
   activeKey: null | string = null;
 
   ngOnInit() {
+    // Filter items based on permissions
+    this.navItems = this._allNavItems.map(group => {
+      if (group.children) {
+        const filteredChildren = group.children.filter((child: any) => {
+          if (!child.permissions) return true;
+          return child.permissions.some((p: string) => this._permissionService.hasPermission(p));
+        });
+        if (filteredChildren.length > 0) {
+          return { ...group, children: filteredChildren };
+        }
+        return null; // Remove group if no children
+      }
+      return group; // Return group/heading if no children (assuming headings don't permissions for now, or we can add logic)
+    }).filter(group => group !== null);
+
     this.navItems.forEach(navItem => {
       this.navItemLinks.push(navItem);
 
@@ -380,7 +450,7 @@ export class SidebarComponent implements OnInit {
       .subscribe(() => {
         this._activateLink();
       })
-    ;
+      ;
   }
 
   private _activateLink() {

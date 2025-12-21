@@ -1,0 +1,327 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@empresa.test",
+      "password": "admin",
+      "name": "Admin",
+      "companyId": 1,
+      "roles": [
+        "admin"
+      ],
+      "phone": "(11) 99999-9999",
+      "jobTitle": "Administrator",
+      "bio": "System Administrator",
+      "address": {
+        "country": "Brasil",
+        "city": "Ariquemes",
+        "street": "Av. Capitão Silvio",
+        "postalCode": "76876-724",
+        "building": "1000",
+        "apartment": "10"
+      },
+      "preferences": {
+        "language": {
+          "code": "pt",
+          "name": "Portuguese (Brazil)"
+        },
+        "dateFormat": "DD/MM/YYYY",
+        "automaticTimeZone": {
+          "name": "GMT-03:00",
+          "isEnabled": true
+        }
+      }
+    },
+    {
+      "id": 2,
+      "email": "user@empresa.test",
+      "password": "user",
+      "name": "User",
+      "companyId": 1,
+      "roles": [
+        "user"
+      ],
+      "phone": "",
+      "jobTitle": "Employee",
+      "bio": "",
+      "address": {
+        "country": "Brasil",
+        "city": "",
+        "street": "",
+        "postalCode": "",
+        "building": "",
+        "apartment": ""
+      },
+      "preferences": {
+        "language": {
+          "code": "pt",
+          "name": "Portuguese (Brazil)"
+        },
+        "dateFormat": "DD/MM/YYYY",
+        "automaticTimeZone": {
+          "name": "GMT-03:00",
+          "isEnabled": true
+        }
+      }
+    },
+    {
+      "name": "User Teste",
+      "email": "testeuser@mail.teste",
+      "password": "123456",
+      "roles": [
+        "user"
+      ],
+      "companyId": 1,
+      "id": 3
+    }
+  ],
+  "companies": [
+    {
+      "name": "Brasil Auto Serviço de Produtos Alimenticios SA",
+      "cnpj": "10964693000196",
+      "id": 1
+    }
+  ],
+  "roles": [
+    {
+      "id": "1",
+      "name": "admin",
+      "permissions": [
+        "users:read",
+        "users:create",
+        "users:update",
+        "users:delete",
+        "companies:manage",
+        "employees:read",
+        "employees:create",
+        "employees:update",
+        "employees:delete",
+        "meals:read",
+        "meals:register",
+        "meals:reports",
+        "meals:delete"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "user",
+      "permissions": [
+        "users:read",
+        "employees:read",
+        "meals:read"
+      ]
+    }
+  ],
+  "permissions": [
+    {
+      "id": "1",
+      "name": "users:read",
+      "description": "Can view users"
+    },
+    {
+      "id": "2",
+      "name": "users:create",
+      "description": "Can create users"
+    },
+    {
+      "id": "3",
+      "name": "users:update",
+      "description": "Can update users"
+    },
+    {
+      "id": "4",
+      "name": "users:delete",
+      "description": "Can delete users"
+    },
+    {
+      "id": "5",
+      "name": "companies:manage",
+      "description": "Can manage companies"
+    },
+    {
+      "id": "6",
+      "name": "employees:read",
+      "description": "Can view employees"
+    },
+    {
+      "id": "7",
+      "name": "employees:create",
+      "description": "Can create employees"
+    },
+    {
+      "id": "8",
+      "name": "employees:update",
+      "description": "Can update employees"
+    },
+    {
+      "id": "9",
+      "name": "employees:delete",
+      "description": "Can delete employees"
+    },
+    {
+      "id": "10",
+      "name": "meals:read",
+      "description": "Can view meals"
+    },
+    {
+      "id": "11",
+      "name": "meals:register",
+      "description": "Can register meals"
+    },
+    {
+      "id": "12",
+      "name": "meals:reports",
+      "description": "Can view meal reports"
+    },
+    {
+      "id": "13",
+      "name": "meals:delete",
+      "description": "Can delete meals"
+    }
+  ],
+  "employees": [
+    {
+      "matricula": "1329",
+      "firstName": "Guilherme",
+      "lastName": "Castelo",
+      "cpf": "03936781214",
+      "funcao": "Analista de Suprote",
+      "setor": "TI",
+      "dataAdmissao": "2020-06-22T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": 1,
+      "id": 1
+    },
+    {
+      "matricula": "1574",
+      "firstName": "Ritielen",
+      "lastName": "Tobias",
+      "cpf": "04828494286",
+      "funcao": "Assistente Administrativo",
+      "setor": "Entrada de Mercadoria",
+      "dataAdmissao": "2022-12-21T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": 1,
+      "id": 2
+    }
+  ],
+  "meals": [
+    {
+      "employeeId": 1,
+      "employeeMatricula": "1329",
+      "employeeName": "Guilherme Castelo",
+      "sector": "TI",
+      "companyId": 1,
+      "date": "2025-12-16T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:40:51.328Z",
+      "id": 1
+    },
+    {
+      "employeeId": 1,
+      "employeeMatricula": "1329",
+      "employeeName": "Guilherme Castelo",
+      "sector": "TI",
+      "companyId": 1,
+      "date": "2025-12-21T05:41:08.026Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:12.286Z",
+      "id": 2
+    },
+    {
+      "employeeId": 2,
+      "employeeMatricula": "1574",
+      "employeeName": "Ritielen Tobias",
+      "sector": "Entrada de Mercadoria",
+      "companyId": 1,
+      "date": "2025-12-21T05:41:08.026Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:21.888Z",
+      "id": 3
+    },
+    {
+      "employeeId": 1,
+      "employeeMatricula": "1329",
+      "employeeName": "Guilherme Castelo",
+      "sector": "TI",
+      "companyId": 1,
+      "date": "2025-12-01T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:29.642Z",
+      "id": 4
+    },
+    {
+      "employeeId": 2,
+      "employeeMatricula": "1574",
+      "employeeName": "Ritielen Tobias",
+      "sector": "Entrada de Mercadoria",
+      "companyId": 1,
+      "date": "2025-12-01T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:32.215Z",
+      "id": 5
+    },
+    {
+      "employeeId": 1,
+      "employeeMatricula": "1329",
+      "employeeName": "Guilherme Castelo",
+      "sector": "TI",
+      "companyId": 1,
+      "date": "2025-12-02T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:39.643Z",
+      "id": 6
+    },
+    {
+      "employeeId": 2,
+      "employeeMatricula": "1574",
+      "employeeName": "Ritielen Tobias",
+      "sector": "Entrada de Mercadoria",
+      "companyId": 1,
+      "date": "2025-12-02T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:41.277Z",
+      "id": 7
+    },
+    {
+      "employeeId": 1,
+      "employeeMatricula": "1329",
+      "employeeName": "Guilherme Castelo",
+      "sector": "TI",
+      "companyId": 1,
+      "date": "2025-12-03T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:49.606Z",
+      "id": 8
+    },
+    {
+      "employeeId": 2,
+      "employeeMatricula": "1574",
+      "employeeName": "Ritielen Tobias",
+      "sector": "Entrada de Mercadoria",
+      "companyId": 1,
+      "date": "2025-12-03T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-21T05:41:50.993Z",
+      "id": 9
+    }
+  ]
+}

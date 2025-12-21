@@ -6,5 +6,6 @@ export const environment = {
     keywords: [],
     description: '',
     author: ''
-  }
+  },
+  apiBaseUrl: '/api'
 };
