@@ -203,6 +203,102 @@
       "dataDemissao": null,
       "companyId": 1,
       "id": 2
+    },
+    {
+      "matricula": "1001",
+      "firstName": "Carlos",
+      "lastName": "Silva",
+      "cpf": "12345678901",
+      "funcao": "Operador de Produção",
+      "setor": "Produção",
+      "dataAdmissao": "2021-03-15T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 3
+    },
+    {
+      "matricula": "1002",
+      "firstName": "Mariana",
+      "lastName": "Oliveira",
+      "cpf": "23456789012",
+      "funcao": "Assistente Administrativo",
+      "setor": "Administrativo",
+      "dataAdmissao": "2020-08-10T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 4
+    },
+    {
+      "matricula": "1003",
+      "firstName": "Rafael",
+      "lastName": "Pereira",
+      "cpf": "34567890123",
+      "funcao": "Analista de TI",
+      "setor": "TI",
+      "dataAdmissao": "2022-01-05T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 5
+    },
+    {
+      "matricula": "1004",
+      "firstName": "Fernanda",
+      "lastName": "Costa",
+      "cpf": "45678901234",
+      "funcao": "Auxiliar de Logística",
+      "setor": "Logística",
+      "dataAdmissao": "2019-11-20T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 6
+    },
+    {
+      "matricula": "1005",
+      "firstName": "João",
+      "lastName": "Santos",
+      "cpf": "56789012345",
+      "funcao": "Motorista",
+      "setor": "Logística",
+      "dataAdmissao": "2021-06-01T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 7
+    },
+    {
+      "matricula": "1006",
+      "firstName": "Ana",
+      "lastName": "Martins",
+      "cpf": "67890123456",
+      "funcao": "Analista Financeiro",
+      "setor": "Financeiro",
+      "dataAdmissao": "2020-02-17T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 8
+    },
+    {
+      "matricula": "1007",
+      "firstName": "Lucas",
+      "lastName": "Almeida",
+      "cpf": "78901234567",
+      "funcao": "Estoquista",
+      "setor": "Almoxarifado",
+      "dataAdmissao": "2023-04-03T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 9
+    },
+    {
+      "matricula": "1008",
+      "firstName": "Patricia",
+      "lastName": "Ribeiro",
+      "cpf": "89012345678",
+      "funcao": "Coordenadora de RH",
+      "setor": "RH",
+      "dataAdmissao": "2018-09-12T04:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 10
     }
   ],
   "meals": [

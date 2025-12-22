@@ -10,6 +10,8 @@ import { EmployeesService } from '../../../core/services/employees.service';
 import { PermissionService } from '../../../core/services/permission.service';
 import { IEmployee } from '../../../core/models/employee.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { EmployeeImportDialogComponent } from '../employee-import-dialog/employee-import-dialog.component';
 
 @Component({
   selector: 'app-employee-list',
@@ -29,9 +31,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
           <h1 class="text-2xl font-bold">Funcionários</h1>
           <p class="text-neutral-500">Gerencie o quadro de colaboradores da empresa</p>
         </div>
-        <a *ngIf="permissionService.hasPermission('employees:create')" mat-flat-button color="primary" routerLink="new">
-          <mat-icon>add</mat-icon> Novo Funcionário
-        </a>
+        <div class="flex gap-2">
+           <button *ngIf="permissionService.hasPermission('employees:create')" mat-stroked-button color="primary" (click)="openImportDialog()">
+             <mat-icon>cloud_upload</mat-icon> Importar
+           </button>
+           <a *ngIf="permissionService.hasPermission('employees:create')" mat-flat-button color="primary" routerLink="new">
+             <mat-icon>add</mat-icon> Novo Funcionário
+           </a>
+        </div>
       </div>
 
       <div class="mat-elevation-z2 rounded-lg overflow-hidden bg-white">
@@ -102,6 +109,7 @@ export class EmployeeListComponent implements OnInit {
   public permissionService = inject(PermissionService);
   private employeesService = inject(EmployeesService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   employees$!: Observable<IEmployee[]>;
   displayedColumns: string[] = ['matricula', 'name', 'role', 'status', 'actions'];
@@ -124,5 +132,19 @@ export class EmployeeListComponent implements OnInit {
         error: () => this.snackBar.open('Erro ao excluir funcionário', 'OK', { duration: 3000 })
       });
     }
+  }
+
+  openImportDialog() {
+    const dialogRef = this.dialog.open(EmployeeImportDialogComponent, {
+      width: '600px',
+      maxHeight: '90vh'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.snackBar.open('Importação concluída com sucesso!', 'OK', { duration: 3000 });
+        this.initialLoad();
+      }
+    });
   }
 }
