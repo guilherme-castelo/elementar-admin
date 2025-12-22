@@ -121,6 +121,8 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    /** 
+     
     {
       type: 'group',
       name: 'Dashboard',
@@ -158,6 +160,7 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    */
     {
       type: 'group',
       name: 'Theme',
@@ -171,10 +174,12 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
-    {
-      type: 'heading',
-      name: 'Features'
-    },
+    //{
+    //  type: 'heading',
+    //  name: 'Features'
+    //},
+    /** 
+     * 
     {
       type: 'group',
       icon: 'hard_drive',
@@ -212,6 +217,7 @@ export class SidebarComponent implements OnInit {
         },
       ],
     },
+    */
     {
       type: 'group',
       icon: 'apps',
@@ -318,6 +324,8 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    /**
+     * 
     {
       type: 'group',
       icon: 'attach_money',
@@ -337,6 +345,7 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    */
     {
       type: 'group',
       icon: 'edit_note',
@@ -350,6 +359,8 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    /**
+     * 
     {
       type: 'group',
       icon: 'error',
@@ -413,6 +424,7 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    */
   ];
 
   navItems: any[] = [];
