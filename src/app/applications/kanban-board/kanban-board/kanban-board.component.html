@@ -9,8 +9,8 @@
           <button emr-segmented-button value="all">All</button>
           <button emr-segmented-button value="assignedToMe">Assigned to me</button>
         </emr-segmented>
-        <button mat-stroked-button>
-          <mat-icon>add</mat-icon>Invite
+        <button mat-stroked-button (click)="openTaskDialog()">
+          <mat-icon>add</mat-icon>New Task
         </button>
         <emr-avatar-group>
           <emr-avatar label="am"/>
@@ -25,12 +25,12 @@
     </div>
   </emr-panel-header>
   <emr-panel-body class="relative">
-    <emr-kanban-board [columns]="columns" class="absolute inset-0">
+    <emr-kanban-board [columns]="columns" (itemDropped)="onItemDropped($event)" class="absolute inset-0">
       <ng-template emrKanbanItemDef let-item let-column>
-        <div class="font-medium text-sm">{{ item.name }}</div>
+        <div class="font-medium text-sm cursor-pointer" (click)="openTaskDialog(item.originalTask)">{{ item.name }}</div>
         <div class="flex items-center justify-between mt-3.5">
-          <emr-dicebear [key]="item.assignee.id" class="size-7"/>
-          <mat-icon [style.color]="item.priority.color" class="filled">flag</mat-icon>
+          <emr-dicebear [key]="item.assigneeId" class="size-7"/>
+          <mat-icon [style.color]="item.priorityColor" class="filled">flag</mat-icon>
         </div>
       </ng-template>
     </emr-kanban-board>

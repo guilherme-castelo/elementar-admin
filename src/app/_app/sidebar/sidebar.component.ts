@@ -229,12 +229,12 @@ export class SidebarComponent implements OnInit {
           name: 'Messenger',
           link: '/applications/messenger'
         },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'File Manager',
-          link: '/applications/file-manager'
-        },
+        //{
+        //  key: uuid(),
+        //  type: 'link',
+        //  name: 'File Manager',
+        //  link: '/applications/file-manager'
+        //},
         {
           key: uuid(),
           type: 'link',

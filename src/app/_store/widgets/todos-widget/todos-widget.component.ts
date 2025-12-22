@@ -1,6 +1,8 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, OnInit } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+import { TaskDialogComponent } from '../../../applications/task-dialog/task-dialog.component';
 import {
   MatCell, MatCellDef,
   MatColumnDef,
@@ -19,27 +21,8 @@ import {
   moveItemInArray
 } from '@angular/cdk/drag-drop';
 import { DASHBOARD, Dashboard, Widget, WidgetComponent } from '@elementar-ui/components/dashboard';
-
-export interface TodoTask {
-  name: string;
-  position: number;
-  assignee: {
-    name: string
-  };
-  priority: {
-    id: string,
-    name: string
-  };
-}
-
-const DATA: TodoTask[] = [
-  { position: 1, name: 'Hydrogen', assignee: { name: 'Me' }, priority: { id: 'high', name: 'High' } },
-  { position: 2, name: 'Helium', assignee: { name: 'Me' }, priority: { id: 'medium', name: 'Medium' } },
-  { position: 3, name: 'Lithium', assignee: { name: 'Me' }, priority: { id: 'low', name: 'Low' } },
-  { position: 4, name: 'Beryllium', assignee: { name: 'Me' }, priority: { id: 'medium', name: 'Medium' } },
-  { position: 5, name: 'Beryllium', assignee: { name: 'Me' }, priority: { id: 'medium', name: 'Medium' } },
-  { position: 6, name: 'Beryllium', assignee: { name: 'Me' }, priority: { id: 'low', name: 'Low' } }
-];
+import { TasksService } from '../../../core/services/tasks.service';
+import { Task } from '../../../core/models/task.interface';
 
 @Component({
   selector: 'emr-todos-widget',
@@ -65,20 +48,32 @@ const DATA: TodoTask[] = [
   templateUrl: './todos-widget.component.html',
   styleUrl: './todos-widget.component.scss'
 })
-export class TodosWidgetComponent implements WidgetComponent {
+export class TodosWidgetComponent implements WidgetComponent, OnInit {
   private _dashboard = inject<Dashboard>(DASHBOARD, { optional: true });
+  private _tasksService = inject(TasksService);
+  private _dialog = inject(MatDialog);
 
   widget = input<Widget>();
+
+  displayedColumns: string[] = ['drag', 'select', 'id', 'title', 'priority'];
+  dataSource = new MatTableDataSource<Task>([]);
+  selection = new SelectionModel<Task>(true, []);
 
   ngOnInit() {
     if (this._dashboard && this.widget()) {
       this._dashboard.markWidgetAsLoaded(this.widget()?.id);
     }
+    this._tasksService.getPublicTasks().subscribe(tasks => {
+      this.dataSource.data = tasks;
+    });
   }
 
-  displayedColumns: string[] = ['drag', 'select', 'position', 'name', 'assignee', 'priority'];
-  dataSource = new MatTableDataSource<TodoTask>(DATA);
-  selection = new SelectionModel<TodoTask>(true, []);
+  openTaskDialog(task?: Task) {
+    this._dialog.open(TaskDialogComponent, {
+      width: '600px',
+      data: task || null
+    });
+  }
 
   /** Whether the number of selected elements matches the total number of rows. */
   isAllSelected() {
@@ -88,16 +83,19 @@ export class TodosWidgetComponent implements WidgetComponent {
   }
 
   /** The label for the checkbox on the passed row */
-  checkboxLabel(row?: TodoTask): string {
+  checkboxLabel(row?: Task): string {
     if (!row) {
       return `${this.isAllSelected() ? 'deselect' : 'select'} all`;
     }
-    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
+    return `${this.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.id}`;
   }
 
-  drop(event: CdkDragDrop<TodoTask[]>) {
+  drop(event: CdkDragDrop<Task[]>) {
     const data = this.dataSource.data;
     moveItemInArray(data, event.previousIndex, event.currentIndex);
     this.dataSource.data = data;
+    // Note: Reordering public tasks isn't persisted to backend in this MVP as db.json doesn't store order explicitly
+    // except array order, but TasksService re-fetches.
+    // If we want persistence, we'd need to update the whole list.
   }
 }

@@ -1,7 +1,7 @@
 <div class="relative p-4 h-full flex flex-col">
   <div class="pb-2.5 border-b-2 border-purple-500 flex items-center justify-between">
-    <div class="font-semibold">Todo's</div>
-    <button mat-stroked-button>
+    <div class="font-semibold">Atividades Públicas</div>
+    <button mat-stroked-button (click)="openTaskDialog()">
       <mat-icon>add</mat-icon>New Task
     </button>
   </div>
@@ -25,37 +25,33 @@
           </mat-checkbox>
         </td>
       </ng-container>
-      <ng-container matColumnDef="position">
+      <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef class="text-neutral-500 dark:text-neutral-400 w-1">#</th>
-        <td mat-cell *matCellDef="let element">{{ element.position }}</td>
+        <td mat-cell *matCellDef="let element">{{ element.id }}</td>
       </ng-container>
-      <ng-container matColumnDef="name">
+      <ng-container matColumnDef="title">
         <th mat-header-cell *matHeaderCellDef class="text-neutral-500 dark:text-neutral-400 w-1/2">Task name</th>
-        <td mat-cell *matCellDef="let element">{{ element.name }}</td>
-      </ng-container>
-      <ng-container matColumnDef="assignee">
-        <th mat-header-cell *matHeaderCellDef class="text-neutral-500 dark:text-neutral-400">Assignee</th>
-        <td mat-cell *matCellDef="let element">{{ element.assignee.name }}</td>
+        <td mat-cell *matCellDef="let element">{{ element.title }}</td>
       </ng-container>
       <ng-container matColumnDef="priority">
         <th mat-header-cell *matHeaderCellDef class="text-neutral-500 dark:text-neutral-400">Priority</th>
         <td mat-cell *matCellDef="let element">
-          @switch (element.priority.id) {
+          @switch (element.priority) {
             @case ('high') {
               <div class="bg-rose-500 font-semibold text-white text-2xs w-max rounded-full h-6 px-3 flex items-center">
-                {{ element.priority.name }}
+                High
               </div>
             }
 
             @case ('medium') {
               <div class="bg-amber-500 font-semibold text-white text-2xs w-max h-6 px-3 rounded-full flex items-center">
-                {{ element.priority.name }}
+                Medium
               </div>
             }
 
             @case ('low') {
               <div class="bg-secondary-500 font-semibold text-white text-2xs w-max h-6 px-3 rounded-full flex items-center">
-                {{ element.priority.name }}
+                Low
               </div>
             }
           }
@@ -63,8 +59,9 @@
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"
-          class="hover:bg-primary-50 dark:hover:bg-neutral-700 row"
-          [class.is-selected]="selection.isSelected(row)" cdkDrag cdkDragLockAxis="y">
+          class="hover:bg-primary-50 dark:hover:bg-neutral-700 row cursor-pointer"
+          [class.is-selected]="selection.isSelected(row)" cdkDrag cdkDragLockAxis="y"
+          (click)="openTaskDialog(row)">
         <td class="table-row-drag-placeholder" *cdkDragPlaceholder colspan="6"></td>
       </tr>
     </table>

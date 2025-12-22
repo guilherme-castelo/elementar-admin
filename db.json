@@ -1,4 +1,118 @@
 {
+  "comments": [
+    {
+      "taskId": "1",
+      "authorId": 1,
+      "authorName": "Admin",
+      "content": "teste",
+      "createdAt": "2025-12-22T03:48:00.104Z",
+      "id": 1
+    },
+    {
+      "taskId": "1",
+      "authorId": 2,
+      "authorName": "User",
+      "content": "teste comentario user",
+      "createdAt": "2025-12-22T03:55:04.719Z",
+      "id": 2
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Initial System Setup",
+      "description": "Setup the initial development environment and dependencies.",
+      "status": "doing",
+      "isPublic": true,
+      "ownerUserId": 1,
+      "collaboratorUserIds": [],
+      "priority": "high",
+      "comments": [
+        {
+          "taskId": "1",
+          "authorId": 1,
+          "authorName": "Admin",
+          "content": "teste",
+          "createdAt": "2025-12-22T03:48:00.104Z",
+          "id": 1
+        }
+      ],
+      "createdAt": "2024-05-20T10:00:00.000Z",
+      "completedAt": "2024-05-21T15:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "title": "Design Database Schema",
+      "description": "Draft the initial schema for users and companies.",
+      "status": "doing",
+      "isPublic": false,
+      "ownerUserId": 1,
+      "collaboratorUserIds": [
+        2
+      ],
+      "priority": "medium",
+      "comments": [
+        {
+          "text": "Make sure to include indices for frequent queries.",
+          "userId": 2,
+          "createdAt": "2024-05-22T09:30:00.000Z"
+        }
+      ],
+      "createdAt": "2024-05-21T16:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "title": "Implement Authentication",
+      "description": "Create login and registration flows.",
+      "status": "doing",
+      "isPublic": true,
+      "ownerUserId": 2,
+      "collaboratorUserIds": [
+        1
+      ],
+      "priority": "low",
+      "comments": [],
+      "createdAt": "2024-05-22T08:00:00.000Z"
+    },
+    {
+      "title": "Teste task user",
+      "description": "",
+      "status": "todo",
+      "isPublic": false,
+      "ownerUserId": 2,
+      "collaboratorUserIds": [],
+      "priority": "medium",
+      "comments": [],
+      "createdAt": "2025-12-22T03:40:13.248Z",
+      "id": "zftZpGy"
+    },
+    {
+      "title": "Teste Task admin",
+      "description": "",
+      "status": "todo",
+      "isPublic": false,
+      "ownerUserId": 1,
+      "collaboratorUserIds": [],
+      "priority": "medium",
+      "comments": [],
+      "createdAt": "2025-12-22T03:40:48.112Z",
+      "id": "TdMBTeI"
+    },
+    {
+      "title": "Task colaborativa",
+      "description": "",
+      "status": "todo",
+      "isPublic": false,
+      "ownerUserId": 1,
+      "collaboratorUserIds": [
+        2
+      ],
+      "priority": "medium",
+      "comments": [],
+      "createdAt": "2025-12-22T03:41:13.120Z",
+      "id": "r4euxo8"
+    }
+  ],
   "users": [
     {
       "id": 1,
@@ -33,36 +147,14 @@
       }
     },
     {
-      "id": 2,
-      "email": "user@empresa.test",
-      "password": "user",
       "name": "User",
-      "companyId": 1,
+      "email": "user@empresa.test",
+      "password": "123456",
       "roles": [
         "user"
       ],
-      "phone": "",
-      "jobTitle": "Employee",
-      "bio": "",
-      "address": {
-        "country": "Brasil",
-        "city": "",
-        "street": "",
-        "postalCode": "",
-        "building": "",
-        "apartment": ""
-      },
-      "preferences": {
-        "language": {
-          "code": "pt",
-          "name": "Portuguese (Brazil)"
-        },
-        "dateFormat": "DD/MM/YYYY",
-        "automaticTimeZone": {
-          "name": "GMT-03:00",
-          "isEnabled": true
-        }
-      }
+      "companyId": 1,
+      "id": 2
     },
     {
       "name": "User Teste",
