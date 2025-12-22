@@ -120,27 +120,21 @@
       "id": "2",
       "title": "Design Database Schema",
       "description": "Draft the initial schema for users and companies.",
-      "status": "doing",
+      "status": "todo",
       "isPublic": false,
       "ownerUserId": 1,
       "collaboratorUserIds": [
         2
       ],
       "priority": "medium",
-      "comments": [
-        {
-          "text": "Make sure to include indices for frequent queries.",
-          "userId": 2,
-          "createdAt": "2024-05-22T09:30:00.000Z"
-        }
-      ],
+      "comments": [],
       "createdAt": "2024-05-21T16:00:00.000Z"
     },
     {
       "id": "3",
       "title": "Implement Authentication",
       "description": "Create login and registration flows.",
-      "status": "doing",
+      "status": "todo",
       "isPublic": true,
       "ownerUserId": 2,
       "collaboratorUserIds": [
@@ -179,14 +173,23 @@
     {
       "title": "Task colaborativa",
       "description": "",
-      "status": "todo",
+      "status": "doing",
       "isPublic": false,
       "ownerUserId": 1,
       "collaboratorUserIds": [
         2
       ],
       "priority": "medium",
-      "comments": [],
+      "comments": [
+        {
+          "taskId": "r4euxo8",
+          "authorId": 2,
+          "authorName": "User",
+          "content": "teste colaborativa",
+          "createdAt": "2025-12-22T04:33:51.928Z",
+          "id": 4
+        }
+      ],
       "createdAt": "2025-12-22T03:41:13.120Z",
       "id": "r4euxo8"
     }

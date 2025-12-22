@@ -27,10 +27,12 @@
   <emr-panel-body class="relative">
     <emr-kanban-board [columns]="columns" (itemDropped)="onItemDropped($event)" class="absolute inset-0">
       <ng-template emrKanbanItemDef let-item let-column>
-        <div class="font-medium text-sm cursor-pointer" (click)="openTaskDialog(item.originalTask)">{{ item.name }}</div>
-        <div class="flex items-center justify-between mt-3.5">
-          <emr-dicebear [key]="item.assigneeId" class="size-7"/>
-          <mat-icon [style.color]="item.priorityColor" class="filled">flag</mat-icon>
+        <div class="flex items-center gap-2 cursor-pointer items-start flex-col" (click)="openTaskDialog(item.originalTask)">
+          <div class="font-medium text-sm">{{ item.name }}</div>
+          <div class="flex items-center gap-2">
+            <emr-dicebear [key]="item.assigneeId" class="size-7"/>
+            <mat-icon [style.color]="item.priorityColor" class="filled">flag</mat-icon>
+          </div>
         </div>
       </ng-template>
     </emr-kanban-board>
