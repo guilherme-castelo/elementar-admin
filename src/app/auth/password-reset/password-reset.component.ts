@@ -25,11 +25,17 @@ import { NgOptimizedImage } from '@angular/common';
 export class PasswordResetComponent {
   private _router = inject(Router);
   pin = new FormControl('', [Validators.required]);
+  pendingEmail = localStorage.getItem('reset_pending_email') || 'your-email@example.com';
 
   resendCode(): void {
+    alert('Code resent (simulated)');
   }
 
   continue() {
-    this._router.navigateByUrl('/auth/set-new-password');
+    if (this.pin.valid) {
+      // Simulate token passed to next step via localStorage or URL. 
+      // For MVP we just assume the "flow" is valid if they pass this screen.
+      this._router.navigateByUrl('/auth/set-new-password');
+    }
   }
 }

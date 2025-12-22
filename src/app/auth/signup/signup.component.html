@@ -9,7 +9,7 @@
         <p class="text-sm mt-3 text-neutral-500">
           Let's get started with your 30 days free trial
         </p>
-        <form class="flex flex-col pt-3 md:pt-8" [formGroup]="form">
+        <form class="flex flex-col pt-3 md:pt-8" [formGroup]="form" (ngSubmit)="onSubmit()">
           <mat-form-field>
             <mat-label>Name</mat-label>
             <input type="name" matInput formControlName="name">
@@ -22,7 +22,7 @@
             <mat-label>Password</mat-label>
             <input type="password" matInput formControlName="password">
           </mat-form-field>
-          <button mat-flat-button color="primary" type="button" class="!h-12 mt-4" [disabled]="form.invalid">Sign Up</button>
+          <button mat-flat-button color="primary" type="submit" class="!h-12 mt-4" [disabled]="form.invalid">Sign Up</button>
         </form>
         <emr-h-divider class="mt-8">or</emr-h-divider>
         <div class="text-sm flex flex-col gap-3 mt-7">

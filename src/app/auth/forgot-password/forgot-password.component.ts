@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { AuthService } from '../../core/services/auth.service';
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
@@ -26,10 +27,22 @@ import { NgOptimizedImage } from '@angular/common';
 })
 export class ForgotPasswordComponent {
   private _router = inject(Router);
+  private _authService = inject(AuthService);
 
   email = new FormControl('', [Validators.required, Validators.email]);
 
   resetPassword() {
-    this._router.navigateByUrl('/auth/password-reset');
+    if (this.email.invalid || !this.email.value) return;
+
+    this._authService.forgotPassword(this.email.value).subscribe({
+      next: () => {
+        // Store email for the simulation flow in next step
+        localStorage.setItem('reset_pending_email', this.email.value!);
+        this._router.navigateByUrl('/auth/set-new-password'); // Changed to set-new-password as it sounds more like the "Enter new password" screen
+      },
+      error: (err) => {
+        alert('Email not found');
+      }
+    });
   }
 }

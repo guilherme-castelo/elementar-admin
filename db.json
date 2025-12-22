@@ -73,6 +73,28 @@
       ],
       "companyId": 1,
       "id": 3
+    },
+    {
+      "name": "DENGO",
+      "email": "dengo@mail.com",
+      "password": "123456",
+      "id": 4,
+      "roles": [
+        "user"
+      ],
+      "permissions": [],
+      "companyId": 1,
+      "preferences": {
+        "language": {
+          "code": "pt",
+          "name": "Portuguese (Brazil)"
+        },
+        "dateFormat": "DD/MM/YYYY",
+        "automaticTimeZone": {
+          "name": "GMT-03:00",
+          "isEnabled": true
+        }
+      }
     }
   ],
   "companies": [
@@ -80,6 +102,11 @@
       "name": "Brasil Auto Serviço de Produtos Alimenticios SA",
       "cnpj": "10964693000196",
       "id": 1
+    },
+    {
+      "name": "Tech Solcicion",
+      "cnpj": "12345678945123",
+      "id": 2
     }
   ],
   "roles": [

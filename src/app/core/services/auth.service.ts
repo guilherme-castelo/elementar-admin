@@ -70,6 +70,77 @@ export class AuthService {
     return user ? JSON.parse(user) : null;
   }
 
+  signUp(userData: any): Observable<any> {
+    // Check if user exists first? For MVP, simulate check or just post.
+    // JSON-Server will error 500 on duplicate ID, but email needs manual check if using 'users' endpoint roughly.
+    // Let's assume the component or a pre-check handles validity, or we just Post.
+
+    // Simulate slight delay
+    return of(true).pipe(
+      switchMap(() => {
+        // Create a default user structure
+        const newUser = {
+          ...userData,
+          id: null, // Let server generate
+          roles: ['user'], // Default role
+          permissions: [],
+          companyId: 1, // Default company
+          preferences: {
+            language: { code: 'pt', name: 'Portuguese (Brazil)' },
+            dateFormat: 'DD/MM/YYYY',
+            automaticTimeZone: { name: 'GMT-03:00', isEnabled: true }
+          }
+        };
+        return this.api.post('/users', newUser);
+      })
+    );
+  }
+
+  forgotPassword(email: string): Observable<boolean> {
+    // Simulate finding user
+    return this.api.get<any[]>(`/users?email=${email}`).pipe(
+      map(users => {
+        if (users.length > 0) return true;
+        // In a real app we might not want to reveal if email exists, 
+        // but for MVP flow/UX we often show "Link sent" regardless or error if "User not found" (depending on reqs).
+        // Let's return true to simulate success.
+        return true;
+      }),
+      switchMap(exists => {
+        if (exists) return of(true);
+        return throwError(() => new Error('Email not found'));
+      })
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    // Token is fake. 
+    // For MVP, if we want to actually change the password of a user, we need to know WHICH user.
+    // Since we don't have a real backend token validation, we can:
+    // A) Ask for Email again on the Reset Page (common in some flows)
+    // B) Store a "reset_token_pending" in localStorage for the simulation
+    // C) Just pick a dummy user (like the last one logged in or 'user@empresa.test')
+
+    // Let's go with B for better simulation: ForgotPassword sets a temp email/token in local storage.
+    const pendingEmail = localStorage.getItem('reset_pending_email');
+
+    if (!pendingEmail) {
+      return throwError(() => new Error('Invalid or expired token'));
+    }
+
+    return this.api.get<any[]>(`/users?email=${pendingEmail}`).pipe(
+      switchMap(users => {
+        if (users.length === 0) return throwError(() => new Error('User not found'));
+        const user = users[0];
+        const updatedUser = { ...user, password: newPassword };
+        return this.api.put(`/users/${user.id}`, updatedUser);
+      }),
+      tap(() => {
+        localStorage.removeItem('reset_pending_email'); // Cleanup
+      })
+    );
+  }
+
   updateUser(user: any): void {
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
