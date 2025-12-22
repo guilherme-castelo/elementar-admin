@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatAnchor, MatButton, MatIconButton } from '@angular/material/button';
 import { MatBadge } from '@angular/material/badge';
@@ -51,13 +51,24 @@ import { AuthService } from '../../core/services/auth.service';
     'class': 'block w-full'
   }
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   private _layoutApi = inject(LayoutApiService);
   private _authService = inject(AuthService); // Inject Auth Service
+
+  name = '';
+  email = '';
 
   sidebarShown = computed(() => {
     return this._layoutApi.isSidebarShown('root')
   });
+
+  ngOnInit() {
+    const user = this._authService.getUser();
+    if (user) {
+      this.name = user.name;
+      this.email = user.email;
+    }
+  }
 
   toggleSidebar(): void {
     if (this.sidebarShown()) {

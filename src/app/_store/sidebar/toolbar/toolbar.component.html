@@ -11,13 +11,10 @@
   <emr-dicebear key="PS" image="assets/avatars/1.svg" class="size-12"/>
   <div class="flex items-center rounded-full p-1 gap-[0.5] bg-surface-container-high
               dark:bg-surface-container-highest hover:text-on-surface">
-    <button mat-icon-button matTooltip="Settings">
+    <button mat-icon-button matTooltip="Settings" routerLink="/account/settings/my-profile">
       <mat-icon>settings</mat-icon>
     </button>
-    <button mat-icon-button matTooltip="Payments">
-      <mat-icon>credit_card</mat-icon>
-    </button>
-    <button mat-icon-button matTooltip="Notifications">
+    <button mat-icon-button matTooltip="Notifications" routerLink="/account/notifications">
       <mat-icon matBadge="3">notifications</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Logout" (click)="logout()">
