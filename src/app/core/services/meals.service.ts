@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { IMeal } from '../models/meal.model';
 import { Observable, map } from 'rxjs';
 import { IEmployee } from '../models/employee.model';
+import { ReportPeriodService } from './report-period.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,34 +12,39 @@ import { IEmployee } from '../models/employee.model';
 export class MealsService {
   private api = inject(ApiService);
   private authService = inject(AuthService);
+  private reportPeriodService = inject(ReportPeriodService);
 
   private readonly MEAL_PRICE = 3.00;
 
   /**
    * Calculates the billing period for a given date.
-   * Rule:
-   * - Starts on day 26 of previous month.
-   * - Ends on day 25 of current month.
+   * Delegates to ReportPeriodService based on the month of the provided date.
+   * Ideally, callers should use ReportPeriodService directly, but kept for compatibility.
    */
   getPeriod(date: Date): { start: string, end: string } {
-    const day = date.getDate();
-    let start: Date;
-    let end: Date;
+    // Determine target month based on date. 
+    // If day >= 26, it belongs to NEXT month's period? No.
+    // The previous logic was:
+    // If >= 26: Start 26th Current, End 25th Next. (This means it belongs to NEXT month period).
+    // If < 26: Start 26th Previous, End 25th Current. (This means it belongs to CURRENT month period).
 
-    if (day >= 26) {
-      // Current month coverage: 26th Current -> 25th Next
-      start = new Date(date.getFullYear(), date.getMonth(), 26);
-      end = new Date(date.getFullYear(), date.getMonth() + 1, 25);
-    } else {
-      // Previous month coverage: 26th Previous -> 25th Current
-      start = new Date(date.getFullYear(), date.getMonth() - 1, 26);
-      end = new Date(date.getFullYear(), date.getMonth(), 25);
+    // Let's align with "Reference Month".
+    // If today is Dec 27, it belongs to Jan Period (Dec 26 - Jan 25).
+    // If today is Dec 20, it belongs to Dec Period (Nov 26 - Dec 25).
+
+    let targetMonth = date.getMonth();
+    let targetYear = date.getFullYear();
+
+    if (date.getDate() >= 26) {
+      targetMonth++;
+      if (targetMonth > 11) {
+        targetMonth = 0;
+        targetYear++;
+      }
     }
 
-    return {
-      start: start.toISOString(),
-      end: end.toISOString()
-    };
+    const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(targetMonth, targetYear);
+    return { start: startIso, end: endIso };
   }
 
   /**

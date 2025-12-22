@@ -11,6 +11,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MealsService } from '../../../core/services/meals.service';
+import { ReportPeriodService } from '../../../core/services/report-period.service';
 import { forkJoin } from 'rxjs';
 
 @Component({
@@ -32,20 +33,34 @@ import { forkJoin } from 'rxjs';
   ],
   template: `
     <div class="p-6">
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 class="text-2xl font-bold dark:text-gray-100">Relatórios de Refeições</h1>
           <p class="text-neutral-500 dark:text-neutral-400">Gestão de custos e consumo por setor</p>
         </div>
         
-        <!-- Period Filter -->
-        <mat-form-field appearance="outline" class="w-64 hide-subscript">
-           <mat-label>Data Base (Vigência)</mat-label>
-           <input matInput [matDatepicker]="picker" [formControl]="dateControl" (dateChange)="onDateChange()">
-           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-           <mat-datepicker #picker></mat-datepicker>
-           <mat-hint class="dark:text-neutral-400">Período: {{ periodStart | date:'dd/MM/yyyy' }} a {{ periodEnd | date:'dd/MM/yyyy' }}</mat-hint>
-        </mat-form-field>
+        <!-- Month/Year Filter -->
+        <div class="flex gap-3 bg-white dark:bg-neutral-800 p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
+           <mat-form-field appearance="outline" class="w-40 hide-subscript">
+             <mat-label>Mês</mat-label>
+             <mat-select [formControl]="monthControl" (selectionChange)="onMonthYearChange()">
+               <mat-option *ngFor="let m of months; let i = index" [value]="i">{{ m }}</mat-option>
+             </mat-select>
+           </mat-form-field>
+
+           <mat-form-field appearance="outline" class="w-32 hide-subscript">
+             <mat-label>Ano</mat-label>
+             <mat-select [formControl]="yearControl" (selectionChange)="onMonthYearChange()">
+               <mat-option *ngFor="let y of years" [value]="y">{{ y }}</mat-option>
+             </mat-select>
+           </mat-form-field>
+        </div>
+      </div>
+      
+      <div class="mb-4 text-right text-sm text-neutral-500 font-medium">
+         <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
+           Período: {{ periodStart | date:'dd/MM/yyyy' }} a {{ periodEnd | date:'dd/MM/yyyy' }}
+         </span>
       </div>
 
       <div class="p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-gray-700 overflow-hidden">
@@ -179,48 +194,58 @@ import { forkJoin } from 'rxjs';
 })
 export class MealReportsComponent implements OnInit {
   private mealsService = inject(MealsService);
+  private reportPeriodService = inject(ReportPeriodService);
 
-  dateControl = new FormControl(new Date());
+  monthControl = new FormControl(new Date().getMonth());
+  yearControl = new FormControl(new Date().getFullYear());
+
+  months = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+  years: number[] = [];
 
   periodStart = '';
   periodEnd = '';
 
   summary: any = {};
   matrix: any = { weeks: [], rows: [] };
-  dailyMatrix: any = { days: [], rows: [] }; // New daily matrix
+  dailyMatrix: any = { days: [], rows: [] };
 
   ngOnInit() {
+    this.generateYears();
     this.refresh();
   }
 
-  onDateChange() {
+  generateYears() {
+    const currentYear = new Date().getFullYear();
+    for (let i = currentYear - 2; i <= currentYear + 2; i++) {
+      this.years.push(i);
+    }
+  }
+
+  onMonthYearChange() {
     this.refresh();
   }
 
   refresh() {
-    let date = this.dateControl.value || new Date();
-    // Normalize to 1st of month to ensure period consistency if user picks a date that shifts period
-    // Requirement: "Selecionar um MÊS de referência"
-    // So if user picks Jan 10, it implies "January View" -> Period Dec 26 - Jan 25.
-    // If we rely on getPeriod(Jan 10) it returns Dec 26 - Jan 25.
-    // If user picks Jan 30, it returns Jan 26 - Feb 25.
-    // We need to enforce "Reference Month".
-    // If user picks Jan 2024, they mean the period ENDING in Jan 2024? Or the main month?
-    // "Regra de vigência obrigatória: 26 do mês anterior → 25 do mês atual"
-    // So if Reference Month is JANUARY, Period is 26 DEC -> 25 JAN.
-    // To ensure this, we pass a date <= 25th of that month to getPeriod.
-    // Let's force date to 1st of the selected month.
+    const month = this.monthControl.value!;
+    const year = this.yearControl.value!;
 
-    date = new Date(date.getFullYear(), date.getMonth(), 1);
+    // Using new service
+    const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(month, year);
+    this.periodStart = startIso;
+    this.periodEnd = endIso;
 
-    const period = this.mealsService.getPeriod(date);
-    this.periodStart = period.start;
-    this.periodEnd = period.end;
+    // Passing the Month Reference Date for dailyMatrix logic (which expects a date in the target month to reuse existing logic)
+    // Actually, getDailySectorMatrixByMonth calls getPeriod(date).
+    // If we pass 1st of month, `getPeriod` calls our service and returns exact same period.
+    const refDate = new Date(year, month, 1);
 
     forkJoin({
-      summary: this.mealsService.getWeeklySummary(period.start, period.end),
-      matrix: this.mealsService.getSectorWeeklyMatrix(period.start, period.end),
-      dailyMatrix: this.mealsService.getDailySectorMatrixByMonth(date) // Pass date for same logic
+      summary: this.mealsService.getWeeklySummary(startIso, endIso),
+      matrix: this.mealsService.getSectorWeeklyMatrix(startIso, endIso),
+      dailyMatrix: this.mealsService.getDailySectorMatrixByMonth(refDate)
     }).subscribe(data => {
       this.summary = data.summary;
       this.matrix = data.matrix;
