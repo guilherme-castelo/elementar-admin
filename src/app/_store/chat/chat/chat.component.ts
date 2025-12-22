@@ -1,8 +1,8 @@
-import { Component, ElementRef, OnInit, Signal, WritableSignal, computed, effect, inject, signal, viewChild, output } from '@angular/core';
+import { Component, ElementRef, OnInit, WritableSignal, effect, inject, signal, viewChild, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDivider } from '@angular/material/divider';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatIconButton } from '@angular/material/button';
 import { MatFormField, MatInput, MatSuffix } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
@@ -15,7 +15,7 @@ import {
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { ChatService } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ChatMessage, ChatUser, Conversation } from '../../../core/models/chat.interface';
+import { ChatUser, Conversation } from '../../../core/models/chat.interface';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -26,7 +26,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
     FormsModule,
     MatIcon,
     MatDivider,
-    MatButton,
     MatInput,
     MatIconButton,
     MatFormField,

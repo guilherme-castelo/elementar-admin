@@ -14,14 +14,33 @@
       <button mat-icon-button (click)="chatDrawer.open()">
         <mat-icon>chat</mat-icon>
       </button>
-      <button mat-icon-button matTooltip="Notifications"
-              [emrPopoverTriggerFor]="notificationsPopover" position="below-end">
-        <mat-icon matBadge="1">notifications</mat-icon>
-      </button>
       <emr-color-scheme-switcher matTooltip="Color Theme" emrSoundEffect>
         <mat-icon *emrColorSchemeLight>light_mode</mat-icon>
         <mat-icon *emrColorSchemeDark>dark_mode</mat-icon>
       </emr-color-scheme-switcher>
+      <button mat-icon-button [matMenuTriggerFor]="notificationsMenu">
+        <mat-icon [matBadge]="unreadNotificationsCount() || null" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+      <mat-menu #notificationsMenu="matMenu" xPosition="before" class="w-80">
+        <div class="px-4 py-3 border-b border-default flex justify-between items-center">
+          <span class="font-bold">Notifications</span>
+          <a routerLink="/account/notifications" class="text-xs text-primary no-underline hover:underline">View all</a>
+        </div>
+        
+        @for (notif of recentNotifications().slice(0, 5); track notif.id) {
+          <button mat-menu-item class="h-auto py-2 leading-tight" routerLink="/account/notifications">
+            <div class="flex flex-col gap-1 items-start whitespace-normal">
+              <div class="font-semibold text-sm">{{ notif.title }}</div>
+              <div class="text-xs text-neutral-600 line-clamp-2">{{ notif.description }}</div>
+              <div class="text-[10px] text-neutral-400 mt-1">{{ notif.createdAt | date:'shortTime' }}</div>
+            </div>
+          </button>
+          <mat-divider></mat-divider>
+        } @empty {
+          <div class="p-4 text-center text-neutral-500 text-sm">No new notifications</div>
+        }
+      </mat-menu>
+      
       <emr-dicebear key="PS"
                     [clickable]="true"
                     [matMenuTriggerFor]="accountMenu"

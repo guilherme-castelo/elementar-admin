@@ -8,7 +8,6 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { SoundEffectDirective } from '@elementar-ui/components/core';
-import { PopoverTriggerForDirective } from '@elementar-ui/components/popover';
 import { LayoutApiService } from '@elementar-ui/components/layout';
 import { AssistantSearchComponent, NotificationsPopoverComponent } from '../../_store/header';
 import { DrawerComponent } from '@elementar-ui/components/drawer';
@@ -19,10 +18,14 @@ import {
   ColorSchemeSwitcherComponent
 } from '@elementar-ui/components/color-scheme';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   imports: [
+    CommonModule,
     MatIcon,
     MatIconButton,
     MatBadge,
@@ -38,7 +41,6 @@ import { AuthService } from '../../core/services/auth.service';
     MatAnchor,
     SoundEffectDirective,
     NotificationsPopoverComponent,
-    PopoverTriggerForDirective,
     DrawerComponent,
     ChatComponent,
     ColorSchemeDarkDirective,
@@ -53,10 +55,14 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class HeaderComponent implements OnInit {
   private _layoutApi = inject(LayoutApiService);
-  private _authService = inject(AuthService); // Inject Auth Service
+  private _authService = inject(AuthService);
+  private _notificationService = inject(NotificationService);
 
   name = '';
   email = '';
+
+  unreadNotificationsCount = toSignal(this._notificationService.unreadCount$, { initialValue: 0 });
+  recentNotifications = toSignal(this._notificationService.activeNotifications$, { initialValue: [] });
 
   sidebarShown = computed(() => {
     return this._layoutApi.isSidebarShown('root')

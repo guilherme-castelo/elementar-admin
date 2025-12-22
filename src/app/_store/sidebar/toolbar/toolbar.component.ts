@@ -9,6 +9,8 @@ import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { AuthService } from '../../../core/services/auth.service';
 import { inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'emr-sidebar-toolbar',
@@ -25,10 +27,13 @@ import { RouterLink } from '@angular/router';
   styleUrl: './toolbar.component.scss'
 })
 export class ToolbarComponent implements OnInit {
+  private _notificationService = inject(NotificationService);
   private _authService = inject(AuthService);
   subscription = 'Free';
   email = '';
   name = '';
+  
+  unreadNotificationsCount = toSignal(this._notificationService.unreadCount$, { initialValue: 0 });
 
   ngOnInit() {
     const user = this._authService.getUser();

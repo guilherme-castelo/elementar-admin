@@ -15,7 +15,7 @@
       <mat-icon>settings</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Notifications" routerLink="/account/notifications">
-      <mat-icon matBadge="3">notifications</mat-icon>
+      <mat-icon matBadge="{{ unreadNotificationsCount() }}">notifications</mat-icon>
     </button>
     <button mat-icon-button matTooltip="Logout" (click)="logout()">
       <mat-icon>logout</mat-icon>

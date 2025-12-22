@@ -1,97 +1,51 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatIconButton } from '@angular/material/button';
-import {
-  NotificationControlsDefDirective,
-  NotificationDefDirective,
-  NotificationListComponent,
-  NotificationPropsDirective,
-  Notification
-} from '@elementar-ui/components/notifications';
-import { InviteToEditFilesInFolderNotification, MentionedInCommentNotification } from '../../_store/notifications';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatListModule } from '@angular/material/list';
+import { DatePipe, CommonModule } from '@angular/common';
 import { PageContentDirective } from '../../_meta/page/page-content.directive';
 import { PageComponent } from '../../_meta/page/page.component';
+import { NotificationService } from '../../core/services/notification.service';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
+  standalone: true,
   imports: [
+    CommonModule,
     PageComponent,
     PageContentDirective,
-    NotificationListComponent,
-    NotificationDefDirective,
-    InviteToEditFilesInFolderNotification,
-    MentionedInCommentNotification,
-    NotificationPropsDirective,
     MatIcon,
-    NotificationControlsDefDirective,
-    MatMenu,
-    MatMenuItem,
     MatIconButton,
-    MatMenuTrigger
+    MatTabsModule,
+    MatListModule,
+    DatePipe
   ],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss'
 })
 export class NotificationsComponent {
-  notifications: Notification[] = [
-    {
-      actor: {
-        id: 1,
-        name: 'Justin Hansen',
-        username: 'justin.hansen',
-        avatarUrl: 'assets/avatars/6.svg'
-      },
-      notifier: {
-        id: 2,
-        name: 'Elma Johnson',
-        username: 'elma.johnson',
-        avatarUrl: 'assets/avatars/4.svg'
-      },
-      payload: {
-        content: 'what did you say?'
-      },
-      isNew: true,
-      type: 'mentionedInComment',
-      createdAt: '1 hour ago'
-    },
-    {
-      actor: {
-        id: 3,
-        name: 'Johnny Gladden',
-        username: 'johnny.gladden',
-        avatarUrl: 'assets/avatars/3.svg'
-      },
-      notifier: {
-        id: 4,
-        name: 'Angela Naylor',
-        username: 'angela.naylor',
-        avatarUrl: 'assets/avatars/1.svg'
-      },
-      payload: {
-        folderName: 'My New Project'
-      },
-      isNew: true,
-      type: 'inviteToEditFilesInFolder',
-      createdAt: '2 hours ago'
-    },
-    {
-      actor: {
-        id: 1,
-        name: 'Justin Hansen',
-        username: 'justin.hansen',
-        avatarUrl: 'assets/avatars/7.svg'
-      },
-      notifier: {
-        id: 2,
-        name: 'Elma Johnson',
-        username: 'elma.johnson',
-        avatarUrl: 'assets/avatars/8.svg'
-      },
-      payload: {
-        content: 'what did you say?'
-      },
-      type: 'mentionedInComment',
-      createdAt: '1 hour ago'
-    },
-  ];
+  private _notificationService = inject(NotificationService);
+
+  activeNotifications = toSignal(this._notificationService.activeNotifications$, { initialValue: [] });
+  archivedNotifications = toSignal(this._notificationService.archivedNotifications$, { initialValue: [] });
+
+  markAsRead(id: string) {
+    this._notificationService.markAsRead(id);
+  }
+
+  archive(id: string) {
+    this._notificationService.archive(id);
+  }
+
+  getLink(type: string, entityId: string | number): string {
+    if (type === 'chat') {
+      return '/applications/messenger'; // Ideally link to specific chat
+    }
+    if (type.startsWith('task')) {
+      // Assuming task dialog or list
+      return '/applications/task-dialog'; // Simplified for now
+    }
+    return '/';
+  }
 }

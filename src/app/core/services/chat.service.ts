@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, combineLatest, map, switchMap, tap, of, catchError, take, merge, filter, fromEvent } from 'rxjs';
 import { AuthService } from './auth.service';
 import { UserService } from './user.service';
+import { NotificationService } from './notification.service';
 import { Conversation, ChatMessage, ChatUser } from '../models/chat.interface';
 
 @Injectable({
@@ -12,6 +13,7 @@ export class ChatService {
   private _http = inject(HttpClient);
   private _authService = inject(AuthService);
   private _userService = inject(UserService);
+  private _notificationService = inject(NotificationService);
 
   private readonly API_URL = 'http://localhost:3000';
   private readonly CHANNEL_NAME = 'elementar_chat_channel';
@@ -123,6 +125,24 @@ export class ChatService {
 
         // Notify other tabs/windows
         this._notifyBroadcast('MESSAGE_SENT', { conversationId });
+
+        // CREATE NOTIFICATION (New)
+        // Find the other participant
+        const conv = this._conversations$.value.find(c => c.id === conversationId);
+        if (conv) {
+          const otherUserId = conv.participantIds.find(id => id !== user.id);
+          if (otherUserId) {
+            this._notificationService.createNotification({
+              type: 'chat',
+              title: `New message from ${user.name}`,
+              description: content,
+              entityId: conversationId,
+              userId: otherUserId,
+              actorName: user.name,
+              actorAvatar: user.avatar
+            }).subscribe();
+          }
+        }
       }),
       catchError(err => {
         console.error('Failed to send message', err);

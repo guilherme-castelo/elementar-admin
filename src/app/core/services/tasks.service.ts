@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, map, BehaviorSubject, tap, switchMap } from 'rxjs';
+import { Observable, map, BehaviorSubject, tap, switchMap, take } from 'rxjs';
 import { Task, TaskComment } from '../models/task.interface';
 import { AuthService } from './auth.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ import { AuthService } from './auth.service';
 export class TasksService {
   private _http = inject(HttpClient);
   private _authService = inject(AuthService);
+  private _notificationService = inject(NotificationService);
   private apiUrl = 'http://localhost:3000/tasks';
 
   private _refresh$ = new BehaviorSubject<void>(undefined);
@@ -28,6 +30,10 @@ export class TasksService {
         params: { ...params, _embed: 'comments' }
       }))
     );
+  }
+
+  getTaskById(id: string | number): Observable<Task> {
+    return this._http.get<Task>(`${this.apiUrl}/${id}`);
   }
 
   getPublicTasks(): Observable<Task[]> {
@@ -85,7 +91,13 @@ export class TasksService {
   }
 
   updateTask(task: Task): Observable<Task> {
-    return this._http.put<Task>(`${this.apiUrl}/${task.id}`, task).pipe(
+    // Read before write to detect changes for notifications
+    return this.getTaskById(task.id).pipe(
+      take(1),
+      switchMap(oldTask => {
+        this._checkForNotifications(oldTask, task);
+        return this._http.put<Task>(`${this.apiUrl}/${task.id}`, task);
+      }),
       tap(() => this._refresh$.next())
     );
   }
@@ -96,21 +108,43 @@ export class TasksService {
     );
   }
 
-  // Legacy support for 'comments' array in Task (if needed), 
-  // but we should prefer separate service. 
-  // However, `tasks-in-progress` card reads `task.comments.length`. 
-  // Since we use `_embed=comments` in getTasks, that property will be populated by json-server dynamically 
-  // even if the array in db.json 'tasks' is empty, IF the relationship is set up correctly (resource name matching).
-  // Resource is 'comments', and it has 'taskId'. Json-server automatically embeds children.
-  // BUT the property name will be 'comments' (plural) matching the resource name.
-  // So `task.comments` will work for reading.
-  // For adding, we use CommentsService.
-  // For the legacy `addComment` method here, we can deprecate or redirect to CommentsService.
-  // Let's redirect it or remove it? The instruction says "Refactor TasksService".
-  // Keeping it for backward compatibility but making it use the new system logic if possible, 
-  // OR just assume new code won't use it.
-  // I'll leave the old one but implementing new logic might be complex. 
-  // Let's just keep the old implementation as legacy fallback OR remove it if unused.
-  // Actually, let's keep it but mark deprecated or just rely on CommentsService.
-  // I'll simply remove `addComment` from here to force usage of `CommentsService`.
+  private _checkForNotifications(oldTask: Task, newTask: Task) {
+    const currentUser = this._authService.getUser();
+    if (!currentUser) return;
+
+    // 1. Check for newly assigned collaborators
+    const newCollaborators = newTask.collaboratorUserIds.filter(id => !oldTask.collaboratorUserIds.includes(id));
+    newCollaborators.forEach(userId => {
+      if (userId !== currentUser.id) { // Don't notify self
+        this._notificationService.createNotification({
+          type: 'task-assigned',
+          title: 'New Task Assignment',
+          description: `You were assigned to task: ${newTask.title}`,
+          entityId: newTask.id,
+          userId: Number(userId),
+          actorName: currentUser.name,
+          actorAvatar: currentUser.avatar
+        }).subscribe();
+      }
+    });
+
+    // 2. Check for completion
+    if (oldTask.status !== 'done' && newTask.status === 'done') {
+      // Notify owner and collaborators (except self)
+      const recipients = new Set([...newTask.collaboratorUserIds, newTask.ownerUserId]);
+      recipients.delete(currentUser.id);
+
+      recipients.forEach(userId => {
+        this._notificationService.createNotification({
+          type: 'task-completed',
+          title: 'Task Completed',
+          description: `${currentUser.name} completed task: ${newTask.title}`,
+          entityId: newTask.id,
+          userId: Number(userId),
+          actorName: currentUser.name,
+          actorAvatar: currentUser.avatar
+        }).subscribe();
+      });
+    }
+  }
 }

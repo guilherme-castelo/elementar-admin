@@ -1,19 +1,13 @@
-import { Component, inject, OnInit, Signal, WritableSignal, signal, effect, ElementRef, viewChild } from '@angular/core';
+import { Component, inject, OnInit, WritableSignal, signal, effect, ElementRef, viewChild } from '@angular/core';
 import { MatInput } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { DatePipe, CommonModule } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
-import { SafeHtmlPipe } from '@elementar-ui/components/core';
-import {
-  MatAccordion,
-  MatExpansionPanel,
-  MatExpansionPanelTitle,
-  MatExpansionPanelHeader
-} from '@angular/material/expansion';
+
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
-import { ImageViewerDirective, ImageViewerPictureDirective } from '@elementar-ui/components/image-viewer';
+import { ImageViewerDirective } from '@elementar-ui/components/image-viewer';
 import { HorizontalDividerComponent } from '@elementar-ui/components/divider';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { ChatService } from '../../../core/services/chat.service';
@@ -27,23 +21,16 @@ import { toSignal } from '@angular/core/rxjs-interop';
   imports: [
     CommonModule,
     FormsModule,
-    ImageViewerPictureDirective,
     MatInput,
     MatIcon,
     MatIconButton,
     DicebearComponent,
     DatePipe,
     MatTooltip,
-    SafeHtmlPipe,
-    MatExpansionPanel,
-    MatAccordion,
-    MatExpansionPanelTitle,
-    MatExpansionPanelHeader,
     MatButton,
     MatMenu,
     MatMenuItem,
     MatMenuTrigger,
-    ImageViewerPictureDirective,
     ImageViewerDirective,
     HorizontalDividerComponent
   ],

@@ -1,89 +1,56 @@
 {
-  "conversations": [
+  "notifications": [
     {
-      "id": "9h1s0s7",
-      "participantIds": [
-        1,
-        2
-      ],
-      "createdAt": "2025-12-22T04:05:41.688Z",
-      "lastMessageAt": "2025-12-22T04:16:44.257Z",
-      "lastMessagePreview": "teste"
+      "type": "task-comment",
+      "title": "New Comment",
+      "description": "User commented on: Initial System Setup",
+      "entityId": "1",
+      "userId": 1,
+      "actorName": "User",
+      "id": "2ujouxm",
+      "createdAt": "2025-12-22T04:33:39.949Z",
+      "read": false,
+      "archived": false
     },
     {
-      "id": "owqg6b4",
-      "participantIds": [
-        1,
-        3
-      ],
-      "createdAt": "2025-12-22T04:15:45.856Z"
+      "type": "task-comment",
+      "title": "New Comment",
+      "description": "User commented on: Task colaborativa",
+      "entityId": "r4euxo8",
+      "userId": 1,
+      "actorName": "User",
+      "id": "dhg4vku",
+      "createdAt": "2025-12-22T04:33:51.957Z",
+      "read": true,
+      "archived": false
+    },
+    {
+      "type": "task-assigned",
+      "title": "New Task Assignment",
+      "description": "You were assigned to task: Teste Task admin",
+      "entityId": "TdMBTeI",
+      "userId": 2,
+      "actorName": "Admin",
+      "id": "w27k2pj",
+      "createdAt": "2025-12-22T04:34:26.554Z",
+      "read": false,
+      "archived": false
+    },
+    {
+      "type": "task-comment",
+      "title": "New Comment",
+      "description": "User commented on: Teste Task admin",
+      "entityId": "TdMBTeI",
+      "userId": 1,
+      "actorName": "User",
+      "id": "ao06nzj",
+      "createdAt": "2025-12-22T04:34:45.404Z",
+      "read": true,
+      "archived": true
     }
   ],
-  "messages": [
-    {
-      "id": "jk3pglj",
-      "conversationId": "9h1s0s7",
-      "senderId": 1,
-      "senderName": "Admin",
-      "content": "ola",
-      "createdAt": "2025-12-22T04:07:26.384Z",
-      "status": "sent"
-    },
-    {
-      "id": "1kxi5m1",
-      "conversationId": "9h1s0s7",
-      "senderId": 2,
-      "senderName": "User",
-      "content": "ola",
-      "createdAt": "2025-12-22T04:07:37.936Z",
-      "status": "sent"
-    },
-    {
-      "id": "ycxgyv5",
-      "conversationId": "9h1s0s7",
-      "senderId": 2,
-      "senderName": "User",
-      "content": "teste 123",
-      "createdAt": "2025-12-22T04:07:45.616Z",
-      "status": "sent"
-    },
-    {
-      "id": "bmr0rmo",
-      "conversationId": "9h1s0s7",
-      "senderId": 1,
-      "senderName": "Admin",
-      "content": "teste",
-      "createdAt": "2025-12-22T04:08:01.256Z",
-      "status": "sent"
-    },
-    {
-      "id": "ehatt3k",
-      "conversationId": "9h1s0s7",
-      "senderId": 2,
-      "senderName": "User",
-      "content": "ola",
-      "createdAt": "2025-12-22T04:08:30.008Z",
-      "status": "sent"
-    },
-    {
-      "id": "7y2g1hj",
-      "conversationId": "9h1s0s7",
-      "senderId": 2,
-      "senderName": "User",
-      "content": "ola",
-      "createdAt": "2025-12-22T04:16:30.377Z",
-      "status": "sent"
-    },
-    {
-      "id": "9d0toi9",
-      "conversationId": "9h1s0s7",
-      "senderId": 1,
-      "senderName": "Admin",
-      "content": "teste",
-      "createdAt": "2025-12-22T04:16:44.257Z",
-      "status": "sent"
-    }
-  ],
+  "conversations": [],
+  "messages": [],
   "comments": [
     {
       "taskId": "1",
@@ -100,6 +67,30 @@
       "content": "teste comentario user",
       "createdAt": "2025-12-22T03:55:04.719Z",
       "id": 2
+    },
+    {
+      "taskId": "1",
+      "authorId": 2,
+      "authorName": "User",
+      "content": "teste",
+      "createdAt": "2025-12-22T04:33:39.904Z",
+      "id": 3
+    },
+    {
+      "taskId": "r4euxo8",
+      "authorId": 2,
+      "authorName": "User",
+      "content": "teste colaborativa",
+      "createdAt": "2025-12-22T04:33:51.928Z",
+      "id": 4
+    },
+    {
+      "taskId": "TdMBTeI",
+      "authorId": 2,
+      "authorName": "User",
+      "content": "teste 123",
+      "createdAt": "2025-12-22T04:34:45.368Z",
+      "id": 5
     }
   ],
   "tasks": [
@@ -177,7 +168,9 @@
       "status": "todo",
       "isPublic": false,
       "ownerUserId": 1,
-      "collaboratorUserIds": [],
+      "collaboratorUserIds": [
+        2
+      ],
       "priority": "medium",
       "comments": [],
       "createdAt": "2025-12-22T03:40:48.112Z",

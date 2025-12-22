@@ -1,32 +1,67 @@
 <app-page>
   <div appPageContent>
-    <h1>Notifications</h1>
-    <div class="w-9/12 mt-14">
-      <emr-notification-list [notifications]="notifications" class="gap-5">
-        <ng-template emrNotificationDef="mentionedInComment" let-notification>
-          <emr-mentioned-in-comment [notification]="notification"
-                                    emrNotificationProps [isUnread]="notification.isNew"/>
-        </ng-template>
-        <ng-template emrNotificationDef="inviteToEditFilesInFolder" let-notification>
-          <emr-invite-to-edit-files-in-folder [notification]="notification"
-                                              emrNotificationProps [isUnread]="notification.isNew"/>
-        </ng-template>
-        <ng-template emrNotificationControlsDef let-notification>
-         <button mat-icon-button [matMenuTriggerFor]="settings">
-           <mat-icon>more_vert</mat-icon>
-         </button>
-          <mat-menu #settings xPosition="before">
-            <button mat-menu-item>
-              <mat-icon>notifications_off</mat-icon>
-              <span>Disable this type of notification</span>
-            </button>
-            <button mat-menu-item>
-              <mat-icon>delete</mat-icon>
-              <span>Delete notification</span>
-            </button>
-          </mat-menu>
-        </ng-template>
-      </emr-notification-list>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold m-0">Notifications</h1>
     </div>
+
+    <mat-tab-group>
+      <mat-tab label="Active">
+        <div class="mt-4">
+          @if (activeNotifications().length > 0) {
+            <mat-list class="bg-surface-container-low rounded-xl">
+              @for (notif of activeNotifications(); track notif.id) {
+                <mat-list-item class="h-auto py-3">
+                  <mat-icon matListItemIcon class="text-primary self-center">notifications</mat-icon>
+                  <div matListItemTitle class="font-semibold flex items-center gap-2">
+                    {{ notif.title }}
+                    @if (!notif.read) {
+                      <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span>
+                    }
+                  </div>
+                  <div matListItemLine class="text-neutral-600 truncate">{{ notif.description }}</div>
+                  <div matListItemLine class="text-xs text-neutral-400 mt-1">{{ notif.createdAt | date:'medium' }}</div>
+                  
+                  <div matListItemMeta class="flex gap-2 self-center">
+                    <button mat-icon-button (click)="markAsRead(notif.id)" matTooltip="Mark as read" [disabled]="notif.read">
+                      <mat-icon>check_circle</mat-icon>
+                    </button>
+                    <button mat-icon-button (click)="archive(notif.id)" matTooltip="Archive">
+                      <mat-icon>archive</mat-icon>
+                    </button>
+                  </div>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+              }
+            </mat-list>
+          } @else {
+             <div class="p-10 text-center text-neutral-500 bg-surface-container-low rounded-xl">
+               No active notifications.
+             </div>
+          }
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="Archived">
+        <div class="mt-4">
+          @if (archivedNotifications().length > 0) {
+            <mat-list class="bg-surface-container-low rounded-xl opacity-75">
+              @for (notif of archivedNotifications(); track notif.id) {
+                <mat-list-item class="h-auto py-3">
+                  <mat-icon matListItemIcon class="text-neutral self-center">history</mat-icon>
+                  <div matListItemTitle class="font-semibold">{{ notif.title }}</div>
+                  <div matListItemLine class="text-neutral-600 truncate">{{ notif.description }}</div>
+                  <div matListItemLine class="text-xs text-neutral-400 mt-1">{{ notif.createdAt | date:'medium' }}</div>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+              }
+            </mat-list>
+          } @else {
+             <div class="p-10 text-center text-neutral-500 bg-surface-container-low rounded-xl">
+               No archived notifications.
+             </div>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
   </div>
 </app-page>

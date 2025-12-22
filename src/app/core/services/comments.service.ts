@@ -1,18 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, switchMap, take } from 'rxjs';
 import { Comment } from '../models/comment.interface';
 import { TasksService } from './tasks.service';
+import { NotificationService } from './notification.service';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommentsService {
   private _http = inject(HttpClient);
-  // We inject TasksService to trigger its refresh subject (or we could expose a global refresh, 
-  // but better to keep comments separate or have tasks refresh if comments count is shown on task card).
-  // For now, let's keep it simple. If we need to update task metadata (like comment count), we might need to refresh tasks.
   private _tasksService = inject(TasksService);
+  private _notificationService = inject(NotificationService);
+  private _authService = inject(AuthService);
 
   private apiUrl = 'http://localhost:3000/comments';
 
@@ -22,17 +23,32 @@ export class CommentsService {
 
   addComment(comment: Omit<Comment, 'id'>): Observable<Comment> {
     return this._http.post<Comment>(this.apiUrl, comment).pipe(
-      // Trigger tasks refresh so that comment counts on cards update if we were showing them from the task object.
-      // However, current task object has 'comments' array which is legacy.
-      // We are moving to separate resource. The card view 'tasks.comments.length' will effectively be 0 or stale 
-      // unless we also update the task object's legacy comments array or switch the card to fetch count.
-      // Challenge: The current 'minhas atividades' card shows comment count. 
-      // If we move to separate resource, that count is harder to get efficiently without including 'comments' embed.
-      // JSON-Server supports _embed=comments, so we should update TasksService to fetch tasks with embedded comments if possible,
-      // OR we just accept we need to update the legacy array for now to keep the count working easily, 
-      // OR we fetch comments count separately (can be expensive for lists).
-      // Best approach for Json-Server: Use `_embed=comments` when fetching tasks.
-      tap(() => this._tasksService.triggerRefresh())
+      tap(() => {
+        this._tasksService.triggerRefresh();
+        this._notifyTaskParticipants(comment);
+      })
     );
+  }
+
+  private _notifyTaskParticipants(comment: Omit<Comment, 'id'>) {
+    const currentUser = this._authService.getUser();
+    if (!currentUser) return;
+
+    this._tasksService.getTaskById(comment.taskId).pipe(take(1)).subscribe(task => {
+      const recipients = new Set([...task.collaboratorUserIds, task.ownerUserId]);
+      recipients.delete(currentUser.id);
+
+      recipients.forEach(userId => {
+        this._notificationService.createNotification({
+          type: 'task-comment',
+          title: 'New Comment',
+          description: `${currentUser.name} commented on: ${task.title}`,
+          entityId: task.id,
+          userId: Number(userId),
+          actorName: currentUser.name,
+          actorAvatar: currentUser.avatar
+        }).subscribe();
+      });
+    });
   }
 }
