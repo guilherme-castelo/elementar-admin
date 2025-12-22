@@ -5,8 +5,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
+import { MatMenuModule } from '@angular/material/menu';
 import { EmployeeImportService, IImportResult } from '../../../core/services/employee-import.service';
-import { IEmployee } from '../../../core/models/employee.model';
+import { EmployeeImportTemplateService } from '../../../core/services/employee-import-template.service';
 
 @Component({
   selector: 'app-employee-import-dialog',
@@ -17,10 +18,25 @@ import { IEmployee } from '../../../core/models/employee.model';
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
-    MatTableModule
+    MatTableModule,
+    MatMenuModule
   ],
   template: `
-    <h2 mat-dialog-title>Importar Funcionários</h2>
+    <div class="flex justify-between items-center pr-6 pl-0 pt-0">
+        <h2 mat-dialog-title>Importar Funcionários</h2>
+        <!-- Template Download Menu -->
+        <button mat-button [matMenuTriggerFor]="menu" class="text-neutral-500">
+           <mat-icon>download</mat-icon> Baixar Modelos
+        </button>
+        <mat-menu #menu="matMenu">
+           <button mat-menu-item (click)="downloadTemplate('csv')">
+             <mat-icon>table_view</mat-icon> Modelo CSV
+           </button>
+           <button mat-menu-item (click)="downloadTemplate('json')">
+             <mat-icon>code</mat-icon> Modelo JSON
+           </button>
+        </mat-menu>
+    </div>
     
     <mat-dialog-content class="mat-typography min-w-[500px]">
       
@@ -106,11 +122,16 @@ import { IEmployee } from '../../../core/models/employee.model';
 export class EmployeeImportDialogComponent {
   private dialogRef = inject(MatDialogRef<EmployeeImportDialogComponent>);
   private importService = inject(EmployeeImportService);
+  private templateService = inject(EmployeeImportTemplateService);
 
   isAnalyzing = false;
   isImporting = false;
   importComplete = false;
   analysisResult: IImportResult | null = null;
+
+  downloadTemplate(type: 'csv' | 'json') {
+    this.templateService.downloadTemplate(type);
+  }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -127,7 +148,7 @@ export class EmployeeImportDialogComponent {
           this.isAnalyzing = false;
         },
         error: (err) => {
-          alert('Erro na validação: ' + err); // Simple alert for now or use snackbar if injected
+          alert('Erro na validação: ' + err);
           this.isAnalyzing = false;
         }
       });
@@ -143,8 +164,6 @@ export class EmployeeImportDialogComponent {
     this.isImporting = true;
     this.importService.importEmployees(this.analysisResult.valid).subscribe({
       next: (results) => {
-        // results is array of responses or errors. Ideally check if any failed.
-        // For MVP assuming standard happy path or partial success logic handled by forkJoin catchError
         this.isImporting = false;
         this.importComplete = true;
       },

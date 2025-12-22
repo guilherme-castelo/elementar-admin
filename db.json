@@ -299,6 +299,30 @@
       "dataDemissao": null,
       "companyId": "1",
       "id": 10
+    },
+    {
+      "matricula": "1010",
+      "firstName": "Ana",
+      "lastName": "Silva",
+      "cpf": "12345678901",
+      "funcao": "Analista de RH",
+      "setor": "Recursos Humanos",
+      "dataAdmissao": "2023-01-15T08:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 11
+    },
+    {
+      "matricula": "1011",
+      "firstName": "Carlos",
+      "lastName": "Oliveira",
+      "cpf": "98765432100",
+      "funcao": "Desenvolvedor",
+      "setor": "TI",
+      "dataAdmissao": "2023-02-01T08:00:00.000Z",
+      "dataDemissao": null,
+      "companyId": "1",
+      "id": 12
     }
   ],
   "meals": [
@@ -444,6 +468,45 @@
       "periodEnd": "2025-12-25T04:00:00.000Z",
       "createdAt": "2025-12-22T00:11:48.776Z",
       "id": 11
+    },
+    {
+      "employeeId": 3,
+      "employeeMatricula": "1001",
+      "employeeName": "Carlos Silva",
+      "sector": "Produção",
+      "companyId": 1,
+      "date": "2025-12-01T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-22T00:26:32.915Z",
+      "id": 12
+    },
+    {
+      "employeeId": 4,
+      "employeeMatricula": "1002",
+      "employeeName": "Mariana Oliveira",
+      "sector": "Administrativo",
+      "companyId": 1,
+      "date": "2025-12-01T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-22T00:26:35.397Z",
+      "id": 13
+    },
+    {
+      "employeeId": 5,
+      "employeeMatricula": "1003",
+      "employeeName": "Rafael Pereira",
+      "sector": "TI",
+      "companyId": 1,
+      "date": "2025-12-01T04:00:00.000Z",
+      "price": 3,
+      "periodStart": "2025-11-26T04:00:00.000Z",
+      "periodEnd": "2025-12-25T04:00:00.000Z",
+      "createdAt": "2025-12-22T00:26:41.916Z",
+      "id": 14
     }
   ]
 }
