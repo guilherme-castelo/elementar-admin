@@ -118,74 +118,101 @@ export class MealsService {
   /**
    * Generates a matrix of Sector x Days (Mon-Sat).
    */
-  getDailySectorMatrixByMonth(date: Date): Observable<any> {
+  /**
+   * Generates a matrix of Group (Sector/Employee) x Days (Mon-Sat).
+   */
+  getDailyReport(date: Date, groupBy: 'sector' | 'employee' = 'sector'): Observable<any> {
     const { start, end } = this.getPeriod(date);
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
     return this.getMealsByPeriod(start, end).pipe(
-      map(meals => {
-        // 1. Generate all valid days (Mon-Sat)
-        const days: { label: string, dateIso: string, fullDate: Date }[] = [];
-        let cursor = new Date(startDate);
+      map(meals => this.generateDailyMatrix(meals, start, end, groupBy))
+    );
+  }
 
-        while (cursor <= endDate) {
-          const dayOfWeek = cursor.getDay();
-          // 0 = Sun, 6 = Sat. Include 1..6 (Mon-Sat)
-          if (dayOfWeek !== 0) {
-            days.push({
-              label: `${cursor.getDate().toString().padStart(2, '0')}/${(cursor.getMonth() + 1).toString().padStart(2, '0')}`,
-              dateIso: cursor.toISOString().split('T')[0], // YYYY-MM-DD
-              fullDate: new Date(cursor)
-            });
-          }
-          cursor.setDate(cursor.getDate() + 1);
+  // Deprecated: kept for backward compatibility if needed, or alias to new method
+  getDailySectorMatrixByMonth(date: Date): Observable<any> {
+    return this.getDailyReport(date, 'sector');
+  }
+
+  private generateDailyMatrix(meals: IMeal[], startIso: string, endIso: string, groupBy: 'sector' | 'employee'): any {
+    const startDate = new Date(startIso);
+    const endDate = new Date(endIso);
+
+    // 1. Generate all valid days (Mon-Sat)
+    const days: { label: string, dateIso: string, fullDate: Date }[] = [];
+    let cursor = new Date(startDate);
+
+    while (cursor <= endDate) {
+      const dayOfWeek = cursor.getDay();
+      // 0 = Sun, 6 = Sat. Include 1..6 (Mon-Sat)
+      if (dayOfWeek !== 0) {
+        days.push({
+          label: `${cursor.getDate().toString().padStart(2, '0')}/${(cursor.getMonth() + 1).toString().padStart(2, '0')}`,
+          dateIso: cursor.toISOString().split('T')[0], // YYYY-MM-DD
+          fullDate: new Date(cursor)
+        });
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    // 2. Group Meals
+    const groupMap: Record<string, { total: number, days: Record<string, number>, label: string, secondaryLabel: string }> = {};
+
+    meals.forEach(meal => {
+      const mDateIso = meal.date.split('T')[0];
+      const validDay = days.find(d => d.dateIso === mDateIso);
+
+      if (validDay) {
+        let key = '';
+        let label = '';
+        let secondaryLabel = '';
+
+        if (groupBy === 'sector') {
+          key = meal.sector;
+          label = meal.sector;
+        } else {
+          // Employee Mode
+          key = meal.employeeId.toString(); // Group by ID to be safe
+          label = meal.employeeName;
+          secondaryLabel = meal.employeeMatricula || '';
         }
 
-        // 2. Group Meals
-        // sector -> date -> count
-        const sectorMap: Record<string, { total: number, days: Record<string, number> }> = {};
+        if (!groupMap[key]) {
+          groupMap[key] = { total: 0, days: {}, label, secondaryLabel };
+        }
 
-        meals.forEach(meal => {
-          const mDateIso = meal.date.split('T')[0]; // Extract YYYY-MM-DD
-          // Only count if this date is in our valid "days" list (excludes Sundays if any slipped in)
-          // Actually, our getMealsByPeriod relies on date range, so it might return Sundays if they exist in DB.
-          // We only map them if they match a valid column.
-          const validDay = days.find(d => d.dateIso === mDateIso);
+        groupMap[key].days[mDateIso] = (groupMap[key].days[mDateIso] || 0) + 1;
+        groupMap[key].total++;
+      }
+    });
 
-          if (validDay) {
-            if (!sectorMap[meal.sector]) sectorMap[meal.sector] = { total: 0, days: {} };
+    // 3. Serialize to rows
+    const rows: any[] = [];
+    Object.keys(groupMap).forEach(key => {
+      const data = groupMap[key];
+      const dailyCounts = days.map(d => data.days[d.dateIso] || 0);
 
-            sectorMap[meal.sector].days[mDateIso] = (sectorMap[meal.sector].days[mDateIso] || 0) + 1;
-            sectorMap[meal.sector].total++;
-          }
-        });
+      rows.push({
+        key, // useful for tracking
+        label: data.label, // Sector Name or Employee Name
+        secondaryLabel: data.secondaryLabel, // Matricula (only for employee)
+        dailyCounts,
+        totalQty: data.total
+      });
+    });
 
-        // 3. Serialize to rows
-        const rows: any[] = [];
-        Object.keys(sectorMap).forEach(sector => {
-          const data = sectorMap[sector];
-          // For each day column, get count
-          const dailyCounts = days.map(d => data.days[d.dateIso] || 0);
+    // Sort: by total quantity desc, then alpha
+    rows.sort((a, b) => {
+      const diff = b.totalQty - a.totalQty;
+      if (diff !== 0) return diff;
+      return a.label.localeCompare(b.label);
+    });
 
-          rows.push({
-            sector,
-            dailyCounts,
-            totalQty: data.total
-          });
-        });
+    // Calculate Totals per Day (Footer)
+    const dailyTotals = days.map(d => {
+      return rows.reduce((acc, row) => acc + (row.dailyCounts[days.indexOf(d)] || 0), 0);
+    });
 
-        // Sort by total quantity desc
-        rows.sort((a, b) => b.totalQty - a.totalQty);
-
-        // Calculate Totals per Day (Footer)
-        const dailyTotals = days.map(d => {
-          return rows.reduce((acc, row) => acc + (row.dailyCounts[days.indexOf(d)] || 0), 0);
-        });
-
-        return { days, rows, dailyTotals };
-      })
-    );
+    return { days, rows, dailyTotals };
   }
 
   /**

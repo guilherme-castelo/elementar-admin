@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MealsService } from '../../../core/services/meals.service';
 import { ReportPeriodService } from '../../../core/services/report-period.service';
 import { forkJoin } from 'rxjs';
@@ -29,7 +30,8 @@ import { forkJoin } from 'rxjs';
     MatIconModule,
     MatTabsModule,
     MatTableModule,
-    MatSelectModule
+    MatSelectModule,
+    MatButtonToggleModule
   ],
   template: `
     <div class="p-6">
@@ -126,60 +128,79 @@ import { forkJoin } from 'rxjs';
           <!-- Daily Report Tab -->
           <mat-tab label="Relatório Diário">
              <div class="p-6">
-                <!-- Legend info -->
-                 <div class="mb-4 flex gap-4 text-xs text-neutral-500">
-                    <span>* Exibindo apenas dias úteis (Segunda a Sábado)</span>
-                    <span>* Feriados não são excluídos automaticamente</span>
+                 <!-- Filters & View Mode -->
+                 <div class="flex flex-col md:flex-row justify-between items-end gap-4 mb-6">
+                    <div class="flex gap-4 items-center">
+                        <mat-button-toggle-group [formControl]="viewModeControl" aria-label="Modo de Visualização" class="h-12">
+                          <mat-button-toggle value="sector">Por Setor</mat-button-toggle>
+                          <mat-button-toggle value="employee">Por Funcionário</mat-button-toggle>
+                        </mat-button-toggle-group>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="w-full md:w-80 hide-subscript">
+                        <mat-label>Filtrar por {{ viewModeControl.value === 'sector' ? 'Setor' : 'Funcionário' }}</mat-label>
+                        <input matInput [formControl]="filterControl" placeholder="Digite para buscar...">
+                        <mat-icon matSuffix>search</mat-icon>
+                    </mat-form-field>
                  </div>
 
-                 <div class="overflow-x-auto max-w-full">
-                  <table class="min-w-max w-full text-sm text-center text-neutral-600 dark:text-neutral-300 border-collapse">
-                    <thead class="text-xs text-neutral-700 dark:text-neutral-200 uppercase bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
-                      <tr>
-                        <th class="px-3 py-3 border-b dark:border-gray-600 text-left sticky left-0 bg-gray-50 dark:bg-gray-700 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Setor</th>
-                        <!-- Dynamic Days Headers -->
-                        <th *ngFor="let day of dailyMatrix?.days" class="px-2 py-3 border-b dark:border-gray-600 min-w-[50px]">
-                          {{ day.label }}
-                        </th>
-                        <th class="px-3 py-3 border-b dark:border-gray-600 text-right sticky right-0 bg-gray-50 dark:bg-gray-700 z-20 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]">Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let row of dailyMatrix?.rows" class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td class="px-3 py-2 font-medium text-gray-900 dark:text-gray-100 text-left sticky left-0 bg-white dark:bg-gray-800 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                            {{ row.sector }}
-                        </td>
-                        
-                        <!-- Daily Counts -->
-                        <td *ngFor="let count of row.dailyCounts" class="px-2 py-2 border-l border-neutral-100 dark:border-neutral-700">
-                           <span *ngIf="count > 0" class="font-semibold text-gray-900 dark:text-white">{{ count }}</span>
-                           <span *ngIf="count === 0" class="text-neutral-300 dark:text-neutral-700">-</span>
-                        </td>
+                 <!-- Legend info -->
+                  <div class="mb-4 flex gap-4 text-xs text-neutral-500">
+                     <span>* Exibindo apenas dias úteis (Segunda a Sábado)</span>
+                     <span>* Feriados não são excluídos automaticamente</span>
+                  </div>
 
-                        <td class="px-3 py-2 text-right font-bold text-gray-900 dark:text-white sticky right-0 bg-white dark:bg-gray-800 z-10 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                          {{ row.totalQty }}
-                        </td>
-                      </tr>
-                      
-                      <!-- Totals Footer -->
-                      <tr *ngIf="dailyMatrix?.rows?.length" class="bg-gray-100 dark:bg-gray-900 font-bold border-t-2 border-neutral-300 dark:border-neutral-600">
-                          <td class="px-3 py-2 text-left sticky left-0 bg-gray-100 dark:bg-gray-900 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">TOTAL</td>
-                          <td *ngFor="let total of dailyMatrix?.dailyTotals" class="px-2 py-2">
-                              {{ total > 0 ? total : '-' }}
-                          </td>
-                          <td class="px-3 py-2 text-right sticky right-0 bg-gray-100 dark:bg-gray-900 z-10 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                              {{ summary?.totalQty }}
-                          </td>
-                      </tr>
-
-                      <tr *ngIf="!dailyMatrix?.rows?.length">
-                          <td [attr.colspan]="(dailyMatrix?.days?.length || 0) + 2" class="text-center py-8">
-                             Nenhum dado encontrado neste período.
-                          </td>
+                  <div class="overflow-x-auto max-w-full">
+                   <table class="min-w-max w-full text-sm text-center text-neutral-600 dark:text-neutral-300 border-collapse">
+                     <thead class="text-xs text-neutral-700 dark:text-neutral-200 uppercase bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                       <tr>
+                         <th class="px-3 py-3 border-b dark:border-gray-600 text-left sticky left-0 bg-gray-50 dark:bg-gray-700 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                             {{ viewModeControl.value === 'sector' ? 'Setor' : 'Funcionário' }}
+                         </th>
+                         <!-- Dynamic Days Headers -->
+                         <th *ngFor="let day of dailyMatrix?.days" class="px-2 py-3 border-b dark:border-gray-600 min-w-[50px]">
+                           {{ day.label }}
+                         </th>
+                         <th class="px-3 py-3 border-b dark:border-gray-600 text-right sticky right-0 bg-gray-50 dark:bg-gray-700 z-20 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]">Total</th>
                        </tr>
-                    </tbody>
-                  </table>
-                 </div>
+                     </thead>
+                     <tbody>
+                       <tr *ngFor="let row of filteredRows" class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                         <td class="px-3 py-2 font-medium text-gray-900 dark:text-gray-100 text-left sticky left-0 bg-white dark:bg-gray-800 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                             <div>{{ row.label }}</div>
+                             <div *ngIf="row.secondaryLabel" class="text-[10px] text-neutral-400 font-normal">Mat: {{ row.secondaryLabel }}</div>
+                         </td>
+                         
+                         <!-- Daily Counts -->
+                         <td *ngFor="let count of row.dailyCounts" class="px-2 py-2 border-l border-neutral-100 dark:border-neutral-700">
+                            <span *ngIf="count > 0" class="font-semibold text-gray-900 dark:text-white">{{ count }}</span>
+                            <span *ngIf="count === 0" class="text-neutral-300 dark:text-neutral-700">-</span>
+                         </td>
+
+                         <td class="px-3 py-2 text-right font-bold text-gray-900 dark:text-white sticky right-0 bg-white dark:bg-gray-800 z-10 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                           {{ row.totalQty }}
+                         </td>
+                       </tr>
+                       
+                       <!-- Totals Footer -->
+                       <tr *ngIf="dailyMatrix?.rows?.length" class="bg-gray-100 dark:bg-gray-900 font-bold border-t-2 border-neutral-300 dark:border-neutral-600">
+                           <td class="px-3 py-2 text-left sticky left-0 bg-gray-100 dark:bg-gray-900 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">TOTAL</td>
+                           <td *ngFor="let total of dailyMatrix?.dailyTotals" class="px-2 py-2">
+                               {{ total > 0 ? total : '-' }}
+                           </td>
+                           <td class="px-3 py-2 text-right sticky right-0 bg-gray-100 dark:bg-gray-900 z-10 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                               {{ summary?.totalQty }}
+                           </td>
+                       </tr>
+
+                       <tr *ngIf="!filteredRows?.length">
+                           <td [attr.colspan]="(dailyMatrix?.days?.length || 0) + 2" class="text-center py-8">
+                              Nenhum dado encontrado neste período.
+                           </td>
+                        </tr>
+                     </tbody>
+                   </table>
+                  </div>
              </div>
           </mat-tab>
         </mat-tab-group>
@@ -190,6 +211,13 @@ import { forkJoin } from 'rxjs';
     .hide-subscript ::ng-deep .mat-mdc-form-field-subscript-wrapper {
       display: none;
     }
+    /* Remove focus outline from mat-button-toggle-group */
+    .mat-button-toggle-group.mat-mdc-button-toggle-group {
+      outline: none;
+    }
+    .mat-button-toggle-group.mat-mdc-button-toggle-group .mat-mdc-button-toggle {
+      outline: none;
+    }
   `]
 })
 export class MealReportsComponent implements OnInit {
@@ -198,6 +226,10 @@ export class MealReportsComponent implements OnInit {
 
   monthControl = new FormControl(new Date().getMonth());
   yearControl = new FormControl(new Date().getFullYear());
+
+  // New Controls
+  viewModeControl = new FormControl<'sector' | 'employee'>('sector');
+  filterControl = new FormControl('');
 
   months = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -212,8 +244,16 @@ export class MealReportsComponent implements OnInit {
   matrix: any = { weeks: [], rows: [] };
   dailyMatrix: any = { days: [], rows: [] };
 
+  // Filtered rows for display
+  filteredRows: any[] = [];
+
   ngOnInit() {
     this.generateYears();
+
+    // Subscribe to control changes to trigger refresh or filter
+    this.viewModeControl.valueChanges.subscribe(() => this.refresh());
+    this.filterControl.valueChanges.subscribe(() => this.applyFilter());
+
     this.refresh();
   }
 
@@ -231,25 +271,43 @@ export class MealReportsComponent implements OnInit {
   refresh() {
     const month = this.monthControl.value!;
     const year = this.yearControl.value!;
+    const viewMode = this.viewModeControl.value || 'sector';
 
     // Using new service
     const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(month, year);
     this.periodStart = startIso;
     this.periodEnd = endIso;
 
-    // Passing the Month Reference Date for dailyMatrix logic (which expects a date in the target month to reuse existing logic)
-    // Actually, getDailySectorMatrixByMonth calls getPeriod(date).
-    // If we pass 1st of month, `getPeriod` calls our service and returns exact same period.
+    // Passing the Month Reference Date for dailyMatrix logic
     const refDate = new Date(year, month, 1);
 
     forkJoin({
       summary: this.mealsService.getWeeklySummary(startIso, endIso),
       matrix: this.mealsService.getSectorWeeklyMatrix(startIso, endIso),
-      dailyMatrix: this.mealsService.getDailySectorMatrixByMonth(refDate)
+      dailyMatrix: this.mealsService.getDailyReport(refDate, viewMode)
     }).subscribe(data => {
       this.summary = data.summary;
       this.matrix = data.matrix;
       this.dailyMatrix = data.dailyMatrix;
+      this.applyFilter();
     });
+  }
+
+  applyFilter() {
+    const filter = (this.filterControl.value || '').toLowerCase().trim();
+    if (!this.dailyMatrix?.rows) {
+      this.filteredRows = [];
+      return;
+    }
+
+    if (!filter) {
+      this.filteredRows = this.dailyMatrix.rows;
+    } else {
+      this.filteredRows = this.dailyMatrix.rows.filter((row: any) => {
+        const labelMatch = (row.label || '').toLowerCase().includes(filter);
+        const subLabelMatch = (row.secondaryLabel || '').toLowerCase().includes(filter);
+        return labelMatch || subLabelMatch;
+      });
+    }
   }
 }
