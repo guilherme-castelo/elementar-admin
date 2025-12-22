@@ -1,91 +1,106 @@
 <emr-panel>
+  <!-- Header -->
   <emr-panel-header>
-    <div class="h-full flex items-center gap-3 justify-between ps-5 pe-2">
-      <div class="font-bold">Chat</div>
+    <div class="h-full flex items-center gap-3 justify-between ps-5 pe-2 min-w-100 max-h-200">
+      <div class="flex items-center gap-2">
+        @if (viewMode() === 'CHAT') {
+          <button mat-icon-button (click)="backToList()">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+        }
+        <div class="font-bold">Chat</div>
+      </div>
       <button mat-icon-button (click)="close()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
     <mat-divider></mat-divider>
   </emr-panel-header>
+
+  <!-- Body -->
   <emr-panel-body class="relative">
-    <div #messagesContainerRef class="absolute inset-0 chat-messages overflow-y-auto">
-      @for (message of messages(); track message.id) {
-        <div class="message-row" [ngClass]="{'my-message-row': message.sender === 'me', 'other-message-row': message.sender === 'other'}">
-          @if (message.sender === 'other') {
-            <div class="avatar-container">
-              <emr-dicebear [key]="message.senderName"
-                            [image]="message.avatar"
-                            [presenceIndicator]="message.isOnline ? 'online' : 'offline'"
-                            [alt]="message.senderName + ' Avatar'" class="avatar"/>
-            </div>
-          }
+    
+    <!-- LIST VIEW -->
+    @if (viewMode() === 'LIST') {
+      <div class="p-4">
+        <!-- Recent Conversations -->
+        @if (conversations().length > 0) {
+          <h3 class="text-sm font-semibold text-gray-500 mb-2">Recent</h3>
+          <mat-nav-list class="mb-4">
+            @for (conv of conversations(); track conv.id) {
+              <mat-list-item (click)="openConversation(conv.id)" class="cursor-pointer hover:bg-gray-50 rounded-lg">
+                <emr-dicebear matListItemIcon [key]="getConversationName(conv)" class="size-8"/>
+                <div matListItemTitle class="font-medium">{{ getConversationName(conv) }}</div>
+                <div matListItemLine class="text-sm text-gray-400 truncate">
+                  {{ conv.lastMessagePreview || 'No messages yet' }}
+                </div>
+              </mat-list-item>
+            }
+          </mat-nav-list>
+        }
 
-          <div class="message-content" [ngClass]="{'my-message': message.sender === 'me', 'other-message': message.sender === 'other'}">
-            <div class="message-bubble" [ngClass]="{'my-bubble': message.sender === 'me', 'other-bubble': message.sender === 'other'}">
-              {{ message.text }}
+        <!-- All Users -->
+        <h3 class="text-sm font-semibold text-gray-500 mb-2">Start a new chat</h3>
+        <mat-nav-list>
+          @for (user of availableUsers(); track user.id) {
+            <mat-list-item (click)="startChat(user.id)" class="cursor-pointer hover:bg-gray-50 rounded-lg">
+              <emr-dicebear matListItemIcon [key]="user.name" class="size-8"/>
+              <div matListItemTitle class="font-medium">{{ user.name }}</div>
+            </mat-list-item>
+          } @empty {
+            <div class="text-sm text-gray-400">No other users found.</div>
+          }
+        </mat-nav-list>
+      </div>
+    }
+
+    <!-- CHAT VIEW -->
+    @if (viewMode() === 'CHAT') {
+      <div #messagesContainerRef class="absolute inset-0 chat-messages overflow-y-auto">
+        @for (message of activeMessages(); track message.id) {
+          <div class="message-row" [ngClass]="{'my-message-row': message.senderId === currentUser?.id, 'other-message-row': message.senderId !== currentUser?.id}">
+            
+            @if (message.senderId !== currentUser?.id) {
+              <div class="avatar-container">
+                <emr-dicebear [key]="message.senderName" class="avatar"/>
+              </div>
+            }
+
+            <div class="message-content" [ngClass]="{'my-message': message.senderId === currentUser?.id, 'other-message': message.senderId !== currentUser?.id}">
+              <div class="message-bubble" [ngClass]="{'my-bubble': message.senderId === currentUser?.id, 'other-bubble': message.senderId !== currentUser?.id}">
+                {{ message.content }}
+              </div>
+              <div class="message-meta">
+                <span class="time">{{ message.createdAt | date:'HH:mm' }}</span>
+                @if (message.senderId === currentUser?.id) {
+                  <mat-icon class="status-icon status-read">done_all</mat-icon>
+                }
+              </div>
             </div>
-            <div class="message-meta">
-              <span class="time">{{ message.time }}</span>
-              @if (message.sender === 'me' && message.status) {
-                <mat-icon
-                  class="status-icon"
-                  [ngClass]="{'status-read': message.status === 'read', 'status-sent': message.status === 'sent' || message.status === 'delivered'}">
-                  @if (message.status === 'read') {
-                    done_all
-                  } @else {
-                    done
-                  }
-                </mat-icon>
-              }
-            </div>
+
           </div>
-
-          @if (message.sender === 'me') {
-            <emr-dicebear [key]="currentUser().name"
-                          [image]="currentUser().avatar"
-                          [alt]="currentUser().name + ' Avatar'" class="avatar"/>
-          }
-        </div>
-      } @empty {
-        <p class="empty-chat">No messages yet. Start the conversation!</p>
-      }
-    </div>
+        } @empty {
+          <div class="h-full flex flex-col items-center justify-center text-gray-400">
+            <mat-icon class="text-4xl mb-2">chat_bubble_outline</mat-icon>
+            <p>No messages yet. Say hello!</p>
+          </div>
+        }
+      </div>
+    }
   </emr-panel-body>
-  <emr-panel-footer class="h-38">
-    <mat-divider></mat-divider>
-    <div class="join-request-banner">
-      <div class="user-info">
-        <emr-dicebear [key]="joinRequestUser().name"
-                      [presenceIndicator]="joinRequestUser().isOnline ? 'online' : 'offline'"
-                      [alt]="joinRequestUser().name + ' Avatar'" class="avatar size-10"/>
 
-        <div class="details">
-          <div>
-            <span class="user-name">{{ joinRequestUser().name }}</span>
-            <span>wants to join chat</span>
-          </div>
-          <div class="sub-details">{{ joinRequestUser().timeAgo }} • {{ joinRequestUser().team }}</div>
-        </div>
+  <!-- Footer (only in CHAT mode) -->
+  @if (viewMode() === 'CHAT') {
+    <emr-panel-footer class="h-20"> <!-- Reduced height since I removed the banner -->
+      <mat-divider/>
+      <div class="flex items-center gap-3 message-input-area px-5 py-3">
+        <mat-form-field appearance="outline" class="message-input-field flex-grow">
+          <input matInput placeholder="Write a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" autocomplete="off">
+          <button mat-icon-button aria-label="Send" matSuffix (click)="sendMessage()">
+            <mat-icon>send</mat-icon>
+          </button>
+        </mat-form-field>
       </div>
-      <div class="actions">
-        <button mat-stroked-button (click)="declineJoinRequest()">Decline</button>
-        <button mat-flat-button class="accept-button" (click)="acceptJoinRequest()">Accept</button>
-      </div>
-    </div>
-    <mat-divider/>
-    <div class="flex items-center gap-3 message-input-area px-5 py-3">
-      <emr-dicebear [key]="currentUser().name"
-                    [image]="currentUser().avatar"
-                    [alt]="currentUser().name + ' Avatar'"
-                    class="avatar size-10"/>
-      <mat-form-field appearance="outline" class="message-input-field flex-grow">
-        <input matInput placeholder="Write a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()">
-        <button mat-icon-button aria-label="Attach file" class="attach-button me-1" matSuffix>
-          <mat-icon>attach_file</mat-icon>
-        </button>
-      </mat-form-field>
-      <button mat-flat-button (click)="sendMessage()">Send</button>
-    </div>
-  </emr-panel-footer>
+    </emr-panel-footer>
+  }
 </emr-panel>

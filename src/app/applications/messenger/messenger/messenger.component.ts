@@ -1,31 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, Signal, WritableSignal, signal, effect, ElementRef, viewChild } from '@angular/core';
 import { MatInput } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
-import {
-  CommentEditorBubbleMenuComponent,
-  CommentEditorCommandBlockquoteDirective,
-  CommentEditorCommandBoldDirective,
-  CommentEditorCommandBulletListDirective,
-  CommentEditorCommandCodeBlockDirective,
-  CommentEditorCommandCodeDirective,
-  CommentEditorCommandDirective,
-  CommentEditorCommandEditLinkDirective,
-  CommentEditorCommandImageDirective,
-  CommentEditorCommandItalicDirective,
-  CommentEditorCommandLinkDirective,
-  CommentEditorCommandOrderedListDirective,
-  CommentEditorCommandStrikeDirective,
-  CommentEditorCommandToggleToolbarDirective,
-  CommentEditorCommandUnsetLinkDirective,
-  CommentEditorCommandYoutubeDirective,
-  CommentEditorComponent,
-  CommentEditorDividerComponent,
-  CommentEditorFooterBarComponent,
-  CommentEditorToolbarComponent
-} from '@elementar-ui/components/comment-editor';
+import { FormsModule } from '@angular/forms';
 import { SafeHtmlPipe } from '@elementar-ui/components/core';
 import {
   MatAccordion,
@@ -36,50 +15,18 @@ import {
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { ImageViewerDirective, ImageViewerPictureDirective } from '@elementar-ui/components/image-viewer';
 import { HorizontalDividerComponent } from '@elementar-ui/components/divider';
-import { AvatarPresenceIndicator, DicebearComponent } from '@elementar-ui/components/avatar';
-
-interface MessengerMessage {
-  id: any;
-  content: any;
-  type: 'default' | 'attachment' | string;
-  sender: {
-    avatarUrl: string;
-    name: string;
-    id: any;
-    presenceIndicator: AvatarPresenceIndicator;
-  };
-  createdAt: string | Date;
-  isDelivered: boolean;
-}
-
-interface MessengerThread {
-  id: any;
-  membersCount: number;
-  sender: {
-    avatarUrl: string;
-    name: string;
-    id: any;
-    presenceIndicator: AvatarPresenceIndicator;
-  };
-  title: string;
-  lastMessage: string;
-  createdAt: string | Date;
-  unreadMessagesCount: number;
-  messages: MessengerMessage[];
-  members: MessengerMember[];
-}
-
-interface MessengerMember {
-  avatarUrl: string;
-  name: string;
-  id: any;
-  presenceIndicator: AvatarPresenceIndicator;
-  status: string;
-}
+import { DicebearComponent } from '@elementar-ui/components/avatar';
+import { ChatService } from '../../../core/services/chat.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { ChatMessage, ChatUser, Conversation } from '../../../core/models/chat.interface';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-messenger',
+  standalone: true,
   imports: [
+    CommonModule,
+    FormsModule,
     ImageViewerPictureDirective,
     MatInput,
     MatIcon,
@@ -87,26 +34,6 @@ interface MessengerMember {
     DicebearComponent,
     DatePipe,
     MatTooltip,
-    CommentEditorComponent,
-    CommentEditorFooterBarComponent,
-    CommentEditorToolbarComponent,
-    CommentEditorBubbleMenuComponent,
-    CommentEditorCommandDirective,
-    CommentEditorCommandBoldDirective,
-    CommentEditorDividerComponent,
-    CommentEditorCommandItalicDirective,
-    CommentEditorCommandStrikeDirective,
-    CommentEditorCommandBulletListDirective,
-    CommentEditorCommandOrderedListDirective,
-    CommentEditorCommandBlockquoteDirective,
-    CommentEditorCommandCodeBlockDirective,
-    CommentEditorCommandImageDirective,
-    CommentEditorCommandYoutubeDirective,
-    CommentEditorCommandEditLinkDirective,
-    CommentEditorCommandUnsetLinkDirective,
-    CommentEditorCommandLinkDirective,
-    CommentEditorCommandCodeDirective,
-    CommentEditorCommandToggleToolbarDirective,
     SafeHtmlPipe,
     MatExpansionPanel,
     MatAccordion,
@@ -123,235 +50,115 @@ interface MessengerMember {
   templateUrl: './messenger.component.html',
   styleUrl: './messenger.component.scss'
 })
-export class MessengerComponent {
-  threads: MessengerThread[] = [
-    {
-      id: 1,
-      membersCount: 2,
-      sender: {
-        avatarUrl: '',
-        name: 'Alejandra Cubides',
-        id: 1,
-        presenceIndicator: 'away'
-      },
-      members: [
-        {
-          avatarUrl: '',
-          name: 'Alejandra Cubides',
-          id: 1,
-          presenceIndicator: 'away',
-          status: 'Busy'
-        },
-        {
-          avatarUrl: '',
-          name: 'Pavel Salauyou',
-          id: 2,
-          presenceIndicator: 'online',
-          status: 'At home'
-        }
-      ],
-      unreadMessagesCount: 2,
-      title: 'Looking for an Angular expert to upgrade angular project to the latest version',
-      lastMessage: 'Angular itself is easy to upgrade, most problems arise with third-party libraries and deprecated code.',
-      createdAt: new Date('Nov 09, 2024'),
-      messages: [
-        {
-          id: 1,
-          type: 'default',
-          sender: {
-            avatarUrl: '',
-            name: 'Alejandra Cubides',
-            id: 1,
-            presenceIndicator: 'away'
-          },
-          content: `Hey! How’s work going for you these days?`,
-          createdAt: new Date('Nov 09, 2024'),
-          isDelivered: true
-        },
-        {
-          id: 2,
-          type: 'default',
-          sender: {
-            avatarUrl: '',
-            name: 'Pavel Salauyou',
-            id: 2,
-            presenceIndicator: 'online'
-          },
-          content: `It’s been pretty good, actually. I just started a new position in project management, so I’m still learning the ropes. What about you?`,
-          createdAt: new Date('Nov 09, 2024'),
-          isDelivered: false
-        },
-        {
-          id: 3,
-          type: 'default',
-          sender: {
-            avatarUrl: '',
-            name: 'Pavel Salauyou',
-            id: 2,
-            presenceIndicator: 'online'
-          },
-          content: `What about you?`,
-          createdAt: new Date('Nov 09, 2024'),
-          isDelivered: false
-        },
-        {
-          id: 4,
-          type: 'default',
-          sender: {
-            avatarUrl: '',
-            name: 'Alejandra Cubides',
-            id: 1,
-            presenceIndicator: 'away'
-          },
-          content: `Nice! Congrats on the new role! Things are busy on my end—I’m still with the same company, but my team got a lot of new projects recently.`,
-          createdAt: new Date(),
-          isDelivered: false
-        },
-        {
-          id: 4,
-          type: 'default',
-          sender: {
-            avatarUrl: '',
-            name: 'Alejandra Cubides',
-            id: 1,
-            presenceIndicator: 'away'
-          },
-          content: `What’s your day-to-day like in the new role?`,
-          createdAt: new Date(),
-          isDelivered: false
-        },
-        {
-          id: 5,
-          type: 'attachment',
-          sender: {
-            avatarUrl: '',
-            name: 'Alejandra Cubides',
-            id: 1,
-            presenceIndicator: 'away'
-          },
-          content: {
-            fileName: 'Terms & Conditions',
-            fileType: 'pdf',
-            pagesCount: 12,
-            fileSize: '11MB',
-            downloadLink: '',
-            iconUrl: '/assets/file/pdf1.svg'
-          },
-          createdAt: new Date(),
-          isDelivered: false
-        },
-        {
-          id: 5,
-          type: 'image',
-          sender: {
-            avatarUrl: '',
-            name: 'Alejandra Cubides',
-            id: 1,
-            presenceIndicator: 'away'
-          },
-          content: {
-            src: '/assets/image/image.jpg'
-          },
-          createdAt: new Date(),
-          isDelivered: false
-        },
-      ]
-    },
-    {
-      id: 2,
-      membersCount: 2,
-      sender: {
-        avatarUrl: '',
-        name: 'Pavel Salauyou',
-        id: 2,
-        presenceIndicator: 'online'
-      },
-      unreadMessagesCount: 0,
-      title: 'Looking for an Angular expert to upgrade angular project to the latest version',
-      lastMessage: 'Angular itself is easy to upgrade, most problems arise with third-party libraries and deprecated code.',
-      createdAt: new Date(),
-      messages: [
-        {
-          id: 5,
-          type: 'attachment',
-          sender: {
-            avatarUrl: '',
-            name: 'Alejandra Cubides',
-            id: 1,
-            presenceIndicator: 'away'
-          },
-          content: {
-            fileName: 'Terms & Conditions',
-            fileType: 'pdf',
-            pagesCount: 12,
-            fileSize: '11MB',
-            downloadLink: '',
-            iconUrl: '/assets/file/pdf1.svg'
-          },
-          createdAt: new Date(),
-          isDelivered: false
-        },
-      ],
-      members: [
-        {
-          avatarUrl: '',
-          name: 'Alejandra Cubides',
-          id: 1,
-          presenceIndicator: 'away',
-          status: 'Busy'
-        },
-        {
-          avatarUrl: '',
-          name: 'Pavel Salauyou',
-          id: 2,
-          presenceIndicator: 'online',
-          status: 'At home'
-        }
-      ]
-    }
-  ];
-  sidebarActive = true;
-  selectedThread: MessengerThread = this.threads[0];
+export class MessengerComponent implements OnInit {
+  private _chatService = inject(ChatService);
+  private _authService = inject(AuthService);
 
-  selectThread(thread: MessengerThread) {
-    this.selectedThread = thread;
+  currentUser = this._authService.getUser();
+
+  // Signals from Service
+  conversations = toSignal(this._chatService.conversations$, { initialValue: [] });
+  activeMessages = toSignal(this._chatService.activeMessages$, { initialValue: [] });
+  activeConversationId = toSignal(this._chatService.activeConversationId$, { initialValue: null });
+
+  availableUsers: WritableSignal<ChatUser[]> = signal([]);
+
+  sidebarActive = true;
+  newMessage = signal('');
+
+  messagesContainerRef = viewChild<ElementRef>('messagesContainer');
+
+  constructor() {
+    effect(() => {
+      // Monitor active messages to scroll to bottom
+      const msgs = this.activeMessages();
+      if (msgs.length > 0) {
+        setTimeout(() => this.scrollToBottom(), 100);
+      }
+    });
+
+    // Auto-select first conversation if available and none selected
+    effect(() => {
+      const convs = this.conversations();
+      const activeId = this.activeConversationId();
+      if (convs.length > 0 && !activeId) {
+        this._chatService.selectConversation(convs[0].id);
+      }
+    });
   }
 
-  isThreadSelected(thread: MessengerThread) {
-    return thread.id === this.selectedThread?.id;
+  ngOnInit() {
+    this._chatService.getUsersToChat().subscribe(users => {
+      this.availableUsers.set(users);
+    });
+  }
+
+  selectConversation(conversation: Conversation) {
+    this._chatService.selectConversation(conversation.id);
+  }
+
+  startChat(userId: number) {
+    this._chatService.startConversation(userId).subscribe();
+  }
+
+  isConversationSelected(conversation: Conversation) {
+    return conversation.id === this.activeConversationId();
   }
 
   toggleSidebar() {
     this.sidebarActive = !this.sidebarActive;
   }
 
-  isNeedToShowTimeSeparator(messages: MessengerMessage[], index: number): boolean {
-    if (index === 0) {
-      return false;
-    }
-
-    const prevMessage = messages[index - 1];
-    const currentMessage = messages[index];
-    const prevCreatedAt = new Date(prevMessage.createdAt);
-    prevCreatedAt.setHours(0);
-    const currentCreatedAt = new Date(currentMessage.createdAt);
-    currentCreatedAt.setHours(0);
-    return prevCreatedAt.getTime() !== currentCreatedAt.getTime();
+  sendMessage() {
+    if (!this.newMessage().trim()) return;
+    this._chatService.sendMessage(this.newMessage()).subscribe();
+    this.newMessage.set('');
   }
 
-  isInnerMessage(messages: MessengerMessage[], index: number): boolean {
-    if (index === 0) {
-      return false;
+  scrollToBottom() {
+    // We need to bind this ref in HTML
+    const container = document.querySelector('.chat-scroll-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
+  }
 
-    const prevMessage = messages[index - 1];
-    const currentMessage = messages[index];
-    const prevCreatedAt = new Date(prevMessage.createdAt);
-    const currentCreatedAt = new Date(currentMessage.createdAt);
-    return prevMessage.sender.id === currentMessage.sender.id &&
-      prevCreatedAt.getMonth() === currentCreatedAt.getMonth() &&
-      prevCreatedAt.getFullYear() === currentCreatedAt.getFullYear() &&
-      prevCreatedAt.getDate() === currentCreatedAt.getDate()
-    ;
+  // Helpers
+  getConversationName(conv: Conversation): string {
+    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
+    const user = this.availableUsers().find(u => u.id === otherId);
+    return user ? user.name : 'User ' + otherId;
+  }
+
+  getConversationAvatar(conv: Conversation): string {
+    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
+    // Use Dicebear seed
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${otherId}`;
+  }
+
+  // Time Separator Logic
+  isNeedToShowTimeSeparator(messages: ChatMessage[], index: number): boolean {
+    if (index === 0) return true;
+    const prev = new Date(messages[index - 1].createdAt).toDateString();
+    const curr = new Date(messages[index].createdAt).toDateString();
+    return prev !== curr;
+  }
+
+  isInnerMessage(messages: ChatMessage[], index: number): boolean {
+    if (index === 0) return false;
+    const prev = messages[index - 1];
+    const curr = messages[index];
+    return prev.senderId === curr.senderId;
+  }
+
+  // For details sidebar
+  getSelectedConversationUser(): ChatUser | undefined {
+    const convId = this.activeConversationId();
+    if (!convId) return undefined;
+    const conv = this.conversations().find(c => c.id === convId);
+    if (!conv) return undefined;
+
+    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
+    return this.availableUsers().find(u => u.id === otherId);
   }
 }

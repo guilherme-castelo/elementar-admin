@@ -1,4 +1,89 @@
 {
+  "conversations": [
+    {
+      "id": "9h1s0s7",
+      "participantIds": [
+        1,
+        2
+      ],
+      "createdAt": "2025-12-22T04:05:41.688Z",
+      "lastMessageAt": "2025-12-22T04:16:44.257Z",
+      "lastMessagePreview": "teste"
+    },
+    {
+      "id": "owqg6b4",
+      "participantIds": [
+        1,
+        3
+      ],
+      "createdAt": "2025-12-22T04:15:45.856Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "jk3pglj",
+      "conversationId": "9h1s0s7",
+      "senderId": 1,
+      "senderName": "Admin",
+      "content": "ola",
+      "createdAt": "2025-12-22T04:07:26.384Z",
+      "status": "sent"
+    },
+    {
+      "id": "1kxi5m1",
+      "conversationId": "9h1s0s7",
+      "senderId": 2,
+      "senderName": "User",
+      "content": "ola",
+      "createdAt": "2025-12-22T04:07:37.936Z",
+      "status": "sent"
+    },
+    {
+      "id": "ycxgyv5",
+      "conversationId": "9h1s0s7",
+      "senderId": 2,
+      "senderName": "User",
+      "content": "teste 123",
+      "createdAt": "2025-12-22T04:07:45.616Z",
+      "status": "sent"
+    },
+    {
+      "id": "bmr0rmo",
+      "conversationId": "9h1s0s7",
+      "senderId": 1,
+      "senderName": "Admin",
+      "content": "teste",
+      "createdAt": "2025-12-22T04:08:01.256Z",
+      "status": "sent"
+    },
+    {
+      "id": "ehatt3k",
+      "conversationId": "9h1s0s7",
+      "senderId": 2,
+      "senderName": "User",
+      "content": "ola",
+      "createdAt": "2025-12-22T04:08:30.008Z",
+      "status": "sent"
+    },
+    {
+      "id": "7y2g1hj",
+      "conversationId": "9h1s0s7",
+      "senderId": 2,
+      "senderName": "User",
+      "content": "ola",
+      "createdAt": "2025-12-22T04:16:30.377Z",
+      "status": "sent"
+    },
+    {
+      "id": "9d0toi9",
+      "conversationId": "9h1s0s7",
+      "senderId": 1,
+      "senderName": "Admin",
+      "content": "teste",
+      "createdAt": "2025-12-22T04:16:44.257Z",
+      "status": "sent"
+    }
+  ],
   "comments": [
     {
       "taskId": "1",
