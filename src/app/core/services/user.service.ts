@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from './api.service';
 import { Observable } from 'rxjs';
 
 export interface User {
@@ -7,16 +7,16 @@ export interface User {
   name: string;
   email: string;
   avatar?: string;
+  roles?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private _http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/users';
+  private _api = inject(ApiService);
 
   getUsers(): Observable<User[]> {
-    return this._http.get<User[]>(this.apiUrl);
+    return this._api.get<User[]>('/users');
   }
 }

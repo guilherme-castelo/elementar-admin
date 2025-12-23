@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
 import { IMeal } from '../models/meal.model';
-import { Observable, map } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
 import { IEmployee } from '../models/employee.model';
 import { ReportPeriodService } from './report-period.service';
 
@@ -81,17 +81,10 @@ export class MealsService {
     // In production this should also filter by companyId.
     const user = this.authService.getUser();
     const companyQuery = user?.companyId ? `companyId=${user.companyId}&` : '';
-    // JSON-SERVER uses 'date' query param directly if exact match, but date might have time components if not careful.
-    // We assume ISO string YYYY-MM-DD for date field storage to be strict, or partial match.
-    // Let's assume the storage is YYYY-MM-DDT... so we might need simple filter or 'like'.
-    // For MVP/JSON-SERVER, strict equality on formatted string is best if we store simplified dates,
-    // but here we stored full ISO.
-    // A better approach for JSON-SERVER 'like' is `q`.
-    // BUT, let's try strict filtering if we store just YYYY-MM-DD or full scan?
-    // Let's rely on the fact we will treat `date` as a string bucket in frontend effectively, or `start` comparison.
-    // Actually, `period` is better for reports.
-    // For "Daily List", we can just fetch all for company and filter in memory or use ?date_like.
-    return this.api.get<IMeal[]>(`/meals?${companyQuery}date_like=${dateIso.split('T')[0]}`);
+
+    return user ?
+      this.api.get<IMeal[]>(`/meals?${companyQuery}date=${dateIso.split('T')[0]}`) :
+      of([]);
   }
 
   getMealsByPeriod(periodStart: string, periodEnd: string): Observable<IMeal[]> {
@@ -166,14 +159,19 @@ export class MealsService {
         let label = '';
         let secondaryLabel = '';
 
+        // Fallbacks for data consistency
+        const sector = meal.sector || 'Sem Setor';
+        const empName = meal.employeeName || 'Sem Nome';
+        const empMatricula = meal.employeeMatricula || 'N/A';
+
         if (groupBy === 'sector') {
-          key = meal.sector;
-          label = meal.sector;
+          key = sector;
+          label = sector;
         } else {
           // Employee Mode
           key = meal.employeeId.toString(); // Group by ID to be safe
-          label = meal.employeeName;
-          secondaryLabel = meal.employeeMatricula || '';
+          label = empName;
+          secondaryLabel = empMatricula;
         }
 
         if (!groupMap[key]) {
@@ -292,10 +290,11 @@ export class MealsService {
           const mDate = new Date(meal.date);
           const w = weeks.find(wk => mDate >= wk.start && mDate <= wk.end);
           if (w) {
-            if (!sectorMap[meal.sector]) sectorMap[meal.sector] = { total: 0, weeks: {} };
+            const sectorName = meal.sector || 'Sem Setor';
+            if (!sectorMap[sectorName]) sectorMap[sectorName] = { total: 0, weeks: {} };
 
-            sectorMap[meal.sector].weeks[w.id] = (sectorMap[meal.sector].weeks[w.id] || 0) + 1;
-            sectorMap[meal.sector].total++;
+            sectorMap[sectorName].weeks[w.id] = (sectorMap[sectorName].weeks[w.id] || 0) + 1;
+            sectorMap[sectorName].total++;
           }
         });
 

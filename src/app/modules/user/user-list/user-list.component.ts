@@ -47,10 +47,8 @@ import { Observable } from 'rxjs';
           <!-- Role Column -->
           <ng-container matColumnDef="role">
             <th mat-header-cell *matHeaderCellDef> Função </th>
-            <td mat-cell *matCellDef="let user"> 
-              <span class="px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                {{user.roles.join(', ')}}
-              </span>
+            <td mat-cell *matCellDef="let user" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"> 
+                {{ user.roles }}
             </td>
           </ng-container>
 

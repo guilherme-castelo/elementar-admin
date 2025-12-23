@@ -17,6 +17,9 @@
     <button mat-icon-button matTooltip="Notifications" routerLink="/account/notifications">
       <mat-icon matBadge="{{ unreadNotificationsCount() }}">notifications</mat-icon>
     </button>
+    <button mat-icon-button matTooltip="Chat" routerLink="/applications/messenger">
+      <mat-icon matBadge="{{ unreadChatCount() }}" [matBadgeHidden]="!unreadChatCount()">chat</mat-icon>
+    </button>
     <button mat-icon-button matTooltip="Logout" (click)="logout()">
       <mat-icon>logout</mat-icon>
     </button>

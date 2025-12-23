@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from './api.service';
 import { BehaviorSubject, Observable, tap, switchMap, map, of } from 'rxjs';
 import { AuthService } from './auth.service';
 
@@ -22,10 +22,8 @@ export interface AppNotification {
   providedIn: 'root'
 })
 export class NotificationService {
-  private _http = inject(HttpClient);
+  private _api = inject(ApiService);
   private _authService = inject(AuthService);
-
-  private readonly API_URL = 'http://localhost:3000';
   private readonly CHANNEL_NAME = 'elementar_notification_channel';
   private _broadcastChannel: BroadcastChannel;
 
@@ -71,7 +69,7 @@ export class NotificationService {
     const user = this._authService.getUser();
     if (!user) return;
 
-    this._http.get<AppNotification[]>(`${this.API_URL}/notifications?userId=${user.id}`).subscribe(list => {
+    this._api.get<AppNotification[]>('/notifications').subscribe(list => {
       this._notifications$.next(list);
     });
   }
@@ -85,7 +83,7 @@ export class NotificationService {
       archived: false
     };
 
-    return this._http.post<AppNotification>(`${this.API_URL}/notifications`, newNotification).pipe(
+    return this._api.post<AppNotification>('/notifications', newNotification).pipe(
       tap(() => {
         // If sending to SELF (e.g. testing), reload. If to OTHER, broadcast.
         // Broadcast is always good to update OTHER active tabs of SAME user as well (if logged in multiple places).
@@ -109,7 +107,7 @@ export class NotificationService {
       newList[index] = updated;
       this._notifications$.next(newList);
 
-      this._http.patch(`${this.API_URL}/notifications/${id}`, { read: true }).subscribe();
+      this._api.patch(`/notifications/${id}/read`, {}).subscribe();
     }
   }
 
@@ -122,7 +120,7 @@ export class NotificationService {
       newList[index] = updated;
       this._notifications$.next(newList);
 
-      this._http.patch(`${this.API_URL}/notifications/${id}`, { archived: true }).subscribe();
+      this._api.patch(`/notifications/${id}/archive`, {}).subscribe();
     }
   }
 
@@ -140,7 +138,7 @@ export class NotificationService {
     // Let's implement single mark on list.
     // If "Mark All Read" is needed:
     current.filter(n => !n.read).forEach(n => {
-      this._http.patch(`${this.API_URL}/notifications/${n.id}`, { read: true }).subscribe();
+      this._api.patch(`/notifications/${n.id}`, { read: true }).subscribe();
     });
   }
 }

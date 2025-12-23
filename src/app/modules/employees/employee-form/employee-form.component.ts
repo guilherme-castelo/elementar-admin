@@ -186,7 +186,13 @@ export class EmployeeFormComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.isLoading = false;
-        this.snackBar.open('Erro ao salvar funcionário.', 'Fechar', { duration: 3000 });
+        const msg = err.error?.message || 'Erro ao salvar funcionário.';
+        this.snackBar.open(msg, 'Fechar', {
+          duration: 5000,
+          panelClass: ['bg-red-600', 'text-white'],
+          horizontalPosition: 'end',
+          verticalPosition: 'top'
+        });
       }
     });
   }

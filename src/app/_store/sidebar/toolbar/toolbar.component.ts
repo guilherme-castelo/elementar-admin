@@ -11,6 +11,7 @@ import { inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ChatService } from '../../../core/services/chat.service';
 
 @Component({
   selector: 'emr-sidebar-toolbar',
@@ -32,8 +33,11 @@ export class ToolbarComponent implements OnInit {
   subscription = 'Free';
   email = '';
   name = '';
-  
+
   unreadNotificationsCount = toSignal(this._notificationService.unreadCount$, { initialValue: 0 });
+
+  private _chatService = inject(ChatService);
+  unreadChatCount = toSignal(this._chatService.totalUnreadCount$, { initialValue: 0 });
 
   ngOnInit() {
     const user = this._authService.getUser();

@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from './api.service';
 import { Observable, tap, switchMap, take } from 'rxjs';
 import { Comment } from '../models/comment.interface';
 import { TasksService } from './tasks.service';
@@ -10,19 +10,17 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class CommentsService {
-  private _http = inject(HttpClient);
+  private _api = inject(ApiService);
   private _tasksService = inject(TasksService);
   private _notificationService = inject(NotificationService);
   private _authService = inject(AuthService);
 
-  private apiUrl = 'http://localhost:3000/comments';
-
   getComments(taskId: string): Observable<Comment[]> {
-    return this._http.get<Comment[]>(`${this.apiUrl}?taskId=${taskId}&_sort=createdAt&_order=asc`);
+    return this._api.get<Comment[]>(`/tasks/${taskId}/comments`);
   }
 
   addComment(comment: Omit<Comment, 'id'>): Observable<Comment> {
-    return this._http.post<Comment>(this.apiUrl, comment).pipe(
+    return this._api.post<Comment>(`/tasks/${comment.taskId}/comments`, comment).pipe(
       tap(() => {
         this._tasksService.triggerRefresh();
         this._notifyTaskParticipants(comment);

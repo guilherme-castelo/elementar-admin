@@ -41,7 +41,18 @@
               </div>
             </div>
             <div class="flex mt-2">
-              <div class="min-w-0">
+              <div class="min-w-0 flex items-center gap-1">
+                @if (conv.lastMessageSenderId === currentUser?.id) {
+                   @if (conv.lastMessageStatus === 'sent') {
+                     <mat-icon class="text-[14px] !w-3.5 !h-3.5 text-neutral-400 relative top-[1px]">check</mat-icon>
+                   }
+                   @if (conv.lastMessageStatus === 'delivered') {
+                     <mat-icon class="text-[14px] !w-3.5 !h-3.5 text-neutral-400 relative top-[1px]">done_all</mat-icon>
+                   }
+                   @if (conv.lastMessageStatus === 'read') {
+                     <mat-icon class="text-[14px] !w-3.5 !h-3.5 text-blue-500 relative top-[1px]">done_all</mat-icon>
+                   }
+                }
                 <div class="text-tiny whitespace-nowrap text-ellipsis mt-0.5 overflow-hidden text-neutral-500">
                   {{ conv.lastMessagePreview || 'No messages' }}
                 </div>
@@ -92,27 +103,52 @@
           </div>
         }
 
-        <div class="flex items-start gap-3 p-3 rounded-3xl hover:bg-surface-container-low relative group">
+        @let isMine = message.senderId === currentUser?.id;
+
+        <!-- Message Container -->
+        <div class="flex items-start gap-3 p-3 rounded-3xl relative group"
+             [class.flex-row-reverse]="isMine"
+             [class.hover:bg-surface-container-low]="!isMine">
+          
+          <!-- Avatar (Only for received messages or always? User requested distinction. -->
+          <!-- Usually chat apps show avatar for partner, but maybe not self. -->
+          
           @if (!isInner) {
-            <emr-dicebear class="size-11"
-                          [key]="message.senderName"
-                          />
+             <!-- Show Avatar -->
+             <emr-dicebear class="size-11" [key]="message.senderName" />
           } @else {
-             <div class="size-11"></div> <!-- Spacer for inner messages -->
+             <div class="size-11"></div> <!-- Spacer -->
           }
 
-          <div class="flex flex-col w-full leading-1.5">
+          <div class="flex flex-col max-w-[70%] leading-1.5" [class.items-end]="isMine">
             @if (!isInner) {
-              <div class="flex items-center justify-between mb-1">
-                <div class="flex items-center gap-2 rtl:space-x-reverse">
-                  <span class="text-sm font-semibold">{{ message.senderName }}</span>
-                  <span class="text-sm text-neutral">{{ message.createdAt | date:'shortTime' }}</span>
-                </div>
+              <div class="flex items-center gap-2 mb-1" [class.flex-row-reverse]="isMine">
+                <span class="text-sm font-semibold">{{ message.senderName }}</span>
+                <span class="text-sm text-neutral">{{ message.createdAt | date:'shortTime' }}</span>
               </div>
             }
 
-            <div class="text-sm font-normal">
+            <div class="text-sm font-normal py-2.5 px-4 rounded-2xl"
+                 [class.bg-primary-container]="isMine"
+                 [class.text-on-primary-container]="isMine"
+                 [class.rounded-tr-none]="isMine && !isInner"
+                 [class.bg-surface-container-highest]="!isMine"
+                 [class.text-on-surface]="!isMine"
+                 [class.rounded-tl-none]="!isMine && !isInner">
                {{ message.content }}
+               @if (isMine) {
+                 <div class="flex justify-end gap-0.5 mt-1 -mb-1 -me-2">
+                   @if (message.status === 'sent') {
+                     <mat-icon class="text-[16px] !w-4 !h-4 text-neutral-400">check</mat-icon>
+                   }
+                   @if (message.status === 'delivered') {
+                     <mat-icon class="text-[16px] !w-4 !h-4 text-neutral-400">done_all</mat-icon>
+                   }
+                   @if (message.status === 'read') {
+                     <mat-icon class="text-[16px] !w-4 !h-4 text-blue-500">done_all</mat-icon>
+                   }
+                 </div>
+               }
             </div>
           </div>
         </div>

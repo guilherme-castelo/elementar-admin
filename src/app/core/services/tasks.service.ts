@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from './api.service';
 import { Observable, map, BehaviorSubject, tap, switchMap, take } from 'rxjs';
 import { Task, TaskComment } from '../models/task.interface';
 import { AuthService } from './auth.service';
@@ -9,10 +9,9 @@ import { NotificationService } from './notification.service';
   providedIn: 'root'
 })
 export class TasksService {
-  private _http = inject(HttpClient);
+  private _api = inject(ApiService);
   private _authService = inject(AuthService);
   private _notificationService = inject(NotificationService);
-  private apiUrl = 'http://localhost:3000/tasks';
 
   private _refresh$ = new BehaviorSubject<void>(undefined);
 
@@ -26,14 +25,12 @@ export class TasksService {
 
   getTasks(params?: any): Observable<Task[]> {
     return this._refresh$.pipe(
-      switchMap(() => this._http.get<Task[]>(this.apiUrl, {
-        params: { ...params, _embed: 'comments' }
-      }))
+      switchMap(() => this._api.get<Task[]>('/tasks', params))
     );
   }
 
   getTaskById(id: string | number): Observable<Task> {
-    return this._http.get<Task>(`${this.apiUrl}/${id}`);
+    return this._api.get<Task>(`/tasks/${id}`);
   }
 
   getPublicTasks(): Observable<Task[]> {
@@ -85,7 +82,7 @@ export class TasksService {
   }
 
   createTask(task: Omit<Task, 'id'>): Observable<Task> {
-    return this._http.post<Task>(this.apiUrl, task).pipe(
+    return this._api.post<Task>('/tasks', task).pipe(
       tap(() => this._refresh$.next())
     );
   }
@@ -96,14 +93,14 @@ export class TasksService {
       take(1),
       switchMap(oldTask => {
         this._checkForNotifications(oldTask, task);
-        return this._http.put<Task>(`${this.apiUrl}/${task.id}`, task);
+        return this._api.put<Task>(`/tasks/${task.id}`, task);
       }),
       tap(() => this._refresh$.next())
     );
   }
 
   deleteTask(id: string): Observable<void> {
-    return this._http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    return this._api.delete<void>(`/tasks/${id}`).pipe(
       tap(() => this._refresh$.next())
     );
   }

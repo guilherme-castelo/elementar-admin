@@ -4,6 +4,8 @@ export interface Conversation {
   createdAt: string;
   lastMessageAt?: string;
   lastMessagePreview?: string;
+  lastMessageSenderId?: number;
+  lastMessageStatus?: 'sent' | 'delivered' | 'read';
 }
 
 export interface ChatMessage {
@@ -14,6 +16,7 @@ export interface ChatMessage {
   senderAvatar?: string;
   content: string;
   createdAt: string;
+  readAt?: string;
   status?: 'sent' | 'delivered' | 'read';
 }
 

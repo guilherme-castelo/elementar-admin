@@ -12,7 +12,7 @@
         <mat-icon>apps</mat-icon>
       </button>
       <button mat-icon-button (click)="chatDrawer.open()">
-        <mat-icon>chat</mat-icon>
+        <mat-icon matBadge="{{ unreadChatCount() }}" [matBadgeHidden]="!unreadChatCount()">chat</mat-icon>
       </button>
       <emr-color-scheme-switcher matTooltip="Color Theme" emrSoundEffect>
         <mat-icon *emrColorSchemeLight>light_mode</mat-icon>

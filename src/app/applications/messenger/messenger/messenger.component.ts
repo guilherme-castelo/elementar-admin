@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, WritableSignal, signal, effect, ElementRef, viewChild } from '@angular/core';
+import { Component, inject, OnInit, WritableSignal, signal, effect, ElementRef, viewChild, OnDestroy } from '@angular/core';
 import { MatInput } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -37,7 +37,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
   templateUrl: './messenger.component.html',
   styleUrl: './messenger.component.scss'
 })
-export class MessengerComponent implements OnInit {
+export class MessengerComponent implements OnInit, OnDestroy {
   private _chatService = inject(ChatService);
   private _authService = inject(AuthService);
 
@@ -75,9 +75,14 @@ export class MessengerComponent implements OnInit {
   }
 
   ngOnInit() {
+    this._chatService.setMessengerActive(true);
     this._chatService.getUsersToChat().subscribe(users => {
       this.availableUsers.set(users);
     });
+  }
+
+  ngOnDestroy() {
+    this._chatService.setMessengerActive(false);
   }
 
   selectConversation(conversation: Conversation) {

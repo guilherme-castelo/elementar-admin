@@ -221,26 +221,23 @@ export class MealRegisterComponent implements OnInit {
     const isoDate = date.toISOString().split('T')[0]; // Current Day YYYY-MM-DD
 
     // 3. Register
-    this.mealsService.getDailyMeals(isoDate).pipe(
-      switchMap(currentMeals => {
-        const alreadyAte = currentMeals.some(m => m.employeeMatricula === matricula);
-        if (alreadyAte) {
-          throw new Error('DUPLICATE');
-        }
-        return this.mealsService.registerTx(date.toISOString(), employee);
-      })
+    // 3. Register
+    // Rely on Backend for definitive validation (Atomic)
+    // The previous client-side check was good for UX but backend is authoritative.
+    // We catch the specific error from backend.
+
+    this.mealsService.registerTx(
+      date.toISOString(),
+      employee
     ).subscribe({
       next: (meal) => {
         this.showFeedback(`Refeição registrada: ${employee.firstName}`, 'success');
-        this.loadMeals(); // Refresh list
+        this.loadMeals();
         this.clearInput();
       },
       error: (err) => {
-        if (err.message === 'DUPLICATE') {
-          this.showFeedback(`Funcionário JÁ ALMOÇOU hoje!`, 'error');
-        } else {
-          this.showFeedback(`Erro ao registrar refeição.`, 'error');
-        }
+        const msg = err.error?.message || 'Erro ao registrar refeição.';
+        this.showFeedback(msg, 'error');
         this.clearInput();
       }
     });

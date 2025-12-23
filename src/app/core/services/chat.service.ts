@@ -1,59 +1,204 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ApiService } from './api.service';
 import { BehaviorSubject, Observable, combineLatest, map, switchMap, tap, of, catchError, take, merge, filter, fromEvent } from 'rxjs';
 import { AuthService } from './auth.service';
-import { UserService } from './user.service';
+import { UsersService } from './users.service';
 import { NotificationService } from './notification.service';
 import { Conversation, ChatMessage, ChatUser } from '../models/chat.interface';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
-  private _http = inject(HttpClient);
+  private _api = inject(ApiService);
   private _authService = inject(AuthService);
-  private _userService = inject(UserService);
+  private _usersService = inject(UsersService);
   private _notificationService = inject(NotificationService);
+  private _snackBar = inject(MatSnackBar);
 
-  private readonly API_URL = 'http://localhost:3000';
   private readonly CHANNEL_NAME = 'elementar_chat_channel';
   private _broadcastChannel: BroadcastChannel;
+  private socket: any;
 
   // State
   private _conversations$ = new BehaviorSubject<Conversation[]>([]);
   private _activeConversationId$ = new BehaviorSubject<string | null>(null);
   private _messages$ = new BehaviorSubject<ChatMessage[]>([]);
+  private _totalUnreadCount$ = new BehaviorSubject<number>(0);
+  private _isMessengerOpen = false;
 
   // Public Selectors
   conversations$ = this._conversations$.asObservable();
   activeConversationId$ = this._activeConversationId$.asObservable();
   activeMessages$ = this._messages$.asObservable();
+  totalUnreadCount$ = this._totalUnreadCount$.asObservable();
 
   constructor() {
     this._broadcastChannel = new BroadcastChannel(this.CHANNEL_NAME);
     this._setupBroadcastListener();
+    this._initSocket();
     this._loadConversations();
+    this._loadUnreadCount();
   }
 
-  // --- Broadcast Logic ---
+  setMessengerActive(isActive: boolean) {
+    this._isMessengerOpen = isActive;
+    if (isActive && this._activeConversationId$.value) {
+      this.markConversationAsRead(this._activeConversationId$.value);
+    }
+  }
 
+  private _loadUnreadCount() {
+    const user = this._authService.getUser();
+    if (!user) return;
+    this._api.get<{ count: number }>('/chat/unread-count').subscribe({
+      next: (res) => this._totalUnreadCount$.next(res.count),
+      error: () => this._totalUnreadCount$.next(0)
+    });
+  }
+
+  private _initSocket() {
+    const user = this._authService.getUser();
+    if (!user) return;
+
+    import('socket.io-client').then((socketIoModule) => {
+      const io = (socketIoModule as any).io || (socketIoModule as any).default;
+      this.socket = io('http://localhost:3000', {
+        transports: ['websocket', 'polling']
+      });
+
+      this.socket.on('connect', () => {
+        if (user) this.socket.emit('join', user.id);
+      });
+
+      this.socket.on('new_message', (msg: any) => {
+        const mapped: ChatMessage = {
+          ...msg,
+          senderName: msg.sender?.name || 'Unknown',
+          senderAvatar: msg.sender?.avatar || '',
+          senderId: msg.senderId
+        };
+        this._handleIncomingMessage(mapped);
+      });
+
+      this.socket.on('conversation_updated', (payload: any) => {
+        this._handleConversationUpdate(payload);
+      });
+
+      this.socket.on('conversation_created', (conv: Conversation) => {
+        this._handleConversationCreated(conv);
+      });
+
+      this.socket.on('message_status_update', (payload: any) => {
+        this._handleStatusUpdate(payload);
+      });
+    });
+  }
+
+  private _handleIncomingMessage(msg: ChatMessage) {
+    const user = this._authService.getUser();
+    if (user && msg.senderId === user.id) {
+      // Ignore own messages for Notifications/Badges
+      return;
+    }
+
+    // Acknowledge Delivery
+    this._markAsDelivered(msg.conversationId);
+
+    const activeId = this._activeConversationId$.value;
+    const isActiveConv = activeId === msg.conversationId;
+
+    // 1. If visible and active, mark read immediately
+    if (this._isMessengerOpen && isActiveConv) {
+      this._appendMessage(msg);
+      this.markConversationAsRead(msg.conversationId);
+    } else {
+      // 2. Otherwise/Background: Increment Badge and/or Toast
+      this._totalUnreadCount$.next(this._totalUnreadCount$.value + 1);
+
+      // Show Toast if NOT in messenger (or if in messenger but different conversation)
+      if (!this._isMessengerOpen) {
+        this._showToast(msg);
+      }
+
+      // If we are in messenger but different conversation, also maybe toast?
+      if (this._isMessengerOpen && !isActiveConv) {
+        this._showToast(msg);
+      }
+    }
+
+    this._updateLocalConversationPreview(msg.conversationId, msg);
+  }
+
+  private _handleStatusUpdate(payload: { conversationId: string, status: 'delivered' | 'read', actorId: number }) {
+    const currentMsgs = this._messages$.value;
+    const updated = currentMsgs.map(m => {
+      if (m.conversationId !== payload.conversationId) return m;
+
+      // If I sent it, update its status
+      const user = this._authService.getUser();
+      if (user && m.senderId === user.id) {
+        if (payload.status === 'read') return { ...m, status: 'read' } as ChatMessage;
+        if (payload.status === 'delivered' && m.status !== 'read') return { ...m, status: 'delivered' } as ChatMessage;
+      }
+      return m;
+    });
+
+    this._messages$.next(updated);
+  }
+
+  private _markAsDelivered(conversationId: string) {
+    this._api.post(`/chat/conversations/${conversationId}/delivered`, {}).subscribe();
+  }
+
+  private _appendMessage(msg: ChatMessage) {
+    const currentMsgs = this._messages$.value;
+    // Dedupe
+    if (!currentMsgs.find(m => m.id === msg.id)) {
+      this._messages$.next([...currentMsgs, msg]);
+    }
+  }
+
+  private _showToast(msg: ChatMessage) {
+    this._snackBar.open(`${msg.senderName}: ${msg.content}`, 'VIEW', {
+      duration: 4000,
+      horizontalPosition: 'end',
+      verticalPosition: 'top',
+      panelClass: ['bg-white', 'text-neutral-900', 'shadow-lg', 'border-l-4', 'border-blue-500']
+    }).onAction().subscribe(() => {
+      // Navigate to messenger?
+      // For now, usage assumes we are in the app.
+      // Router navigate could be added if needed, but 'VIEW' is just partial.
+    });
+  }
+
+  private _handleConversationUpdate(payload: any) {
+    const currentConvs = this._conversations$.value;
+    const index = currentConvs.findIndex(c => c.id === payload.id);
+    if (index !== -1) {
+      const updated = {
+        ...currentConvs[index],
+        lastMessageAt: payload.lastMessageAt,
+        lastMessagePreview: payload.lastMessagePreview
+      };
+      const others = currentConvs.filter(c => c.id !== payload.id);
+      this._conversations$.next([updated, ...others]);
+    }
+  }
+
+  private _handleConversationCreated(conv: Conversation) {
+    const current = this._conversations$.value;
+    if (!current.some(c => c.id === conv.id)) {
+      this._conversations$.next([conv, ...current]);
+    }
+  }
+
+  // --- Broadcast ---
   private _setupBroadcastListener() {
     this._broadcastChannel.onmessage = (event) => {
-      const { type, payload } = event.data;
-      if (type === 'MESSAGE_SENT') {
-        this._handleRemoteMessage(payload);
-      }
+      // ... kept for fallback
     };
-  }
-
-  private _handleRemoteMessage(payload: { conversationId: string }) {
-    // Reload messages if we are in the active conversation
-    const currentActive = this._activeConversationId$.value;
-    if (currentActive === payload.conversationId) {
-      this._reloadMessages(currentActive);
-    }
-    // Always reload conversations to update lastMessage preview
-    this._loadConversations();
   }
 
   private _notifyBroadcast(type: string, payload: any) {
@@ -65,8 +210,7 @@ export class ChatService {
   private _loadConversations() {
     const user = this._authService.getUser();
     if (!user) return;
-
-    this._http.get<Conversation[]>(`${this.API_URL}/conversations`).pipe(
+    this._api.get<Conversation[]>('/chat/conversations').pipe(
       map(convs => convs.filter(c => c.participantIds.includes(user.id))),
       map(convs => convs.sort((a, b) => {
         const timeA = new Date(a.lastMessageAt || a.createdAt).getTime();
@@ -81,10 +225,29 @@ export class ChatService {
   selectConversation(conversationId: string) {
     this._activeConversationId$.next(conversationId);
     this._reloadMessages(conversationId);
+    if (this._isMessengerOpen) {
+      this.markConversationAsRead(conversationId);
+    }
+  }
+
+  markConversationAsRead(conversationId: string) {
+    this._api.post(`/chat/conversations/${conversationId}/read`, {}).subscribe({
+      next: () => {
+        // Re-fetch unread count to be accurate
+        this._loadUnreadCount();
+      }
+    });
   }
 
   private _reloadMessages(conversationId: string) {
-    this._http.get<ChatMessage[]>(`${this.API_URL}/messages?conversationId=${conversationId}`)
+    this._api.get<any[]>(`/chat/messages?conversationId=${conversationId}`)
+      .pipe(
+        map(msgs => msgs.map(m => ({
+          ...m,
+          senderName: m.sender?.name || 'Unknown',
+          senderAvatar: m.sender?.avatar || ''
+        } as ChatMessage)))
+      )
       .subscribe(msgs => {
         this._messages$.next(msgs);
       });
@@ -96,7 +259,7 @@ export class ChatService {
 
     if (!user || !conversationId) return of(null);
 
-    const newMessage: ChatMessage = {
+    const newMessage: ChatMessage & { isTemp?: boolean } = {
       id: this._generateId(),
       conversationId,
       senderId: user.id,
@@ -104,7 +267,9 @@ export class ChatService {
       senderAvatar: user.avatar,
       content,
       createdAt: new Date().toISOString(),
-      status: 'sent'
+      status: 'sent',
+      isTemp: true,
+      readAt: undefined
     };
 
     // Optimistic Update
@@ -115,34 +280,9 @@ export class ChatService {
     this._updateLocalConversationPreview(conversationId, newMessage);
 
     // Persist
-    return this._http.post<ChatMessage>(`${this.API_URL}/messages`, newMessage).pipe(
+    return this._api.post<ChatMessage>('/chat/messages', newMessage).pipe(
       tap(() => {
-        // Sync Conversation metadata on server (fire and forget)
-        this._http.patch(`${this.API_URL}/conversations/${conversationId}`, {
-          lastMessageAt: newMessage.createdAt,
-          lastMessagePreview: content
-        }).subscribe();
-
-        // Notify other tabs/windows
-        this._notifyBroadcast('MESSAGE_SENT', { conversationId });
-
-        // CREATE NOTIFICATION (New)
-        // Find the other participant
-        const conv = this._conversations$.value.find(c => c.id === conversationId);
-        if (conv) {
-          const otherUserId = conv.participantIds.find(id => id !== user.id);
-          if (otherUserId) {
-            this._notificationService.createNotification({
-              type: 'chat',
-              title: `New message from ${user.name}`,
-              description: content,
-              entityId: conversationId,
-              userId: otherUserId,
-              actorName: user.name,
-              actorAvatar: user.avatar
-            }).subscribe();
-          }
-        }
+        // Success
       }),
       catchError(err => {
         console.error('Failed to send message', err);
@@ -164,18 +304,10 @@ export class ChatService {
       return of(existing.id);
     }
 
-    const newConv: Conversation = {
-      id: this._generateId(),
-      participantIds: [currentUser.id, targetUserId],
-      createdAt: new Date().toISOString()
-    };
-
-    return this._http.post<Conversation>(`${this.API_URL}/conversations`, newConv).pipe(
+    return this._api.post<Conversation>('/chat/conversations', { recipientId: targetUserId }).pipe(
       tap(conv => {
         this._conversations$.next([conv, ...this._conversations$.value]);
         this.selectConversation(conv.id);
-        // Maybe notify broadcast about new conversation if we want list live update
-        this._notifyBroadcast('MESSAGE_SENT', { conversationId: conv.id });
       }),
       map(conv => conv.id)
     );
@@ -183,20 +315,19 @@ export class ChatService {
 
   getUsersToChat(): Observable<ChatUser[]> {
     const currentUserId = this._authService.getUser()?.id;
-    return this._userService.getUsers().pipe(
+    return this._usersService.getAll().pipe(
       map(users => users
         .filter(u => u.id !== currentUserId)
         .map(u => ({
-          id: u.id,
+          id: Number(u.id),
           name: u.name,
-          avatar: u.avatar,
+          avatar: u.avatar || '',
           status: 'offline'
         }))
       )
     );
   }
 
-  // Utility
   private _updateLocalConversationPreview(conversationId: string, msg: ChatMessage) {
     const currentConvs = this._conversations$.value;
     const convIndex = currentConvs.findIndex(c => c.id === conversationId);
@@ -204,7 +335,9 @@ export class ChatService {
       const updatedConv = {
         ...currentConvs[convIndex],
         lastMessageAt: msg.createdAt,
-        lastMessagePreview: msg.content
+        lastMessagePreview: msg.content,
+        lastMessageSenderId: msg.senderId,
+        lastMessageStatus: msg.status
       };
       const newConvs = [updatedConv, ...currentConvs.filter(c => c.id !== conversationId)];
       this._conversations$.next(newConvs);

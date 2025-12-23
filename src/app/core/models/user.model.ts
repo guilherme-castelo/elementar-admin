@@ -5,6 +5,7 @@ export interface IUser {
   password?: string;
   companyId: string | number;
   roles: string[];
+  avatar?: string;
 
   // Profile fields
   phone?: string;

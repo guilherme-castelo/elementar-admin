@@ -13,48 +13,27 @@ export class AuthService {
   private readonly USER_KEY = 'auth_user';
 
   login(credentials: any): Observable<any> {
-    // Mock implementation: Get user by email and check password client-side
-    return this.api.get<any[]>(`/users?email=${credentials.email}`).pipe(
-      // SwitchMap/MergeMap would be better but keeping it simple for prototype with nested logic inside map/tap or just forkJoin if we were parallelizing.
-      // But we need the user first to know IF we should proceed.
-      // Using switchMap to get roles after valid user.
-      switchMap(users => {
-        const user = users[0];
-        if (user && user.password === credentials.password) {
-          // User valid, now get roles
-          return this.api.get<any[]>('/roles').pipe(
-            map(roles => {
-              // Flatten permissions
-              const userPermissions = new Set<string>();
-              user.roles.forEach((userRole: string) => {
-                const roleDef = roles.find(r => r.name === userRole);
-                if (roleDef && roleDef.permissions) {
-                  roleDef.permissions.forEach((p: string) => userPermissions.add(p));
-                }
-              });
-
-              return { user, permissions: Array.from(userPermissions) };
-            })
-          );
+    return this.api.post('/auth/login', credentials).pipe(
+      tap((response: any) => {
+        if (response && response.token) {
+          localStorage.setItem(this.TOKEN_KEY, response.token);
+          this.updateUser(response.user);
+          if (response.permissions) {
+            localStorage.setItem('auth_permissions', JSON.stringify(response.permissions));
+          }
         }
-        return throwError(() => new Error('Invalid credentials'));
       }),
-      tap(({ user, permissions }) => {
-        // Mock token generation
-        const token = btoa(`${user.id}:${user.email}:${Date.now()}`);
-        localStorage.setItem(this.TOKEN_KEY, token);
-        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
-        localStorage.setItem('auth_permissions', JSON.stringify(permissions));
-      }),
-      map(({ user }) => user)
+      map((response: any) => response.user)
     );
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-    localStorage.removeItem('auth_permissions');
-    this.router.navigate(['/auth/signin']);
+    this.api.post('/auth/logout', {}).subscribe(() => {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem('auth_permissions');
+      this.router.navigate(['/auth/signin']);
+    });
   }
 
   isAuthenticated(): boolean {
@@ -71,45 +50,32 @@ export class AuthService {
   }
 
   signUp(userData: any): Observable<any> {
-    // Check if user exists first? For MVP, simulate check or just post.
-    // JSON-Server will error 500 on duplicate ID, but email needs manual check if using 'users' endpoint roughly.
-    // Let's assume the component or a pre-check handles validity, or we just Post.
-
-    // Simulate slight delay
-    return of(true).pipe(
-      switchMap(() => {
-        // Create a default user structure
-        const newUser = {
-          ...userData,
-          id: null, // Let server generate
-          roles: ['user'], // Default role
-          permissions: [],
-          companyId: 1, // Default company
-          preferences: {
-            language: { code: 'pt', name: 'Portuguese (Brazil)' },
-            dateFormat: 'DD/MM/YYYY',
-            automaticTimeZone: { name: 'GMT-03:00', isEnabled: true }
+    return this.api.post('/auth/register', userData).pipe(
+      tap((response: any) => {
+        if (response && response.token) {
+          localStorage.setItem(this.TOKEN_KEY, response.token);
+          this.updateUser(response.user);
+          if (response.permissions) {
+            localStorage.setItem('auth_permissions', JSON.stringify(response.permissions));
           }
-        };
-        return this.api.post('/users', newUser);
+        }
       })
     );
   }
 
   forgotPassword(email: string): Observable<boolean> {
-    // Simulate finding user
-    return this.api.get<any[]>(`/users?email=${email}`).pipe(
-      map(users => {
-        if (users.length > 0) return true;
-        // In a real app we might not want to reveal if email exists, 
-        // but for MVP flow/UX we often show "Link sent" regardless or error if "User not found" (depending on reqs).
-        // Let's return true to simulate success.
-        return true;
-      }),
-      switchMap(exists => {
-        if (exists) return of(true);
-        return throwError(() => new Error('Email not found'));
-      })
+    // Check if email format is valid (simple check)
+    if (!email || !email.includes('@')) {
+      return throwError(() => new Error('Invalid email'));
+    }
+
+    // Simulate API delay and success.
+    // Ideally we would POST to /auth/forgot-password, but backend doesn't support it yet.
+    // Returing true to allow UI to show "Reset link sent".
+    // We store the email in local storage to simulate the "token" verification flow later if needed.
+    localStorage.setItem('reset_pending_email', email);
+    return of(true).pipe(
+      // delay(1000) // optional delay simulation
     );
   }
 

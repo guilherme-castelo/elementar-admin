@@ -19,6 +19,7 @@ import {
 } from '@elementar-ui/components/color-scheme';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { ChatService } from '../../core/services/chat.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 
@@ -61,8 +62,12 @@ export class HeaderComponent implements OnInit {
   name = '';
   email = '';
 
+  private _chatService = inject(ChatService);
+  unreadChatCount = toSignal(this._chatService.totalUnreadCount$, { initialValue: 0 });
+
   unreadNotificationsCount = toSignal(this._notificationService.unreadCount$, { initialValue: 0 });
   recentNotifications = toSignal(this._notificationService.activeNotifications$, { initialValue: [] });
+
 
   sidebarShown = computed(() => {
     return this._layoutApi.isSidebarShown('root')
