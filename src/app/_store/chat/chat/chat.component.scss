@@ -80,6 +80,10 @@
       &.status-sent {
         color: #9ca3af;
       }
+
+      &.status-delivered {
+        color: #9ca3af;
+      }
     }
   }
 
@@ -111,11 +115,13 @@
     .actions {
       display: flex;
       gap: 0.5rem; // space-x-2
-      button { // Стилизуем непосредственно кнопки внутри actions
+      button {
+        // Стилизуем непосредственно кнопки внутри actions
         font-size: 0.875rem; // text-sm
         font-weight: 500; // font-medium
       }
-      .accept-button { // Конкретно для кнопки Accept
+      .accept-button {
+        // Конкретно для кнопки Accept
         background-color: black;
         color: white;
         &:hover {
@@ -145,7 +151,8 @@
     ::ng-deep .mat-form-field-outline-gap {
       border-color: #d1d5db !important; // border-gray-300
     }
-    &.mat-focused ::ng-deep .mat-form-field-outline-thick { // Стиль для фокуса
+    &.mat-focused ::ng-deep .mat-form-field-outline-thick {
+      // Стиль для фокуса
       border-color: #3b82f6 !important; // focus:ring-blue-500
       border-width: 2px !important;
     }
@@ -162,7 +169,8 @@
   }
 
   // Общие стили для кнопок Material, если они используются внутри хоста
-  button.mat-stroked-button { // Для Decline кнопки в баннере
+  button.mat-stroked-button {
+    // Для Decline кнопки в баннере
     border-color: #d1d5db; // border-gray-300
     color: #374151; // text-gray-700
     &:hover {
