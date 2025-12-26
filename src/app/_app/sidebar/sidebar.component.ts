@@ -243,6 +243,7 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
+    /**
     {
       type: 'group',
       icon: 'lock',
@@ -291,7 +292,7 @@ export class SidebarComponent implements OnInit {
           link: '/auth/create-account'
         },
       ]
-    },
+    }, 
     {
       type: 'group',
       name: 'User Profile',
@@ -304,7 +305,7 @@ export class SidebarComponent implements OnInit {
           link: '/user-profile/talent-profile'
         }
       ]
-    },
+    },*/
     {
       type: 'group',
       name: 'Account',
@@ -345,7 +346,6 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
-    */
     {
       type: 'group',
       icon: 'edit_note',
@@ -359,8 +359,6 @@ export class SidebarComponent implements OnInit {
         }
       ]
     },
-    /**
-     * 
     {
       type: 'group',
       icon: 'error',

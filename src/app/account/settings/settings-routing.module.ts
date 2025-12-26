@@ -21,6 +21,7 @@ const routes: Routes = [
         title: 'Notifications',
         loadComponent: () => import('./notifications/notifications.component').then(c => c.NotificationsComponent),
       },
+      /**
       {
         path: 'billing',
         title: 'Billing',
@@ -40,7 +41,7 @@ const routes: Routes = [
         path: 'cookie',
         title: 'Cookie',
         loadComponent: () => import('./cookie/cookie.component').then(c => c.CookieComponent),
-      },
+      }, */
       {
         path: '',
         pathMatch: 'full',

@@ -41,6 +41,7 @@ export class CommonComponent implements OnInit {
       name: 'Notifications',
       link: '/account/settings/notifications'
     },
+    /**
     {
       name: 'Billing',
       link: '/account/settings/billing'
@@ -56,7 +57,7 @@ export class CommonComponent implements OnInit {
     {
       name: 'Sessions',
       link: '/account/settings/sessions'
-    }
+    }*/
   ];
 
   ngOnInit() {

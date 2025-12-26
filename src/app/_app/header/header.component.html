@@ -7,10 +7,12 @@
       <emr-assistant-search/>
     </div>
     <div class="ms-auto flex items-center gap-3">
+      <!---
       <a mat-stroked-button href="https://github.com/elementarlabs/elementar-ui" target="_blank">Github</a>
       <button mat-icon-button [matMenuTriggerFor]="appsMenu" matTooltip="Applications">
         <mat-icon>apps</mat-icon>
       </button>
+      -->
       <button mat-icon-button (click)="chatDrawer.open()">
         <mat-icon matBadge="{{ unreadChatCount() }}" [matBadgeHidden]="!unreadChatCount()">chat</mat-icon>
       </button>
