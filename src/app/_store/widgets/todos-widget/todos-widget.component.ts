@@ -24,9 +24,13 @@ import { DASHBOARD, Dashboard, Widget, WidgetComponent } from '@elementar-ui/com
 import { TasksService } from '../../../core/services/tasks.service';
 import { Task } from '../../../core/models/task.interface';
 
+import { CommonModule } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 @Component({
   selector: 'emr-todos-widget',
   imports: [
+    CommonModule,
     MatButton,
     MatIcon,
     MatCell,
@@ -43,7 +47,8 @@ import { Task } from '../../../core/models/task.interface';
     MatCellDef,
     MatHeaderCellDef,
     MatHeaderRowDef,
-    MatRowDef
+    MatRowDef,
+    MatTooltipModule
   ],
   templateUrl: './todos-widget.component.html',
   styleUrl: './todos-widget.component.scss'

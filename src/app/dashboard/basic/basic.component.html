@@ -1,39 +1,204 @@
-<div class="p-10 flex flex-col gap-8">
-  <div class="flex items-center justify-between">
-    <h1 class="text-lg font-bold">Dashboard</h1>
+<div class="p-6">
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <h1 class="text-2xl font-bold dark:text-gray-100">Dashboard</h1>
+      <p class="text-neutral-500 dark:text-neutral-400">
+        Visão geral do sistema
+      </p>
+    </div>
   </div>
-  <emr-dashboard [configs]="configs" [widgets]="widgets"></emr-dashboard>
 
-<!--  <div class="grid grid-cols-4 gap-6">-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-total-subscribers-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-avg-open-rate-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-avg-click-rate-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-unique-visitors-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-total-tasks-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-total-projects-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-events-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-1">-->
-<!--      <emr-team-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-2">-->
-<!--      <emr-tasks-in-progress-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--    <div class="col-span-2">-->
-<!--      <emr-todos-widget class="border border-default rounded-xl overflow-hidden"/>-->
-<!--    </div>-->
-<!--  </div>-->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Integration Alert -->
+    <ng-container
+      *ngIf="canViewIntegrations && !isLoading && !isIntegrationConfigured"
+    >
+      <div
+        class="col-span-full bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <mat-icon class="text-red-600 dark:text-red-400">warning</mat-icon>
+          <div>
+            <h3 class="font-bold text-red-800 dark:text-red-300">
+              Integração Pendente
+            </h3>
+            <p class="text-sm text-red-600 dark:text-red-400">
+              A integração com Domínio Web não está configurada.
+            </p>
+          </div>
+        </div>
+        <button mat-stroked-button color="warn" routerLink="/company/edit">
+          Configurar
+        </button>
+      </div>
+    </ng-container>
+
+    <!-- Meals Stats -->
+    <ng-container *ngIf="canViewMeals">
+      <mat-card
+        class="dashboard-card bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+      >
+        <mat-card-content class="relative overflow-hidden p-6">
+          <div class="absolute right-[-10px] top-[-10px] opacity-20">
+            <mat-icon style="transform: scale(4); width: 48px; height: 48px"
+              >restaurant</mat-icon
+            >
+          </div>
+          <div class="text-blue-100 text-sm font-medium mb-1">
+            Refeições Hoje
+          </div>
+          <div class="text-4xl font-bold mb-2">
+            {{ stats?.todayMealsQty || 0 }}
+          </div>
+          <div class="text-blue-100 text-xs">Registros processados hoje</div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="dashboard-card">
+        <mat-card-content class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <mat-icon class="text-green-600 dark:text-green-400"
+                >monetization_on</mat-icon
+              >
+            </div>
+            <span
+              class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full"
+              >Mensal</span
+            >
+          </div>
+          <div
+            class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
+          >
+            Custo Estimado
+          </div>
+          <div class="text-2xl font-bold dark:text-gray-100">
+            {{ stats?.monthlyMealsValue || 0 | currency : "BRL" }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+
+    <!-- Employees Stats -->
+    <ng-container *ngIf="canViewEmployees">
+      <mat-card class="dashboard-card">
+        <mat-card-content class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <mat-icon class="text-purple-600 dark:text-purple-400"
+                >groups</mat-icon
+              >
+            </div>
+          </div>
+          <div
+            class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
+          >
+            Funcionários Ativos
+          </div>
+          <div class="text-2xl font-bold dark:text-gray-100">
+            {{ stats?.employeesCount || 0 }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+
+    <!-- Shared/System Stats -->
+    <ng-container *ngIf="stats?.usersCount !== undefined">
+      <mat-card class="dashboard-card">
+        <mat-card-content class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div class="p-2 bg-gray-100 dark:bg-gray-700/30 rounded-lg">
+              <mat-icon class="text-gray-600 dark:text-gray-400"
+                >person</mat-icon
+              >
+            </div>
+          </div>
+          <div
+            class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
+          >
+            Usuários do Sistema
+          </div>
+          <div class="text-2xl font-bold dark:text-gray-100">
+            {{ stats?.usersCount || 0 }}
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </ng-container>
+  </div>
+
+  <!-- Activity Section -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+    <!-- My Tasks (Legacy Widget) -->
+    <mat-card class="dashboard-card h-full">
+      <mat-card-content class="p-0 h-full">
+        <emr-tasks-in-progress-widget></emr-tasks-in-progress-widget>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Public Tasks (Legacy Widget) -->
+    <mat-card class="dashboard-card h-full">
+      <mat-card-content class="p-0 h-full overflow-hidden flex flex-col">
+        <emr-todos-widget
+          class="grow h-full overflow-hidden"
+        ></emr-todos-widget>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Chats -->
+    <mat-card class="dashboard-card h-full">
+      <div
+        class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center"
+      >
+        <h3 class="font-bold text-gray-800 dark:text-gray-100">
+          Conversas Recentes
+        </h3>
+        <button mat-icon-button routerLink="/chat">
+          <mat-icon>chat</mat-icon>
+        </button>
+      </div>
+      <mat-card-content class="p-0">
+        <div
+          *ngIf="recentMessages.length === 0"
+          class="p-6 text-center text-gray-400 text-sm"
+        >
+          Nenhuma conversa recente.
+        </div>
+        <div
+          *ngFor="let chat of recentMessages"
+          class="p-4 border-b last:border-0 border-gray-50 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors flex gap-3 items-center"
+          routerLink="/chat"
+        >
+          <div
+            class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm"
+          >
+            {{ getChatName(chat).charAt(0).toUpperCase() }}
+          </div>
+          <div class="flex-1 overflow-hidden">
+            <div
+              class="font-medium text-sm text-gray-700 dark:text-gray-200 truncate"
+            >
+              {{ getChatName(chat) }}
+            </div>
+            <div class="text-xs text-gray-500 truncate mt-0.5">
+              {{ chat.lastMessagePreview || "Nova conversa" }}
+            </div>
+          </div>
+          <div class="text-[10px] text-gray-400 whitespace-nowrap">
+            {{ chat.lastMessageAt | date : "shortTime" }}
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Loading State -->
+  <div
+    *ngIf="isLoading"
+    class="grid grid-cols-1 md:grid-cols-4 gap-6 animate-pulse"
+  >
+    <div class="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+    <div class="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+    <div class="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+    <div class="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+  </div>
 </div>
