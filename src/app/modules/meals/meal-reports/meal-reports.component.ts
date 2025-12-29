@@ -14,6 +14,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MealsService } from '../../../core/services/meals.service';
 import { ReportPeriodService } from '../../../core/services/report-period.service';
 import { forkJoin } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-meal-reports',
@@ -31,7 +34,8 @@ import { forkJoin } from 'rxjs';
     MatTabsModule,
     MatTableModule,
     MatSelectModule,
-    MatButtonToggleModule
+    MatButtonToggleModule,
+    MatSnackBarModule
   ],
   template: `
     <div class="p-6">
@@ -56,6 +60,10 @@ import { forkJoin } from 'rxjs';
                <mat-option *ngFor="let y of years" [value]="y">{{ y }}</mat-option>
              </mat-select>
            </mat-form-field>
+           
+           <button mat-icon-button color="primary" matTooltip="Exportar para Domínio" (click)="exportToDominio()" [disabled]="isExporting">
+             <mat-icon>file_download</mat-icon>
+           </button>
         </div>
       </div>
       
@@ -223,6 +231,9 @@ import { forkJoin } from 'rxjs';
 export class MealReportsComponent implements OnInit {
   private mealsService = inject(MealsService);
   private reportPeriodService = inject(ReportPeriodService);
+  private http = inject(HttpClient);
+  private snackBar = inject(MatSnackBar);
+  private baseUrl = environment.apiBaseUrl || '/api';
 
   monthControl = new FormControl(new Date().getMonth());
   yearControl = new FormControl(new Date().getFullYear());
@@ -246,6 +257,8 @@ export class MealReportsComponent implements OnInit {
 
   // Filtered rows for display
   filteredRows: any[] = [];
+  
+  isExporting = false;
 
   ngOnInit() {
     this.generateYears();
@@ -309,5 +322,58 @@ export class MealReportsComponent implements OnInit {
         return labelMatch || subLabelMatch;
       });
     }
+  }
+  
+  exportToDominio() {
+      this.isExporting = true;
+      const month = this.monthControl.value! + 1; // 0-indexed to 1-indexed
+      const year = this.yearControl.value!;
+
+      const params = new HttpParams().set('month', month).set('year', year);
+
+      this.http.get(`${this.baseUrl}/integrations/dominio/export`, { 
+        params,
+        responseType: 'text' 
+      }).subscribe({
+        next: (data: any) => {
+          this.downloadFile(data, `dominio_${year}_${String(month).padStart(2,'0')}.txt`);
+          this.isExporting = false;
+          this.snackBar.open('Arquivo gerado com sucesso!', 'OK', { duration: 3000 });
+        },
+        error: (err: any) => {
+          console.error(err);
+          let msg = 'Erro ao gerar arquivo.';
+
+          if (err.status === 404) {
+             msg = 'Não há registros para o período.';
+          } else if (err.error) {
+             try {
+                // Since responseType is 'text', err.error is likely a JSON string
+                const body = typeof err.error === 'string' ? JSON.parse(err.error) : err.error;
+                if (body && body.message) {
+                  msg = body.message;
+                }
+             } catch (e) {
+                // If parsing fails, stick to default or try raw text
+                if (typeof err.error === 'string') msg = err.error;
+             }
+          }
+          
+          this.snackBar.open(msg, 'Fechar', { duration: 5000 });
+          this.isExporting = false;
+        }
+      });
+  }
+
+  private downloadFile(data: string, filename: string) {
+    const blob = new Blob([data], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 }

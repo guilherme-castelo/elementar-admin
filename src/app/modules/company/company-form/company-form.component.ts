@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CompanyService } from '../../../core/services/company.service';
 
@@ -18,30 +19,64 @@ import { CompanyService } from '../../../core/services/company.service';
     MatInputModule,
     MatButtonModule,
     MatSnackBarModule,
-    RouterLink
+    RouterLink,
+    MatTabsModule
   ],
   template: `
-    <div class="p-6 max-w-2xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6">{{ isEdit ? 'Editar Empresa' : 'Nova Empresa' }}</h1>
+    <div class="p-6 max-w-4xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">{{ isEdit ? 'Editar Empresa' : 'Nova Empresa' }}</h1>
+        <a mat-button color="basic" routerLink="/companies">Voltar</a>
+      </div>
       
-      <form [formGroup]="companyForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 p-6 rounded-lg shadow">
-        
-        <mat-form-field appearance="outline">
-          <mat-label>Nome da Empresa</mat-label>
-          <input matInput formControlName="name" placeholder="Ex: Tech Solutions">
-          <mat-error *ngIf="companyForm.get('name')?.hasError('required')">Nome é obrigatório</mat-error>
-        </mat-form-field>
+      <form [formGroup]="companyForm" (ngSubmit)="onSubmit()" class="rounded-lg shadow overflow-hidden">
+        <mat-tab-group animationDuration="0ms">
+          
+          <!-- General Tab -->
+          <mat-tab label="Geral">
+            <div class="p-6 flex flex-col gap-4">
+              <mat-form-field appearance="outline">
+                <mat-label>Nome da Empresa</mat-label>
+                <input matInput formControlName="name" placeholder="Ex: Tech Solutions">
+                <mat-error *ngIf="companyForm.get('name')?.hasError('required')">Nome é obrigatório</mat-error>
+              </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>CNPJ</mat-label>
-          <input matInput formControlName="cnpj" placeholder="00.000.000/0000-00">
-          <mat-error *ngIf="companyForm.get('cnpj')?.hasError('required')">CNPJ é obrigatório</mat-error>
-        </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>CNPJ</mat-label>
+                <input matInput formControlName="cnpj" placeholder="00.000.000/0000-00">
+                <mat-error *ngIf="companyForm.get('cnpj')?.hasError('required')">CNPJ é obrigatório</mat-error>
+              </mat-form-field>
+            </div>
+          </mat-tab>
 
-        <div class="flex justify-end gap-3 mt-4">
+          <!-- Integrations Tab -->
+          <mat-tab label="Integrações">
+            <div class="p-6">
+              <h3 class="text-lg font-semibold mb-4">Domínio Sistemas</h3>
+              <p class="text-sm text-gray-500 mb-6">Configure os parâmetros para exportação de dados para a folha de pagamento.</p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <mat-form-field appearance="outline">
+                  <mat-label>Código da Empresa (Domínio)</mat-label>
+                  <input matInput formControlName="dominioCode" placeholder="Ex: 100" maxlength="10">
+                  <mat-hint>Utilizado na exportação de refeições</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                  <mat-label>Código da Rubrica (Refeição)</mat-label>
+                  <input matInput formControlName="dominioRubric" placeholder="Ex: 297" maxlength="9">
+                  <mat-hint>Código da rubrica na folha de pagamento</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-tab>
+
+        </mat-tab-group>
+
+        <div class="p-6 border-t flex justify-end gap-3">
           <a mat-button color="basic" routerLink="/companies">Cancelar</a>
           <button mat-flat-button color="primary" type="submit" [disabled]="companyForm.invalid || isLoading">
-            {{ isLoading ? 'Salvando...' : 'Salvar' }}
+            {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}
           </button>
         </div>
       </form>
@@ -57,7 +92,9 @@ export class CompanyFormComponent implements OnInit {
 
   companyForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
-    cnpj: ['', Validators.required]
+    cnpj: ['', Validators.required],
+    dominioCode: [''],
+    dominioRubric: ['']
   });
 
   isEdit = false;
