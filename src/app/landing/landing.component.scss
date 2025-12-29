@@ -8,7 +8,9 @@ $text-muted: #6c757d;
 .landing-container {
   font-family: 'Inter', sans-serif;
   color: $text-dark;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
   display: flex;
   flex-direction: column;
 }
