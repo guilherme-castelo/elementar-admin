@@ -1,7 +1,29 @@
-import { Routes } from '@angular/router';
+import { Routes, Router } from '@angular/router';
+import { inject } from '@angular/core';
 import { authGuard } from './core/guards/auth.guard';
+import { AuthService } from './core/services/auth.service';
 
 export const routes: Routes = [
+  {
+    path: '',
+    pathMatch: 'full',
+    canMatch: [() => {
+      const router = inject(Router);
+      const authService = inject(AuthService);
+      if (authService.isAuthenticated()) {
+        return new Promise<boolean>(resolve => {
+           router.navigate(['/dashboard']);
+           resolve(false); 
+        });
+      }
+      return true;
+    }],
+    loadComponent: () => import('./landing/landing.component').then(c => c.LandingComponent)
+  },
+  {
+    path: 'landing',
+    loadComponent: () => import('./landing/landing.component').then(c => c.LandingComponent)
+  },
   {
     path: 'auth',
     loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule)
@@ -17,7 +39,7 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./app/app.component').then(c => c.AppComponent),
+    loadComponent: () => import('./layouts/admin-layout/admin-layout.component').then(c => c.AdminLayoutComponent),
     children: [
       {
         path: '',

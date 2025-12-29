@@ -1,0 +1,282 @@
+<div class="landing-container">
+  <!-- Navbar -->
+  <nav class="navbar glass-effect">
+    <div class="container">
+      <div class="logo">
+        <mat-icon color="primary">grid_view</mat-icon>
+        <span>Elementar</span>
+      </div>
+      <div class="links desktop-only">
+        <a (click)="scrollTo('features')">Funcionalidades</a>
+        <a (click)="scrollTo('benefits')">Benefícios</a>
+        <a (click)="scrollTo('pricing')">Planos</a>
+      </div>
+      <div class="actions">
+        @if (isLoggedIn) {
+        <a routerLink="/dashboard" mat-raised-button color="primary">
+          <mat-icon>dashboard</mat-icon> Ir para Dashboard
+        </a>
+        } @else {
+        <a routerLink="/auth/signin" mat-stroked-button color="primary"
+          >Entrar</a
+        >
+        <a routerLink="/auth/signup" mat-flat-button color="primary"
+          >Criar Conta</a
+        >
+        }
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header id="home" class="hero">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <span class="badge">Novo: Integração com Chat</span>
+        <h1>O Sistema Operacional para Refeitórios e Equipes</h1>
+        <p class="subtitle">
+          Centralize o custo das refeições, gerencie dados de colaboradores e
+          organize tarefas do RH em uma plataforma segura.
+        </p>
+        <div class="hero-ctas">
+          <button mat-flat-button color="primary" class="btn-lg">
+            Começar Agora
+          </button>
+          <button mat-stroked-button class="btn-lg">Ver Demonstração</button>
+        </div>
+        <p class="trust-text">
+          <mat-icon inline>verified</mat-icon> Usado por mais de 50 empresas
+        </p>
+      </div>
+      <div class="hero-image">
+        <div class="browser-mockup">
+          <!-- Placeholder for Dashboard Image -->
+          <div class="mockup-content">
+            <div class="sidebar-mock"></div>
+            <div class="main-mock">
+              <div class="chart-mock"></div>
+              <div class="list-mock"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Problems Section -->
+  <section id="benefits" class="problems">
+    <div class="container">
+      <h2 class="section-title">Chega de Caos Administrativo</h2>
+      <div class="cards-grid">
+        <mat-card class="problem-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar color="warn">table_view</mat-icon>
+            <mat-card-title>Planilhas Confusas</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              Perda de tempo consolidando gastos de refeitório em Excel que
+              nunca fecha.
+            </p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="problem-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar color="warn">person_off</mat-icon>
+            <mat-card-title>Dados Dispersos</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              Informações de colaboradores espalhadas em e-mails e sistemas
+              antigos.
+            </p>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="problem-card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar color="warn">message</mat-icon>
+            <mat-card-title>WhatsApp Pessoal</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              Comunicação da empresa misturada com conversas pessoais, sem
+              auditoria.
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title">Tudo o que você precisa</h2>
+
+      <!-- Feature 1: Meals -->
+      <div class="feature-block reverse">
+        <div class="feature-text">
+          <h3>Gestão de Refeições</h3>
+          <p>
+            Controle cada refeição servida. Saiba quem comeu, quando e quanto
+            custou.
+          </p>
+          <ul class="feature-list">
+            <li>
+              <mat-icon>check_circle</mat-icon> Relatórios por Centro de Custo
+            </li>
+            <li><mat-icon>check_circle</mat-icon> Auditoria de fornecedores</li>
+            <li>
+              <mat-icon>check_circle</mat-icon> Histórico completo do
+              colaborador
+            </li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div class="mockup-window">Meals Table Mockup</div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Employees -->
+      <div class="feature-block">
+        <div class="feature-text">
+          <h3>Base de Colaboradores</h3>
+          <p>
+            Um dossiê digital completo dos seus funcionários. Simples, seguro e
+            centralizado.
+          </p>
+          <ul class="feature-list">
+            <li>
+              <mat-icon>check_circle</mat-icon> Cadastro completo (CPF,
+              Matrícula)
+            </li>
+            <li>
+              <mat-icon>check_circle</mat-icon> Histórico de setor e função
+            </li>
+            <li>
+              <mat-icon>check_circle</mat-icon> Integração com ponto (em breve)
+            </li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div class="mockup-window">Employee Profile Mockup</div>
+        </div>
+      </div>
+
+      <!-- Feature 3: Productivity -->
+      <div class="feature-block reverse">
+        <div class="feature-text">
+          <h3>Produtividade Integrada</h3>
+          <p>
+            Não pague por Trello ou Slack separadamente. O Elementar já traz o
+            essencial.
+          </p>
+          <ul class="feature-list">
+            <li>
+              <mat-icon>check_circle</mat-icon>
+              <strong>Kanban:</strong> Organize tarefas visuais
+            </li>
+            <li>
+              <mat-icon>check_circle</mat-icon> <strong>Messenger:</strong> Chat
+              corporativo seguro
+            </li>
+            <li>
+              <mat-icon>check_circle</mat-icon>
+              <strong>Notificações:</strong> Tudo em tempo real
+            </li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div class="mockup-window">Kanban Board Mockup</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <h2 class="section-title">Planos Transparentes</h2>
+      <p class="section-subtitle">Escolha o melhor para sua operação.</p>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <mat-card class="pricing-card">
+          <mat-card-header>
+            <mat-card-title>Starter</mat-card-title>
+            <mat-card-subtitle>Para pequenas empresas</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="price">R$ 0 <small>/mês</small></div>
+            <ul class="benefits-list">
+              <li>Até 50 Colaboradores</li>
+              <li>Gestão de Refeições Básica</li>
+              <li>1 Usuário Admin</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-stroked-button color="primary">Começar Grátis</button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Pro -->
+        <mat-card class="pricing-card featured">
+          <div class="popular-tag">Popoular</div>
+          <mat-card-header>
+            <mat-card-title>Growth</mat-card-title>
+            <mat-card-subtitle>Para empresas em expansão</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="price">R$ 299 <small>/mês</small></div>
+            <ul class="benefits-list">
+              <li>Até 500 Colaboradores</li>
+              <li>Gestão de Refeições Completa</li>
+              <li>Chat & Tarefas Ilimitados</li>
+              <li>5 Usuários Admin</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-raised-button color="primary">Assinar Agora</button>
+          </mat-card-actions>
+        </mat-card>
+
+        <!-- Enterprise -->
+        <mat-card class="pricing-card">
+          <mat-card-header>
+            <mat-card-title>Enterprise</mat-card-title>
+            <mat-card-subtitle>Grandes operações</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="price">Sob Consulta</div>
+            <ul class="benefits-list">
+              <li>Colaboradores Ilimitados</li>
+              <li>API de Integração</li>
+              <li>SSO & Audit Logs</li>
+              <li>Suporte Dedicado</li>
+            </ul>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-stroked-button color="primary">Falar com Vendas</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="brand">
+        <h3>Elementar</h3>
+        <p>Copyright © 2025. Todos os direitos reservados.</p>
+      </div>
+      <div class="links">
+        <a href="#">Termos de Uso</a>
+        <a href="#">Privacidade</a>
+        <a href="#">Suporte</a>
+      </div>
+    </div>
+  </footer>
+</div>
