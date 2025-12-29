@@ -1,4 +1,10 @@
-import { Component, ElementRef, inject, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -35,44 +41,82 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
     MatSnackBarModule,
     MatTableModule,
     MatCardModule,
-    MatDialogModule
+    MatDialogModule,
   ],
   template: `
     <div class="p-6 h-[calc(100vh-64px)] flex flex-col">
       <!-- Header / Controls -->
-      <div class="p-4 rounded-lg shadow-sm border border-neutral-200 mb-4 flex flex-col md:flex-row items-center gap-4">
+      <div
+        class="p-4 rounded-lg shadow-sm border border-neutral-200 mb-4 flex flex-col md:flex-row items-center gap-4"
+      >
         <!-- Date Picker (Fixed) -->
-        <mat-form-field appearance="outline" class="w-full md:w-[200px] hide-subscript">
+        <mat-form-field
+          appearance="outline"
+          class="w-full md:w-[200px] hide-subscript"
+        >
           <mat-label>Data da Refeição</mat-label>
-          <input matInput [matDatepicker]="picker" [formControl]="dateControl" (dateChange)="onDateChange()">
-          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <input
+            matInput
+            [matDatepicker]="picker"
+            [formControl]="dateControl"
+            (dateChange)="onDateChange()"
+          />
+          <mat-datepicker-toggle
+            matIconSuffix
+            [for]="picker"
+          ></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
 
         <!-- Matricula Input (Focus Target) -->
-        <mat-form-field appearance="outline" class="w-full flex-1 hide-subscript">
-          <mat-label>DIGITE A MATRÍCULA E PRESSIONE ENTER</mat-label>
-          <input matInput 
-                 #matriculaInput
-                 [formControl]="matriculaControl" 
-                 (keydown.enter)="registerMeal()"
-                 placeholder="Ex: 1234" 
-                 autocomplete="off">
-          <mat-icon matSuffix class="cursor-pointer" (click)="registerMeal()">send</mat-icon>
+        <mat-form-field
+          appearance="outline"
+          class="w-full flex-1 hide-subscript"
+        >
+          <mat-label>DIGITE A MATRÍCULA</mat-label>
+          <input
+            matInput
+            #matriculaInput
+            [formControl]="matriculaControl"
+            (keydown.enter)="registerMeal()"
+            placeholder="Ex: 1234"
+            autocomplete="off"
+          />
+          <mat-icon matSuffix class="cursor-pointer" (click)="registerMeal()"
+            >send</mat-icon
+          >
         </mat-form-field>
 
-        <button mat-stroked-button color="primary" class="h-[56px]" (click)="openImportDialog()" matTooltip="Importar Arquivo">
-             <mat-icon>upload</mat-icon> Importar
+        <button
+          mat-stroked-button
+          color="primary"
+          class="h-[56px]"
+          (click)="openImportDialog()"
+          matTooltip="Importar Arquivo"
+        >
+          <mat-icon>upload</mat-icon> Importar
         </button>
       </div>
 
       <!-- Main Content / List -->
-      <div class="flex-1 rounded-lg shadow-sm border border-neutral-200 overflow-hidden flex flex-col">
+      <div
+        class="flex-1 rounded-lg shadow-sm border border-neutral-200 overflow-hidden flex flex-col"
+      >
         <div class="p-4 border-b flex justify-between items-center bg-gray-50">
           <h2 class="font-bold text-lg text-primary-700">Refeições do Dia</h2>
           <div class="flex gap-4 text-sm font-medium">
-            <span class="text-neutral-600">Qtd: <strong class="text-black">{{ (meals$ | async)?.length || 0 }}</strong></span>
-            <span class="text-neutral-600">Total: <strong class="text-green-600">{{ ((meals$ | async)?.length || 0) * 3 | currency:'BRL' }}</strong></span>
+            <span class="text-neutral-600"
+              >Qtd:
+              <strong class="text-black">{{
+                (meals$ | async)?.length || 0
+              }}</strong></span
+            >
+            <span class="text-neutral-600"
+              >Total:
+              <strong class="text-green-600">{{
+                ((meals$ | async)?.length || 0) * 3 | currency : 'BRL'
+              }}</strong></span
+            >
           </div>
         </div>
 
@@ -80,49 +124,83 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
           <table mat-table [dataSource]="(meals$ | async) || []" class="w-full">
             <!-- Time Column -->
             <ng-container matColumnDef="time">
-              <th mat-header-cell *matHeaderCellDef> Hora </th>
-              <td mat-cell *matCellDef="let meal"> {{ meal.createdAt | date:'HH:mm' }} </td>
+              <th mat-header-cell *matHeaderCellDef>Hora</th>
+              <td mat-cell *matCellDef="let meal">
+                {{ meal.createdAt | date : 'HH:mm' }}
+              </td>
             </ng-container>
 
             <!-- Matricula Column -->
             <ng-container matColumnDef="matricula">
-              <th mat-header-cell *matHeaderCellDef> Matrícula </th>
-              <td mat-cell *matCellDef="let meal"> <span class="font-mono bg-gray-400 px-2 py-1 rounded">{{ meal.employeeMatricula }}</span> </td>
+              <th mat-header-cell *matHeaderCellDef>Matrícula</th>
+              <td mat-cell *matCellDef="let meal">
+                <span class="font-mono bg-gray-400 px-2 py-1 rounded">
+                  {{meal.matriculaSnapshot}}
+                </span>
+              </td>
             </ng-container>
 
             <!-- Name Column -->
             <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef> Funcionário </th>
-              <td mat-cell *matCellDef="let meal"> 
-                <div class="font-medium">{{ meal.employeeName }}</div>
-                <div class="text-xs text-neutral-500">{{ meal.sector }}</div>
-              </td>
-            </ng-container>
+              <th mat-header-cell *matHeaderCellDef>Funcionário</th>
+              <td mat-cell *matCellDef="let meal">
+                <div>
+                  <div class="font-medium">
+                    {{
+                      meal.employeeNameSnapshot ||
+                        (meal.employee
+                          ? meal.employee.firstName +
+                            ' ' +
+                            meal.employee.lastName
+                          : 'Sem Nome')
+                    }}
+                  </div>
+                  <div class="text-xs text-neutral-500">
+                    {{
+                      meal.employeeSectorSnapshot ||
+                        meal.employee?.setor ||
+                        'Sem Setor'
+                    }}
+                  </div>
+                </div>
+              </td></ng-container
+            >
 
             <!-- Cost Column -->
             <ng-container matColumnDef="price">
-              <th mat-header-cell *matHeaderCellDef> Valor </th>
-              <td mat-cell *matCellDef="let meal"> {{ meal.price | currency:'BRL' }} </td>
+              <th mat-header-cell *matHeaderCellDef>Valor</th>
+              <td mat-cell *matCellDef="let meal">
+                {{ meal.price | currency : 'BRL' }}
+              </td>
             </ng-container>
 
             <!-- Actions Column -->
             <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef> Ações </th>
+              <th mat-header-cell *matHeaderCellDef>Ações</th>
               <td mat-cell *matCellDef="let meal">
-                <button *ngIf="permissionService.hasPermission('meal:delete')" 
-                        mat-icon-button color="warn" 
-                        (click)="deleteMeal(meal)"
-                        title="Excluir refeição">
+                <button
+                  *ngIf="permissionService.hasPermission('meal:delete')"
+                  mat-icon-button
+                  color="warn"
+                  (click)="deleteMeal(meal)"
+                  title="Excluir refeição"
+                >
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-            
+            <tr
+              mat-header-row
+              *matHeaderRowDef="displayedColumns; sticky: true"
+            ></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
             <tr class="mat-row" *matNoDataRow>
-              <td class="mat-cell text-center py-10 text-neutral-400 italic" [attr.colspan]="displayedColumns.length">
+              <td
+                class="mat-cell text-center py-10 text-neutral-400 italic"
+                [attr.colspan]="displayedColumns.length"
+              >
                 Nenhuma refeição registrada nesta data.
               </td>
             </tr>
@@ -131,11 +209,13 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
       </div>
     </div>
   `,
-  styles: [`
-    .hide-subscript ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-  `]
+  styles: [
+    `
+      .hide-subscript ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+      }
+    `,
+  ],
 })
 export class MealRegisterComponent implements OnInit {
   private mealsService = inject(MealsService);
@@ -160,24 +240,26 @@ export class MealRegisterComponent implements OnInit {
   }
 
   loadEmployees() {
-    this.employeesService.getAll().subscribe(employees => {
+    this.employeesService.getAll().subscribe((employees) => {
       this.allEmployees = employees;
     });
   }
 
   loadMeals() {
     const date = this.dateControl.value || new Date();
-    // Use ISO string but strip time for robust filtering if needed, 
+    // Use ISO string but strip time for robust filtering if needed,
     // but the service handles "date_like" or "date" match.
     // Ideally we pass local date string YYYY-MM-DD to service.
     // For now, passing full ISO from Date object.
     const isoDate = date.toISOString().split('T')[0];
     this.meals$ = this.mealsService.getDailyMeals(isoDate).pipe(
-      map(meals => meals.sort((a, b) => {
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
-      }))
+      map((meals) =>
+        meals.sort((a, b) => {
+          const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return timeB - timeA;
+        })
+      )
     );
   }
 
@@ -191,16 +273,22 @@ export class MealRegisterComponent implements OnInit {
     if (!matricula) return;
 
     // 1. Validate Employee Locally (Fast)
-    const employee = this.allEmployees.find(e => e.matricula === matricula);
+    const employee = this.allEmployees.find((e) => e.matricula === matricula);
 
     if (!employee) {
-      this.showFeedback(`Funcionário não encontrado (Matrícula: ${matricula})`, 'error');
+      this.showFeedback(
+        `Funcionário não encontrado (Matrícula: ${matricula})`,
+        'error'
+      );
       this.clearInput();
       return;
     }
 
     if (employee.dataDemissao) {
-      this.showFeedback(`Funcionário DEMITIDO. Refeição não permitida.`, 'error');
+      this.showFeedback(
+        `Funcionário DEMITIDO. Refeição não permitida.`,
+        'error'
+      );
       this.clearInput();
       return;
     }
@@ -221,7 +309,7 @@ export class MealRegisterComponent implements OnInit {
     // So we check in the component before call.
 
     // We need the current value of meals.
-    // Let's assume we can get it from a subscribe or store. 
+    // Let's assume we can get it from a subscribe or store.
     // For MVP, lets just call register and handle success.
     // To properly prevent duplicates, we should check `this.meals$` if we keep a local subject, or fetch specific check.
 
@@ -238,12 +326,12 @@ export class MealRegisterComponent implements OnInit {
     // The previous client-side check was good for UX but backend is authoritative.
     // We catch the specific error from backend.
 
-    this.mealsService.registerTx(
-      date.toISOString(),
-      employee
-    ).subscribe({
+    this.mealsService.registerTx(date.toISOString(), employee).subscribe({
       next: (meal) => {
-        this.showFeedback(`Refeição registrada: ${employee.firstName}`, 'success');
+        this.showFeedback(
+          `Refeição registrada: ${employee.firstName}`,
+          'success'
+        );
         this.loadMeals();
         this.clearInput();
       },
@@ -251,20 +339,25 @@ export class MealRegisterComponent implements OnInit {
         const msg = err.error?.message || 'Erro ao registrar refeição.';
         this.showFeedback(msg, 'error');
         this.clearInput();
-      }
+      },
     });
   }
 
   deleteMeal(meal: IMeal) {
     if (!this.permissionService.hasPermission('meal:delete')) return;
 
-    if (confirm(`Deseja realmente excluir a refeição de ${meal.employeeName}?`)) {
+    const name =
+      meal.employeeNameSnapshot ||
+      (meal.employee
+        ? `${meal.employee.firstName} ${meal.employee.lastName}`
+        : 'Sem Nome');
+    if (confirm(`Deseja realmente excluir a refeição de ${name}?`)) {
       this.mealsService.delete(meal.id).subscribe({
         next: () => {
           this.showFeedback('Refeição excluída com sucesso', 'success');
           this.loadMeals();
         },
-        error: () => this.showFeedback('Erro ao excluir refeição', 'error')
+        error: () => this.showFeedback('Erro ao excluir refeição', 'error'),
       });
     }
   }
@@ -277,16 +370,19 @@ export class MealRegisterComponent implements OnInit {
   private showFeedback(message: string, type: 'success' | 'error') {
     this.snackBar.open(message, 'FECHAR', {
       duration: type === 'error' ? 5000 : 2000,
-      panelClass: type === 'error' ? ['bg-red-600', 'text-white'] : ['bg-green-600', 'text-white'],
+      panelClass:
+        type === 'error'
+          ? ['bg-red-600', 'text-white']
+          : ['bg-green-600', 'text-white'],
       horizontalPosition: 'center',
-      verticalPosition: 'bottom'
+      verticalPosition: 'bottom',
     });
   }
 
   openImportDialog() {
     const dialogRef = this.dialog.open(MealImportDialogComponent, {
       width: '800px',
-      disableClose: true
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((result: boolean) => {

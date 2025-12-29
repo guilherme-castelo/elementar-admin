@@ -7,11 +7,11 @@ import { IEmployee } from '../models/employee.model';
 import { ReportPeriodService } from './report-period.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MealsService {
   private api = inject(ApiService);
-  
+
   parseFile(file: File): Promise<any[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -42,10 +42,12 @@ export class MealsService {
   }
 
   private parseCsv(text: string): any[] {
-    const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
+    const lines = text.split(/\r\n|\n/).filter((line) => line.trim() !== '');
     if (lines.length < 2) return [];
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const headers = lines[0]
+      .split(',')
+      .map((h) => h.trim().replace(/^"|"$/g, ''));
     const results = [];
 
     for (let i = 1; i < lines.length; i++) {
@@ -64,7 +66,7 @@ export class MealsService {
   private authService = inject(AuthService);
   private reportPeriodService = inject(ReportPeriodService);
 
-  private readonly MEAL_PRICE = 3.00;
+  private readonly MEAL_PRICE = 3.0;
 
   analyzeBatch(data: any[]): Observable<any> {
     return this.api.post('/meals/analyze', data);
@@ -75,9 +77,9 @@ export class MealsService {
   }
 
   getPendingCount(): Observable<number> {
-    return this.api.get<{count: number}>('/meals/pending-count').pipe(
-      map(res => res.count)
-    );
+    return this.api
+      .get<{ count: number }>('/meals/pending-count')
+      .pipe(map((res) => res.count));
   }
 
   getPendingMeals(): Observable<IMeal[]> {
@@ -89,8 +91,8 @@ export class MealsService {
    * Delegates to ReportPeriodService based on the month of the provided date.
    * Ideally, callers should use ReportPeriodService directly, but kept for compatibility.
    */
-  getPeriod(date: Date): { start: string, end: string } {
-    // Determine target month based on date. 
+  getPeriod(date: Date): { start: string; end: string } {
+    // Determine target month based on date.
     // If day >= 26, it belongs to NEXT month's period? No.
     // The previous logic was:
     // If >= 26: Start 26th Current, End 25th Next. (This means it belongs to NEXT month period).
@@ -111,7 +113,10 @@ export class MealsService {
       }
     }
 
-    const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(targetMonth, targetYear);
+    const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(
+      targetMonth,
+      targetYear
+    );
     return { start: startIso, end: endIso };
   }
 
@@ -131,7 +136,7 @@ export class MealsService {
       // However, to be safe or explicit:
       employeeNameSnapshot: `${employee.firstName} ${employee.lastName}`,
       employeeSectorSnapshot: employee.setor,
-      
+
       companyId: Number(currentUser?.companyId || employee.companyId || 1),
       date: dateIso,
       price: this.MEAL_PRICE,
@@ -153,12 +158,17 @@ export class MealsService {
     const user = this.authService.getUser();
     const companyQuery = user?.companyId ? `companyId=${user.companyId}&` : '';
 
-    return user ?
-      this.api.get<IMeal[]>(`/meals?${companyQuery}date=${dateIso.split('T')[0]}`) :
-      of([]);
+    return user
+      ? this.api.get<IMeal[]>(
+          `/meals?${companyQuery}date=${dateIso.split('T')[0]}`
+        )
+      : of([]);
   }
 
-  getMealsByPeriod(periodStart: string, periodEnd: string): Observable<IMeal[]> {
+  getMealsByPeriod(
+    periodStart: string,
+    periodEnd: string
+  ): Observable<IMeal[]> {
     const user = this.authService.getUser();
     const companyQuery = user?.companyId ? `companyId=${user.companyId}&` : '';
     // Fetching by period logic on JSON-SERVER is tricky without range operators (gte, lte).
@@ -166,12 +176,14 @@ export class MealsService {
     // Since we store periodStart/End on the record, we can filter by that specific period "bucket" if we want exact billing cycle match.
     // Or we filter by `date` range.
     // Storing `periodStart` allows us to just Get `?periodStart=X&periodEnd=Y` which aggregates perfectly.
-    return this.api.get<IMeal[]>(`/meals?${companyQuery}periodStart=${periodStart}&periodEnd=${periodEnd}`);
+    return this.api.get<IMeal[]>(
+      `/meals?${companyQuery}periodStart=${periodStart}&periodEnd=${periodEnd}`
+    );
   }
 
   getWeeklySummary(start: string, end: string): Observable<any> {
     return this.getMealsByPeriod(start, end).pipe(
-      map(meals => {
+      map((meals) => {
         const totalQty = meals.length;
         const totalValue = totalQty * this.MEAL_PRICE;
         return { totalQty, totalValue };
@@ -185,10 +197,13 @@ export class MealsService {
   /**
    * Generates a matrix of Group (Sector/Employee) x Days (Mon-Sat).
    */
-  getDailyReport(date: Date, groupBy: 'sector' | 'employee' = 'sector'): Observable<any> {
+  getDailyReport(
+    date: Date,
+    groupBy: 'sector' | 'employee' = 'sector'
+  ): Observable<any> {
     const { start, end } = this.getPeriod(date);
     return this.getMealsByPeriod(start, end).pipe(
-      map(meals => this.generateDailyMatrix(meals, start, end, groupBy))
+      map((meals) => this.generateDailyMatrix(meals, start, end, groupBy))
     );
   }
 
@@ -197,12 +212,17 @@ export class MealsService {
     return this.getDailyReport(date, 'sector');
   }
 
-  private generateDailyMatrix(meals: IMeal[], startIso: string, endIso: string, groupBy: 'sector' | 'employee'): any {
+  private generateDailyMatrix(
+    meals: IMeal[],
+    startIso: string,
+    endIso: string,
+    groupBy: 'sector' | 'employee'
+  ): any {
     const startDate = new Date(startIso);
     const endDate = new Date(endIso);
 
     // 1. Generate all valid days (Mon-Sat)
-    const days: { label: string, dateIso: string, fullDate: Date }[] = [];
+    const days: { label: string; dateIso: string; fullDate: Date }[] = [];
     let cursor = new Date(startDate);
 
     while (cursor <= endDate) {
@@ -210,20 +230,32 @@ export class MealsService {
       // 0 = Sun, 6 = Sat. Include 1..6 (Mon-Sat)
       if (dayOfWeek !== 0) {
         days.push({
-          label: `${cursor.getDate().toString().padStart(2, '0')}/${(cursor.getMonth() + 1).toString().padStart(2, '0')}`,
+          label: `${cursor.getDate().toString().padStart(2, '0')}/${(
+            cursor.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, '0')}`,
           dateIso: cursor.toISOString().split('T')[0], // YYYY-MM-DD
-          fullDate: new Date(cursor)
+          fullDate: new Date(cursor),
         });
       }
       cursor.setDate(cursor.getDate() + 1);
     }
 
     // 2. Group Meals
-    const groupMap: Record<string, { total: number, days: Record<string, number>, label: string, secondaryLabel: string }> = {};
+    const groupMap: Record<
+      string,
+      {
+        total: number;
+        days: Record<string, number>;
+        label: string;
+        secondaryLabel: string;
+      }
+    > = {};
 
-    meals.forEach(meal => {
+    meals.forEach((meal) => {
       const mDateIso = meal.date.split('T')[0];
-      const validDay = days.find(d => d.dateIso === mDateIso);
+      const validDay = days.find((d) => d.dateIso === mDateIso);
 
       if (validDay) {
         let key = '';
@@ -231,9 +263,15 @@ export class MealsService {
         let secondaryLabel = '';
 
         // Fallbacks for data consistency
-        const sector = meal.employeeSectorSnapshot || meal.sector || 'Sem Setor';
-        const empName = meal.employeeNameSnapshot || meal.employeeName || 'Sem Nome';
-        const empMatricula = meal.employeeMatricula || 'N/A';
+        const sector =
+          meal.employeeSectorSnapshot || meal.employee?.setor || 'Sem Setor';
+        const empName =
+          meal.employeeNameSnapshot ||
+          (meal.employee
+            ? `${meal.employee.firstName} ${meal.employee.lastName}`
+            : 'Sem Nome');
+        const empMatricula =
+          meal.matriculaSnapshot || meal.employee?.matricula || 'N/A';
 
         if (groupBy === 'sector') {
           key = sector;
@@ -242,12 +280,12 @@ export class MealsService {
           // Employee Mode
           // Handle null employeeId (Unlinked Imports)
           if (meal.employeeId) {
-             key = meal.employeeId.toString();
+            key = meal.employeeId.toString();
           } else {
-             // Group by matricula if available, or unique per meal if not (though matricula should be there)
-             key = `unlinked_${meal.matriculaSnapshot || 'unknown'}`;
+            // Group by matricula if available, or unique per meal if not (though matricula should be there)
+            key = `unlinked_${meal.matriculaSnapshot || 'unknown'}`;
           }
-          
+
           label = empName;
           secondaryLabel = empMatricula;
         }
@@ -263,16 +301,16 @@ export class MealsService {
 
     // 3. Serialize to rows
     const rows: any[] = [];
-    Object.keys(groupMap).forEach(key => {
+    Object.keys(groupMap).forEach((key) => {
       const data = groupMap[key];
-      const dailyCounts = days.map(d => data.days[d.dateIso] || 0);
+      const dailyCounts = days.map((d) => data.days[d.dateIso] || 0);
 
       rows.push({
         key, // useful for tracking
         label: data.label, // Sector Name or Employee Name
         secondaryLabel: data.secondaryLabel, // Matricula (only for employee)
         dailyCounts,
-        totalQty: data.total
+        totalQty: data.total,
       });
     });
 
@@ -284,8 +322,11 @@ export class MealsService {
     });
 
     // Calculate Totals per Day (Footer)
-    const dailyTotals = days.map(d => {
-      return rows.reduce((acc, row) => acc + (row.dailyCounts[days.indexOf(d)] || 0), 0);
+    const dailyTotals = days.map((d) => {
+      return rows.reduce(
+        (acc, row) => acc + (row.dailyCounts[days.indexOf(d)] || 0),
+        0
+      );
     });
 
     return { days, rows, dailyTotals };
@@ -297,7 +338,7 @@ export class MealsService {
    */
   getSectorWeeklyMatrix(start: string, end: string): Observable<any> {
     return this.getMealsByPeriod(start, end).pipe(
-      map(meals => {
+      map((meals) => {
         // 1. Identify all valid weeks within the period (Mon-Sat windows)
         // Since the period is 26th-25th, it spans 4-5 weeks.
 
@@ -311,7 +352,8 @@ export class MealsService {
         // If Period starts on Wed 26th, Week 1 includes Wed 26, Thu 27, Fri 28, Sat 29.
         // Week 2 starts Mon.
 
-        const weeks: { label: string, start: Date, end: Date, id: string }[] = [];
+        const weeks: { label: string; start: Date; end: Date; id: string }[] =
+          [];
         let cursor = new Date(start);
         const endDate = new Date(end);
         let weekIndex = 1;
@@ -325,8 +367,8 @@ export class MealsService {
           const day = nextSat.getDay();
           const dist = 6 - day + (day === 0 ? -6 : 0); // distance to Sat
           if (day === 0) {
-            // If cursor is Sunday, it belongs to no "Mon-Sat" work week effectively? 
-            // Or previous week? 
+            // If cursor is Sunday, it belongs to no "Mon-Sat" work week effectively?
+            // Or previous week?
             // Rule: "segunda a sábado". Sunday is ignored.
             // Skip Sunday
             cursor.setDate(cursor.getDate() + 1);
@@ -342,14 +384,14 @@ export class MealsService {
             label: `Semana ${weekIndex}`,
             id: `w${weekIndex}`,
             start: new Date(cursor),
-            end: weekEnd
+            end: weekEnd,
           });
 
           // Move cursor to next Monday
           const nextMon = new Date(nextSat);
           nextMon.setDate(nextMon.getDate() + 2); // Sat + 2 = Mon
           // Reset cursor to next Mon (or Sun -> +1) logic
-          // Actually, simply: cursor = next day after weekEnd? 
+          // Actually, simply: cursor = next day after weekEnd?
           // If weekEnd was Sat, next is Sun (skip) -> Mon.
           // If weekEnd was Period End (e.g. Wed), loop terminates.
 
@@ -362,30 +404,48 @@ export class MealsService {
 
         // 2. Group Meals
         const rows: any[] = [];
-        const sectorMap: Record<string, { total: number, weeks: Record<string, number> }> = {};
+        const sectorMap: Record<
+          string,
+          { total: number; weeks: Record<string, number> }
+        > = {};
 
-        meals.forEach(meal => {
-          const mDate = new Date(meal.date);
-          const w = weeks.find(wk => mDate >= wk.start && mDate <= wk.end);
+        meals.forEach((meal) => {
+          // Normalize meal date to YYYY-MM-DD string locally or strictly from ISO part
+          const mDateIso = meal.date.split('T')[0];
+
+          // Find week by comparing string ranges
+          const w = weeks.find((wk) => {
+            // Convert week start/end to comparable strings
+            const wkStartIso = wk.start.toISOString().split('T')[0];
+            const wkEndIso = wk.end.toISOString().split('T')[0];
+            return mDateIso >= wkStartIso && mDateIso <= wkEndIso;
+          });
+
           if (w) {
-            const sectorName = meal.sector || 'Sem Setor';
-            if (!sectorMap[sectorName]) sectorMap[sectorName] = { total: 0, weeks: {} };
+            // Fix: Use fallback logic compatible with new backend structure
+            const sectorName =
+              meal.employeeSectorSnapshot ||
+              meal.employee?.setor ||
+              'Sem Setor';
+            if (!sectorMap[sectorName])
+              sectorMap[sectorName] = { total: 0, weeks: {} };
 
-            sectorMap[sectorName].weeks[w.id] = (sectorMap[sectorName].weeks[w.id] || 0) + 1;
+            sectorMap[sectorName].weeks[w.id] =
+              (sectorMap[sectorName].weeks[w.id] || 0) + 1;
             sectorMap[sectorName].total++;
           }
         });
 
         // 3. Flatten
-        Object.keys(sectorMap).forEach(sector => {
+        Object.keys(sectorMap).forEach((sector) => {
           const data = sectorMap[sector];
-          const weeklyCounts = weeks.map(w => data.weeks[w.id] || 0);
+          const weeklyCounts = weeks.map((w) => data.weeks[w.id] || 0);
           rows.push({
             sector,
             weeklyCounts,
-            weeklyValues: weeklyCounts.map(c => c * this.MEAL_PRICE),
+            weeklyValues: weeklyCounts.map((c) => c * this.MEAL_PRICE),
             totalQty: data.total,
-            totalValue: data.total * this.MEAL_PRICE
+            totalValue: data.total * this.MEAL_PRICE,
           });
         });
 

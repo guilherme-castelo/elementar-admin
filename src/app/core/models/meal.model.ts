@@ -21,4 +21,14 @@ export interface IMeal {
   periodEnd: string; // ISO Date YYYY-MM-DD
   
   createdAt?: string;
+  
+  // Nested relation from backend
+  employee?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    matricula: string;
+    setor: string;
+    funcao?: string;
+  };
 }
