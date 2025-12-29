@@ -56,23 +56,26 @@ export class MealsService {
     const { start, end } = this.getPeriod(dateObj);
     const currentUser = this.authService.getUser();
 
-    const meal: Omit<IMeal, 'id'> = {
-      employeeId: employee.id,
-      employeeMatricula: employee.matricula,
-      employeeName: `${employee.firstName} ${employee.lastName}`,
-      sector: employee.setor,
-      companyId: currentUser?.companyId || employee.companyId || '1',
+    const meal: Partial<IMeal> = {
+      employeeId: Number(employee.id),
+      // employeeMatricula: employee.matricula, // Not needed for persistence if backend snapshots
+      // Backend expects these for snapshotting if it doesn't do it itself (but our backend service DOES do it).
+      // However, to be safe or explicit:
+      employeeNameSnapshot: `${employee.firstName} ${employee.lastName}`,
+      employeeSectorSnapshot: employee.setor,
+      
+      companyId: Number(currentUser?.companyId || employee.companyId || 1),
       date: dateIso,
       price: this.MEAL_PRICE,
       periodStart: start,
       periodEnd: end,
-      createdAt: new Date().toISOString()
+      // createdAt: new Date().toISOString() // Backend sets this
     };
 
     return this.api.post<IMeal>('/meals', meal);
   }
 
-  delete(id: string): Observable<void> {
+  delete(id: number | string): Observable<void> {
     return this.api.delete<void>(`/meals/${id}`);
   }
 
@@ -160,8 +163,8 @@ export class MealsService {
         let secondaryLabel = '';
 
         // Fallbacks for data consistency
-        const sector = meal.sector || 'Sem Setor';
-        const empName = meal.employeeName || 'Sem Nome';
+        const sector = meal.employeeSectorSnapshot || meal.sector || 'Sem Setor';
+        const empName = meal.employeeNameSnapshot || meal.employeeName || 'Sem Nome';
         const empMatricula = meal.employeeMatricula || 'N/A';
 
         if (groupBy === 'sector') {

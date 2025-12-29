@@ -9,19 +9,19 @@ const routes: Routes = [
     path: '',
     component: CompanyListComponent,
     canActivate: [roleGuard],
-    data: { permission: 'companies:manage' }
+    data: { permission: 'company:read' }
   },
   {
     path: 'new',
     component: CompanyFormComponent,
     canActivate: [roleGuard],
-    data: { permission: 'companies:manage' }
+    data: { permission: 'company:create' }
   },
   {
     path: ':id',
     component: CompanyFormComponent,
     canActivate: [roleGuard],
-    data: { permission: 'companies:manage' }
+    data: { permission: 'company:update' }
   }
 ];
 

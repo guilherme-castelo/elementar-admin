@@ -22,7 +22,7 @@ import { PermissionService } from '../../../core/services/permission.service';
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Gerenciamento de Empresas</h1>
-        <a *ngIf="permissionService.hasPermission('companies:manage')" mat-flat-button color="primary" routerLink="new">
+        <a *ngIf="permissionService.hasPermission('company:create')" mat-flat-button color="primary" routerLink="new">
           <mat-icon>add</mat-icon> Nova Empresa
         </a>
       </div>
@@ -53,7 +53,7 @@ import { PermissionService } from '../../../core/services/permission.service';
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> Ações </th>
             <td mat-cell *matCellDef="let company">
-              <button *ngIf="permissionService.hasPermission('companies:manage')" mat-icon-button color="accent" [routerLink]="[company.id]">
+              <button *ngIf="permissionService.hasPermission('company:update')" mat-icon-button color="accent" [routerLink]="[company.id]">
                 <mat-icon>edit</mat-icon>
               </button>
             </td>

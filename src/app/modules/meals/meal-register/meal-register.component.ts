@@ -102,7 +102,7 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef> Ações </th>
               <td mat-cell *matCellDef="let meal">
-                <button *ngIf="permissionService.hasPermission('meals:delete')" 
+                <button *ngIf="permissionService.hasPermission('meal:delete')" 
                         mat-icon-button color="warn" 
                         (click)="deleteMeal(meal)"
                         title="Excluir refeição">
@@ -165,7 +165,11 @@ export class MealRegisterComponent implements OnInit {
     // For now, passing full ISO from Date object.
     const isoDate = date.toISOString().split('T')[0];
     this.meals$ = this.mealsService.getDailyMeals(isoDate).pipe(
-      map(meals => meals.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
+      map(meals => meals.sort((a, b) => {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      }))
     );
   }
 
@@ -244,7 +248,7 @@ export class MealRegisterComponent implements OnInit {
   }
 
   deleteMeal(meal: IMeal) {
-    if (!this.permissionService.hasPermission('meals:delete')) return;
+    if (!this.permissionService.hasPermission('meal:delete')) return;
 
     if (confirm(`Deseja realmente excluir a refeição de ${meal.employeeName}?`)) {
       this.mealsService.delete(meal.id).subscribe({

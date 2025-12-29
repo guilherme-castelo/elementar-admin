@@ -1,16 +1,28 @@
+import { IRole } from './role.model';
+
 export interface IUser {
-  id: string | number;
+  id: number;
   name: string;
   email: string;
   password?: string;
-  companyId: string | number;
-  roles: string[];
-  avatar?: string;
-
+  
+  // Relations
+  companyId?: number;
+  roleId?: number;
+  role?: IRole; // Backend returns full object on many endpoints
+  
+  // Flattened for Helper (Optional) but better to remove if strict
+  // roles?: string[]; // Deprecated in favor of role.permissions.map(slug)
+  
+  isActive: boolean;
+  
   // Profile fields
   phone?: string;
   jobTitle?: string;
   bio?: string;
+  avatar?: string;
+  
+  // JSON Fields (parsed)
   address?: {
     country: string;
     city: string;
@@ -27,4 +39,14 @@ export interface IUser {
 
   createdAt?: string;
   updatedAt?: string;
+}
+
+// DTO for Transport (if needed for flat strings)
+export interface IUserDTO {
+  id: number;
+  name: string;
+  email: string;
+  address?: string; // stringified JSON
+  preferences?: string; // stringified JSON
+  // ...
 }

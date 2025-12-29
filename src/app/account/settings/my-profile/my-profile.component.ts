@@ -50,7 +50,7 @@ export class MyProfileComponent implements OnInit {
     this.profileForm = this.fb.group({
       // Read-only / Hidden
       id: [''],
-      roles: [[]],
+      roleId: [null],
       companyId: [''],
 
       // Personal Info
@@ -115,7 +115,7 @@ export class MyProfileComponent implements OnInit {
       jobTitle: user.jobTitle,
       bio: user.bio,
       companyId: user.companyId,
-      roles: user.roles
+      roleId: user.roleId
     });
 
     if (user.address) {

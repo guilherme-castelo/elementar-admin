@@ -32,10 +32,10 @@ import { EmployeeImportDialogComponent } from '../employee-import-dialog/employe
           <p class="text-neutral-500">Gerencie o quadro de colaboradores da empresa</p>
         </div>
         <div class="flex gap-2">
-           <button *ngIf="permissionService.hasPermission('employees:create')" mat-stroked-button color="primary" (click)="openImportDialog()">
+           <button *ngIf="permissionService.hasPermission('employee:create')" mat-stroked-button color="primary" (click)="openImportDialog()">
              <mat-icon>cloud_upload</mat-icon> Importar
            </button>
-           <a *ngIf="permissionService.hasPermission('employees:create')" mat-flat-button color="primary" routerLink="new">
+           <a *ngIf="permissionService.hasPermission('employee:create')" mat-flat-button color="primary" routerLink="new">
              <mat-icon>add</mat-icon> Novo Funcionário
            </a>
         </div>
@@ -83,10 +83,10 @@ import { EmployeeImportDialogComponent } from '../employee-import-dialog/employe
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef> Ações </th>
             <td mat-cell *matCellDef="let employee">
-              <button *ngIf="permissionService.hasPermission('employees:update')" mat-icon-button color="primary" [routerLink]="[employee.id, 'edit']">
+              <button *ngIf="permissionService.hasPermission('employee:update')" mat-icon-button color="primary" [routerLink]="[employee.id, 'edit']">
                 <mat-icon>edit</mat-icon>
               </button>
-              <button *ngIf="permissionService.hasPermission('employees:delete')" mat-icon-button color="warn" (click)="deleteEmployee(employee.id)">
+              <button *ngIf="permissionService.hasPermission('employee:delete')" mat-icon-button color="warn" (click)="deleteEmployee(employee.id)">
                 <mat-icon>delete</mat-icon>
               </button>
             </td>

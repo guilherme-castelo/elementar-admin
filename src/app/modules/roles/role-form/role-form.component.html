@@ -1,0 +1,89 @@
+<div class="p-6 max-w-5xl mx-auto">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">
+      {{ isEditMode ? "Editar" : "Novo" }} Cargo
+    </h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-6">
+    <!-- Basic Info Card -->
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Informações Básicas</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="pt-4 flex flex-col gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Nome do Cargo</mat-label>
+          <input
+            matInput
+            formControlName="name"
+            placeholder="Ex: Gestor de RH"
+          />
+          <mat-error *ngIf="form.get('name')?.hasError('required')"
+            >O nome é obrigatório</mat-error
+          >
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Descrição</mat-label>
+          <textarea
+            matInput
+            formControlName="description"
+            rows="3"
+            placeholder="Descrição das responsabilidades deste cargo"
+          ></textarea>
+        </mat-form-field>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Permissions Matrix -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        *ngFor="let group of groupedPermissions"
+        class="flex flex-col h-full"
+      >
+        <mat-card appearance="outlined" class="h-full">
+          <mat-card-header class="bg-gray-50 border-b border-gray-100 py-3">
+            <div class="flex items-center justify-between w-full">
+              <span class="font-bold text-gray-700">{{ group.name }}</span>
+              <mat-checkbox
+                (change)="toggleGroup(group.name, $event.checked)"
+                [checked]="isGroupFullySelected(group.name)"
+                [indeterminate]="isGroupPartiallySelected(group.name)"
+                color="primary"
+              >
+              </mat-checkbox>
+            </div>
+          </mat-card-header>
+          <mat-card-content class="pt-4">
+            <div class="flex flex-col gap-3">
+              <mat-checkbox
+                *ngFor="let perm of group.permissions"
+                [checked]="isPermissionSelected(perm.slug)"
+                (change)="togglePermission(perm.slug)"
+                color="primary"
+              >
+                <span class="font-medium text-sm">{{ perm.name }}</span>
+                <!-- Optional: Show slug or description in tooltip or small text -->
+                <!-- <p class="text-xs text-gray-500 ml-0">{{ perm.description }}</p> -->
+              </mat-checkbox>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 mt-4">
+      <a mat-button routerLink="/roles">Cancelar</a>
+      <button
+        mat-flat-button
+        color="primary"
+        type="submit"
+        [disabled]="form.invalid"
+      >
+        Salvar Cargo
+      </button>
+    </div>
+  </form>
+</div>

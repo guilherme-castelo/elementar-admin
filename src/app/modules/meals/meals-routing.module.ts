@@ -9,13 +9,13 @@ const routes: Routes = [
     path: 'register',
     component: MealRegisterComponent,
     canActivate: [roleGuard],
-    data: { permission: 'meals:register' }
+    data: { permission: 'meal:create' }
   },
   {
     path: 'reports',
     component: MealReportsComponent,
     canActivate: [roleGuard],
-    data: { permission: 'meals:reports' }
+    data: { permission: 'meal:read' }
   },
   {
     path: '', // Default redirect or landing?

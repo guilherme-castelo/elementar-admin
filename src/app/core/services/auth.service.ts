@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, tap, map, catchError, of, throwError, switchMap } from 'rxjs';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
+import { PermissionService } from './permission.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,7 @@ import { ApiService } from './api.service';
 export class AuthService {
   private api = inject(ApiService);
   private router = inject(Router);
+  private permissionService = inject(PermissionService);
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
@@ -19,7 +21,7 @@ export class AuthService {
           localStorage.setItem(this.TOKEN_KEY, response.token);
           this.updateUser(response.user);
           if (response.permissions) {
-            localStorage.setItem('auth_permissions', JSON.stringify(response.permissions));
+            this.permissionService.setPermissions(response.permissions);
           }
         }
       }),
@@ -31,7 +33,7 @@ export class AuthService {
     this.api.post('/auth/logout', {}).subscribe(() => {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
-      localStorage.removeItem('auth_permissions');
+      this.permissionService.setPermissions([]);
       this.router.navigate(['/auth/signin']);
     });
   }
@@ -56,7 +58,7 @@ export class AuthService {
           localStorage.setItem(this.TOKEN_KEY, response.token);
           this.updateUser(response.user);
           if (response.permissions) {
-            localStorage.setItem('auth_permissions', JSON.stringify(response.permissions));
+            this.permissionService.setPermissions(response.permissions);
           }
         }
       })

@@ -22,7 +22,7 @@ import { Observable } from 'rxjs';
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Gerenciamento de Usuários</h1>
-        <a *ngIf="permissionService.hasPermission('users:create')" mat-flat-button color="primary" routerLink="new">
+        <a *ngIf="permissionService.hasPermission('user:create')" mat-flat-button color="primary" routerLink="new">
           <mat-icon>add</mat-icon> Novo Usuário
         </a>
       </div>

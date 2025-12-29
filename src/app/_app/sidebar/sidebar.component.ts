@@ -82,14 +82,21 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'Users',
           link: '/users',
-          permissions: ['users:read']
+          permissions: ['user:read']
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Companies',
           link: '/companies',
-          permissions: ['companies:manage']
+          permissions: ['company:read']
+        },
+        {
+          key: uuid(),
+          type: 'link',
+          name: 'Roles',
+          link: '/roles',
+          permissions: ['role:manage']
         }
       ]
     },
@@ -103,21 +110,21 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'Funcionários',
           link: '/employees',
-          permissions: ['employees:read']
+          permissions: ['employee:read']
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Refeições',
           link: '/meals/register',
-          permissions: ['meals:read', 'meals:register']
+          permissions: ['meal:read', 'meal:create']
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Relatórios',
           link: '/meals/reports',
-          permissions: ['meals:reports']
+          permissions: ['meal:read']
         }
       ]
     },

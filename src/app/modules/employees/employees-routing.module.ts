@@ -9,19 +9,19 @@ const routes: Routes = [
     path: '',
     component: EmployeeListComponent,
     canActivate: [roleGuard],
-    data: { permission: 'employees:read' }
+    data: { permission: 'employee:read' }
   },
   {
     path: 'new',
     component: EmployeeFormComponent,
     canActivate: [roleGuard],
-    data: { permission: 'employees:create' }
+    data: { permission: 'employee:create' }
   },
   {
     path: ':id/edit',
     component: EmployeeFormComponent,
     canActivate: [roleGuard],
-    data: { permission: 'employees:update' }
+    data: { permission: 'employee:update' }
   }
 ];
 

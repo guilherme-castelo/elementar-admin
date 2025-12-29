@@ -84,6 +84,11 @@ export const routes: Routes = [
         loadChildren: () => import('./modules/meals/meals.module').then(m => m.MealsModule),
         canActivate: [authGuard]
       },
+      {
+        path: 'roles',
+        canActivate: [authGuard],
+        loadChildren: () => import('./modules/roles/roles.module').then(m => m.RolesModule)
+      },
     ]
   },
   {

@@ -9,19 +9,19 @@ const routes: Routes = [
     path: '',
     component: UserListComponent,
     canActivate: [roleGuard],
-    data: { permission: 'users:read' }
+    data: { permission: 'user:read' }
   },
   {
     path: 'new',
     component: UserFormComponent,
     canActivate: [roleGuard],
-    data: { permission: 'users:create' }
+    data: { permission: 'user:create' }
   },
   {
     path: ':id',
     component: UserFormComponent,
     canActivate: [roleGuard],
-    data: { permission: 'users:update' }
+    data: { permission: 'user:update' }
   }
 ];
 

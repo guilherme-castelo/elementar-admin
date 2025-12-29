@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { MatAnchor, MatButton, MatIconButton } from '@angular/material/button';
+import { MatIconButton } from '@angular/material/button';
 import { MatBadge } from '@angular/material/badge';
 import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
@@ -35,11 +35,9 @@ import { CommonModule } from '@angular/common';
     MatMenuItem,
     DicebearComponent,
     MatDivider,
-    MatButton,
     MatTooltip,
     RouterLink,
     AssistantSearchComponent,
-    MatAnchor,
     SoundEffectDirective,
     NotificationsPopoverComponent,
     DrawerComponent,
