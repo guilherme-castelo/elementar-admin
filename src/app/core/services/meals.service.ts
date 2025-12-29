@@ -11,10 +11,78 @@ import { ReportPeriodService } from './report-period.service';
 })
 export class MealsService {
   private api = inject(ApiService);
+  
+  parseFile(file: File): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const text = e.target.result;
+        try {
+          if (file.name.endsWith('.json')) {
+            resolve(this.parseJson(text));
+          } else if (file.name.endsWith('.csv')) {
+            resolve(this.parseCsv(text));
+          } else {
+            reject('Formato de arquivo não suportado. Use .csv ou .json');
+          }
+        } catch (err) {
+          reject('Erro ao ler arquivo: ' + err);
+        }
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsText(file);
+    });
+  }
+
+  private parseJson(text: string): any[] {
+    const data = JSON.parse(text);
+    if (Array.isArray(data)) return data;
+    if (data.meals && Array.isArray(data.meals)) return data.meals; // Support wrapped
+    throw new Error('Formato JSON inválido. Esperado array.');
+  }
+
+  private parseCsv(text: string): any[] {
+    const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
+    if (lines.length < 2) return [];
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const results = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const currentLine = lines[i].split(',');
+      if (currentLine.length === headers.length) {
+        const obj: any = {};
+        for (let j = 0; j < headers.length; j++) {
+          let val = currentLine[j].trim().replace(/^"|"$/g, '');
+          obj[headers[j]] = val;
+        }
+        results.push(obj);
+      }
+    }
+    return results;
+  }
   private authService = inject(AuthService);
   private reportPeriodService = inject(ReportPeriodService);
 
   private readonly MEAL_PRICE = 3.00;
+
+  analyzeBatch(data: any[]): Observable<any> {
+    return this.api.post('/meals/analyze', data);
+  }
+
+  importBulk(records: any[]): Observable<any> {
+    return this.api.post('/meals/import', { records });
+  }
+
+  getPendingCount(): Observable<number> {
+    return this.api.get<{count: number}>('/meals/pending-count').pipe(
+      map(res => res.count)
+    );
+  }
+
+  getPendingMeals(): Observable<IMeal[]> {
+    return this.api.get<IMeal[]>('/meals/pending');
+  }
 
   /**
    * Calculates the billing period for a given date.
@@ -172,7 +240,14 @@ export class MealsService {
           label = sector;
         } else {
           // Employee Mode
-          key = meal.employeeId.toString(); // Group by ID to be safe
+          // Handle null employeeId (Unlinked Imports)
+          if (meal.employeeId) {
+             key = meal.employeeId.toString();
+          } else {
+             // Group by matricula if available, or unique per meal if not (though matricula should be there)
+             key = `unlinked_${meal.matriculaSnapshot || 'unknown'}`;
+          }
+          
           label = empName;
           secondaryLabel = empMatricula;
         }

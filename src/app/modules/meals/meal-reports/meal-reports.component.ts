@@ -17,6 +17,9 @@ import { forkJoin } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { environment } from '../../../../environments/environment';
+import { UnlinkedMealsDialogComponent } from '../unlinked-meals-dialog/unlinked-meals-dialog.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-meal-reports',
@@ -35,7 +38,9 @@ import { environment } from '../../../../environments/environment';
     MatTableModule,
     MatSelectModule,
     MatButtonToggleModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatDialogModule,
+    RouterModule
   ],
   template: `
     <div class="p-6">
@@ -61,8 +66,8 @@ import { environment } from '../../../../environments/environment';
              </mat-select>
            </mat-form-field>
            
-           <button mat-icon-button color="primary" matTooltip="Exportar para Domínio" (click)="exportToDominio()" [disabled]="isExporting">
-             <mat-icon>file_download</mat-icon>
+           <button mat-stroked-button color="primary" matTooltip="Exportar para Domínio" (click)="exportToDominio()" [disabled]="isExporting">
+             <mat-icon>file_download</mat-icon> Exportar
            </button>
         </div>
       </div>
@@ -71,6 +76,20 @@ import { environment } from '../../../../environments/environment';
          <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-100">
            Período: {{ periodStart | date:'dd/MM/yyyy' }} a {{ periodEnd | date:'dd/MM/yyyy' }}
          </span>
+      </div>
+
+      <!-- Pending Meals Banner -->
+      <div *ngIf="pendingCount > 0" class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded shadow-sm flex justify-between items-center">
+         <div class="flex items-center gap-3">
+            <mat-icon class="text-amber-600">warning</mat-icon>
+            <div>
+               <h3 class="font-bold text-amber-800 m-0">Atenção: Registros Pendentes</h3>
+               <p class="text-sm text-amber-700 m-0">Existem {{ pendingCount }} refeições importadas sem vínculo com funcionário.</p>
+            </div>
+         </div>
+         <button mat-stroked-button color="warn" (click)="openUnlinkedDialog()">
+            Visualizar Pendências
+         </button>
       </div>
 
       <div class="p-4 rounded-lg shadow-sm border border-neutral-200 dark:border-gray-700 overflow-hidden">
@@ -233,6 +252,7 @@ export class MealReportsComponent implements OnInit {
   private reportPeriodService = inject(ReportPeriodService);
   private http = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
   private baseUrl = environment.apiBaseUrl || '/api';
 
   monthControl = new FormControl(new Date().getMonth());
@@ -254,6 +274,7 @@ export class MealReportsComponent implements OnInit {
   summary: any = {};
   matrix: any = { weeks: [], rows: [] };
   dailyMatrix: any = { days: [], rows: [] };
+  pendingCount = 0;
 
   // Filtered rows for display
   filteredRows: any[] = [];
@@ -297,11 +318,13 @@ export class MealReportsComponent implements OnInit {
     forkJoin({
       summary: this.mealsService.getWeeklySummary(startIso, endIso),
       matrix: this.mealsService.getSectorWeeklyMatrix(startIso, endIso),
-      dailyMatrix: this.mealsService.getDailyReport(refDate, viewMode)
+      dailyMatrix: this.mealsService.getDailyReport(refDate, viewMode),
+      pendingCount: this.mealsService.getPendingCount()
     }).subscribe(data => {
       this.summary = data.summary;
       this.matrix = data.matrix;
       this.dailyMatrix = data.dailyMatrix;
+      this.pendingCount = data.pendingCount;
       this.applyFilter();
     });
   }
@@ -323,7 +346,15 @@ export class MealReportsComponent implements OnInit {
       });
     }
   }
+
   
+  openUnlinkedDialog() {
+    this.dialog.open(UnlinkedMealsDialogComponent, {
+      width: '900px',
+      disableClose: false
+    });
+  }
+
   exportToDominio() {
       this.isExporting = true;
       const month = this.monthControl.value! + 1; // 0-indexed to 1-indexed

@@ -15,6 +15,8 @@ import { EmployeesService } from '../../../core/services/employees.service';
 import { PermissionService } from '../../../core/services/permission.service';
 import { IMeal } from '../../../core/models/meal.model';
 import { IEmployee } from '../../../core/models/employee.model';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MealImportDialogComponent } from '../meal-import-dialog/meal-import-dialog.component';
 import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
 @Component({
@@ -32,14 +34,15 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
     MatIconModule,
     MatSnackBarModule,
     MatTableModule,
-    MatCardModule
+    MatCardModule,
+    MatDialogModule
   ],
   template: `
     <div class="p-6 h-[calc(100vh-64px)] flex flex-col">
       <!-- Header / Controls -->
-      <div class="p-4 rounded-lg shadow-sm border border-neutral-200 mb-4 items-center gap-4 grid grid-cols-1 md:grid-cols-[200px_1fr]">
+      <div class="p-4 rounded-lg shadow-sm border border-neutral-200 mb-4 flex flex-col md:flex-row items-center gap-4">
         <!-- Date Picker (Fixed) -->
-        <mat-form-field appearance="outline" class="w-full hide-subscript">
+        <mat-form-field appearance="outline" class="w-full md:w-[200px] hide-subscript">
           <mat-label>Data da Refeição</mat-label>
           <input matInput [matDatepicker]="picker" [formControl]="dateControl" (dateChange)="onDateChange()">
           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
@@ -47,7 +50,7 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
         </mat-form-field>
 
         <!-- Matricula Input (Focus Target) -->
-        <mat-form-field appearance="outline" class="w-full hide-subscript">
+        <mat-form-field appearance="outline" class="w-full flex-1 hide-subscript">
           <mat-label>DIGITE A MATRÍCULA E PRESSIONE ENTER</mat-label>
           <input matInput 
                  #matriculaInput
@@ -57,6 +60,10 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
                  autocomplete="off">
           <mat-icon matSuffix class="cursor-pointer" (click)="registerMeal()">send</mat-icon>
         </mat-form-field>
+
+        <button mat-stroked-button color="primary" class="h-[56px]" (click)="openImportDialog()" matTooltip="Importar Arquivo">
+             <mat-icon>upload</mat-icon> Importar
+        </button>
       </div>
 
       <!-- Main Content / List -->
@@ -135,6 +142,7 @@ export class MealRegisterComponent implements OnInit {
   private employeesService = inject(EmployeesService);
   public permissionService = inject(PermissionService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   @ViewChild('matriculaInput') matriculaInput!: ElementRef<HTMLInputElement>;
 
@@ -272,6 +280,20 @@ export class MealRegisterComponent implements OnInit {
       panelClass: type === 'error' ? ['bg-red-600', 'text-white'] : ['bg-green-600', 'text-white'],
       horizontalPosition: 'center',
       verticalPosition: 'bottom'
+    });
+  }
+
+  openImportDialog() {
+    const dialogRef = this.dialog.open(MealImportDialogComponent, {
+      width: '800px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.showFeedback('Importação realizada com sucesso!', 'success');
+        this.loadMeals();
+      }
     });
   }
 }

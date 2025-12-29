@@ -1,22 +1,22 @@
 export interface IMeal {
   id: number;
-  
-  // Relations
-  employeeId: number;
+  // employeeId is now optional for unlinked imports
+  employeeId?: number;
   companyId: number;
+  date: string;
+  price: number;
   
-  // Snapshots (Historical Integrity)
+  // Snapshots for history / unlinked records
+  matriculaSnapshot?: string;
   employeeNameSnapshot?: string;
   employeeSectorSnapshot?: string;
-  
-  // Helpers from Join (Legacy/Convenience)
-  employeeName?: string;
-  sector?: string;
-  employeeMatricula?: string;
+  status?: 'LINKED' | 'PENDING_LINK';
 
-  // Data
-  date: string; // ISO Date YYYY-MM-DD
-  price: number;
+  // Flattened fields from backend usually
+  sector?: string;
+  employeeName?: string;
+  employeeMatricula?: string;
+  // price removed (dup)
   periodStart: string; // ISO Date YYYY-MM-DD
   periodEnd: string; // ISO Date YYYY-MM-DD
   

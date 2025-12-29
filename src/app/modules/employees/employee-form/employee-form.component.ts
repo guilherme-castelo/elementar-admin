@@ -148,6 +148,24 @@ export class EmployeeFormComponent implements OnInit {
     if (this.employeeId) {
       this.isEdit = true;
       this.loadEmployee(this.employeeId);
+    } else {
+        // Check for query params to pre-fill (e.g. from Unlinked Meals)
+        this.route.queryParams.subscribe(params => {
+            if (params['matricula']) {
+                this.employeeForm.patchValue({ matricula: params['matricula'] });
+            }
+            if (params['name']) {
+                // Simple split for first/last name guess
+                const parts = (params['name'] || '').split(' ');
+                const firstName = parts[0] || '';
+                const lastName = parts.slice(1).join(' ') || '';
+                
+                this.employeeForm.patchValue({
+                    firstName: firstName,
+                    lastName: lastName
+                });
+            }
+        });
     }
   }
 
