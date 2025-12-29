@@ -15,12 +15,10 @@ registerLocaleData(localePt);
 import { provideRouter, TitleStrategy, withViewTransitions } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideStore } from '@ngrx/store';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
-import { provideNativeDateAdapter } from '@angular/material/core';
 import { ENVIRONMENT, EnvironmentService, GlobalStore, PageTitleStrategyService } from '@elementar-ui/components/core';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { environment } from '../environments/environment';
@@ -33,7 +31,7 @@ export const appConfig: ApplicationConfig = {
     ColorSchemeStore,
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions()),
-    provideClientHydration(withEventReplay()),
+    provideRouter(routes, withViewTransitions()),
     provideAnimationsAsync(),
     provideAnimationsAsync(),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),

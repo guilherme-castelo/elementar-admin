@@ -4,7 +4,7 @@
       <button mat-icon-button (click)="toggleSidebar()">
         <mat-icon>menu</mat-icon>
       </button>
-      <emr-assistant-search/>
+      <emr-assistant-search />
     </div>
     <div class="ms-auto flex items-center gap-3">
       <!---
@@ -14,39 +14,68 @@
       </button>
       -->
       <button mat-icon-button (click)="chatDrawer.open()">
-        <mat-icon matBadge="{{ unreadChatCount() }}" [matBadgeHidden]="!unreadChatCount()">chat</mat-icon>
+        <mat-icon
+          aria-hidden="false"
+          matBadge="{{ unreadChatCount() }}"
+          [matBadgeHidden]="!unreadChatCount()"
+          >chat</mat-icon
+        >
       </button>
       <emr-color-scheme-switcher matTooltip="Color Theme" emrSoundEffect>
         <mat-icon *emrColorSchemeLight>light_mode</mat-icon>
         <mat-icon *emrColorSchemeDark>dark_mode</mat-icon>
       </emr-color-scheme-switcher>
       <button mat-icon-button [matMenuTriggerFor]="notificationsMenu">
-        <mat-icon [matBadge]="unreadNotificationsCount() || null" matBadgeColor="warn">notifications</mat-icon>
+        <mat-icon
+          aria-hidden="false"
+          [matBadge]="unreadNotificationsCount() || null"
+          matBadgeColor="warn"
+          >notifications</mat-icon
+        >
       </button>
       <mat-menu #notificationsMenu="matMenu" xPosition="before" class="w-80">
-        <div class="px-4 py-3 border-b border-default flex justify-between items-center">
+        <div
+          class="px-4 py-3 border-b border-default flex justify-between items-center"
+        >
           <span class="font-bold">Notifications</span>
-          <a routerLink="/account/notifications" class="text-xs text-primary no-underline hover:underline">View all</a>
+          <a
+            routerLink="/account/notifications"
+            class="text-xs text-primary no-underline hover:underline"
+            >View all</a
+          >
         </div>
-        
+
         @for (notif of recentNotifications().slice(0, 5); track notif.id) {
-          <button mat-menu-item class="h-auto py-2 leading-tight" routerLink="/account/notifications">
-            <div class="flex flex-col gap-1 items-start whitespace-normal">
-              <div class="font-semibold text-sm">{{ notif.title }}</div>
-              <div class="text-xs text-neutral-600 line-clamp-2">{{ notif.description }}</div>
-              <div class="text-[10px] text-neutral-400 mt-1">{{ notif.createdAt | date:'shortTime' }}</div>
+        <button
+          mat-menu-item
+          class="h-auto py-2 leading-tight"
+          routerLink="/account/notifications"
+        >
+          <div class="flex flex-col gap-1 items-start whitespace-normal">
+            <div class="font-semibold text-sm">{{ notif.title }}</div>
+            <div class="text-xs text-neutral-600 line-clamp-2">
+              {{ notif.description }}
             </div>
-          </button>
-          <mat-divider></mat-divider>
+            <div class="text-[10px] text-neutral-400 mt-1">
+              {{ notif.createdAt | date : "shortTime" }}
+            </div>
+          </div>
+        </button>
+        <mat-divider></mat-divider>
         } @empty {
-          <div class="p-4 text-center text-neutral-500 text-sm">No new notifications</div>
+        <div class="p-4 text-center text-neutral-500 text-sm">
+          No new notifications
+        </div>
         }
       </mat-menu>
-      
-      <emr-dicebear key="PS"
-                    [clickable]="true"
-                    [matMenuTriggerFor]="accountMenu"
-                    matTooltip="Account" class="size-10"/>
+
+      <emr-dicebear
+        key="PS"
+        [clickable]="true"
+        [matMenuTriggerFor]="accountMenu"
+        matTooltip="Account"
+        class="size-10 relative block"
+      />
     </div>
   </div>
 </div>
@@ -55,9 +84,19 @@
   <div class="w-80">
     <a routerLink="/" mat-menu-item>
       <div class="flex items-center gap-3 my-3">
-        <div class="w-14 h-14 border border-default border-neutral-400  rounded-xl flex-none flex items-center justify-center">
-          <img src="assets/applications/file-storage.svg" alt="File Storage" class="size-8 dark:hidden">
-          <img src="assets/applications/file-storage-dark.svg" alt="File Storage" class="size-8 hidden dark:block">
+        <div
+          class="w-14 h-14 border border-default border-neutral-400 rounded-xl flex-none flex items-center justify-center"
+        >
+          <img
+            src="assets/applications/file-storage.svg"
+            alt="File Storage"
+            class="size-8 dark:hidden"
+          />
+          <img
+            src="assets/applications/file-storage-dark.svg"
+            alt="File Storage"
+            class="size-8 hidden dark:block"
+          />
         </div>
         <div class="-mt-0.5">
           <div>File Storage</div>
@@ -69,9 +108,19 @@
     </a>
     <a routerLink="/" mat-menu-item>
       <div class="flex items-center gap-3 my-3">
-        <div class="w-14 h-14 border border-default border-neutral-400  rounded-xl flex-none flex items-center justify-center">
-          <img src="assets/applications/sign.svg" alt="Sign" class="size-8 dark:hidden">
-          <img src="assets/applications/sign-dark.svg" alt="Sign" class="size-8 hidden dark:block">
+        <div
+          class="w-14 h-14 border border-default border-neutral-400 rounded-xl flex-none flex items-center justify-center"
+        >
+          <img
+            src="assets/applications/sign.svg"
+            alt="Sign"
+            class="size-8 dark:hidden"
+          />
+          <img
+            src="assets/applications/sign-dark.svg"
+            alt="Sign"
+            class="size-8 hidden dark:block"
+          />
         </div>
         <div class="-mt-0.5">
           <div>Sign</div>
@@ -83,9 +132,19 @@
     </a>
     <a routerLink="/" mat-menu-item>
       <div class="flex items-center gap-3 my-3">
-        <div class="w-14 h-14 border border-default border-neutral-400  rounded-xl flex-none flex items-center justify-center">
-          <img src="assets/applications/backup.svg" alt="Backup" class="size-8 dark:hidden">
-          <img src="assets/applications/backup-dark.svg" alt="Backup" class="size-8 hidden dark:block">
+        <div
+          class="w-14 h-14 border border-default border-neutral-400 rounded-xl flex-none flex items-center justify-center"
+        >
+          <img
+            src="assets/applications/backup.svg"
+            alt="Backup"
+            class="size-8 dark:hidden"
+          />
+          <img
+            src="assets/applications/backup-dark.svg"
+            alt="Backup"
+            class="size-8 hidden dark:block"
+          />
         </div>
         <div class="-mt-0.5">
           <div>Backup</div>
@@ -96,16 +155,24 @@
       </div>
     </a>
     <div class="my-3">
-      <mat-divider/>
+      <mat-divider />
     </div>
-    <div class="text-base py-3 px-4">
-      See what other options there are
-    </div>
+    <div class="text-base py-3 px-4">See what other options there are</div>
     <a routerLink="/" mat-menu-item>
       <div class="flex items-center gap-3 my-3">
-        <div class="w-14 h-14 border border-default border-neutral-400  rounded-xl flex-none flex items-center justify-center">
-          <img src="assets/applications/passwords.svg" alt="Passwords" class="size-8 dark:hidden">
-          <img src="assets/applications/passwords-dark.svg" alt="Passwords" class="size-8 hidden dark:block">
+        <div
+          class="w-14 h-14 border border-default border-neutral-400 rounded-xl flex-none flex items-center justify-center"
+        >
+          <img
+            src="assets/applications/passwords.svg"
+            alt="Passwords"
+            class="size-8 dark:hidden"
+          />
+          <img
+            src="assets/applications/passwords-dark.svg"
+            alt="Passwords"
+            class="size-8 hidden dark:block"
+          />
         </div>
         <div class="-mt-0.5">
           <div>Passwords</div>
@@ -116,12 +183,16 @@
       </div>
     </a>
     <div class="my-3">
-      <mat-divider/>
+      <mat-divider />
     </div>
     <a routerLink="/" mat-menu-item>
       <div class="flex items-center gap-3 my-3">
-        <div class="w-14 h-14 border border-default border-neutral-400  rounded-xl flex-none flex items-center justify-center">
-          <mat-icon class="font-icon !text-2xl !w-5 !h-8 relative -right-1">arrow_forward</mat-icon>
+        <div
+          class="w-14 h-14 border border-default border-neutral-400 rounded-xl flex-none flex items-center justify-center"
+        >
+          <mat-icon class="font-icon !text-2xl !w-5 !h-8 relative -right-1"
+            >arrow_forward</mat-icon
+          >
         </div>
         <div class="-mt-0.5">
           <div>App Center</div>
@@ -136,20 +207,25 @@
 
 <ng-template #notificationsPopover>
   @defer {
-    <emr-notifications-popover/>
+  <emr-notifications-popover />
   }
 </ng-template>
 
 <mat-menu xPosition="before" #accountMenu="matMenu">
   <div class="flex items-center px-4 pb-4 pt-2 gap-3">
-    <emr-dicebear key="PS" class="size-14"/>
+    <emr-dicebear key="PS" class="size-14" />
     <div class="-mt-0.5">
       <div class="flex items-center gap-2">
         {{ name }}
-        <div class="border border-default flex items-center border-neutral-900 dark:border-neutral-200 h-5 leading-3 px-2
-                    rounded-full font-bold text-4xs uppercase text-neutral-500 dark:text-neutral-200">Free</div>
+        <div
+          class="border border-default flex items-center border-neutral-900 dark:border-neutral-200 h-5 leading-3 px-2 rounded-full font-bold text-4xs uppercase text-neutral-500 dark:text-neutral-200"
+        >
+          Free
+        </div>
       </div>
-      <div class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">{{ email }}</div>
+      <div class="text-xs text-gray-500 mt-0.5 dark:text-gray-400">
+        {{ email }}
+      </div>
     </div>
   </div>
   <!--
@@ -160,7 +236,7 @@
       </button>
     </div>
     -->
-  <mat-divider/>
+  <mat-divider />
   <a mat-menu-item routerLink="/account/settings/my-profile">
     <mat-icon>tune</mat-icon>
     <span>Settings</span>
@@ -192,5 +268,5 @@
 </mat-menu>
 
 <emr-drawer #chatDrawer="emrDrawer">
-  <app-chat (closed)="chatDrawer.close()"/>
+  <app-chat (closed)="chatDrawer.close()" />
 </emr-drawer>
