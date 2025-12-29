@@ -5,6 +5,7 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -96,6 +97,16 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
         >
           <mat-icon>upload</mat-icon> Importar
         </button>
+
+        <button
+          mat-stroked-button
+          class="h-[56px] text-primary-700 border-primary-700"
+          (click)="navigateToReports()"
+          matTooltip="Visualizar Relatórios"
+          *ngIf="permissionService.hasPermission('meal:read')"
+        >
+          <mat-icon>bar_chart</mat-icon> Relatórios
+        </button>
       </div>
 
       <!-- Main Content / List -->
@@ -135,7 +146,7 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
               <th mat-header-cell *matHeaderCellDef>Matrícula</th>
               <td mat-cell *matCellDef="let meal">
                 <span class="font-mono bg-gray-400 px-2 py-1 rounded">
-                  {{meal.matriculaSnapshot}}
+                  {{ meal.matriculaSnapshot }}
                 </span>
               </td>
             </ng-container>
@@ -223,6 +234,7 @@ export class MealRegisterComponent implements OnInit {
   public permissionService = inject(PermissionService);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
+  private router = inject(Router);
 
   @ViewChild('matriculaInput') matriculaInput!: ElementRef<HTMLInputElement>;
 
@@ -391,5 +403,9 @@ export class MealRegisterComponent implements OnInit {
         this.loadMeals();
       }
     });
+  }
+
+  navigateToReports() {
+    this.router.navigate(['/meals/reports']);
   }
 }

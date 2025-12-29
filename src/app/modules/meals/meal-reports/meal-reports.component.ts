@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -17,6 +18,7 @@ import { forkJoin } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { environment } from '../../../../environments/environment';
+import { PermissionService } from '../../../core/services/permission.service';
 import { UnlinkedMealsDialogComponent } from '../unlinked-meals-dialog/unlinked-meals-dialog.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
@@ -92,6 +94,17 @@ import { RouterModule } from '@angular/router';
             [disabled]="isExporting"
           >
             <mat-icon>file_download</mat-icon> Exportar
+          </button>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            class="bg-blue-600 text-white border-blue-600"
+            (click)="navigateToRegister()"
+            *ngIf="permissionService.hasPermission('meal:create')"
+            matTooltip="Registrar Nova Refeição"
+          >
+            <mat-icon>add_circle</mat-icon> Registrar
           </button>
         </div>
       </div>
@@ -441,6 +454,8 @@ export class MealReportsComponent implements OnInit {
   private http = inject(HttpClient);
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
+  public permissionService = inject(PermissionService);
+  private router = inject(Router);
   private baseUrl = environment.apiBaseUrl || '/api';
 
   // Initialize with current BILLING period (26th rule)
@@ -621,5 +636,9 @@ export class MealReportsComponent implements OnInit {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+  }
+
+  navigateToRegister() {
+    this.router.navigate(['/meals/register']);
   }
 }
