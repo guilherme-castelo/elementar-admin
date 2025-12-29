@@ -36,4 +36,26 @@ export class ReportPeriodService {
       endIso: end.toISOString()
     };
   }
+
+  /**
+   * Returns the month and year of the CURRENT billing period based on today's date.
+   * If today > 25, it's already the NEXT booking month.
+   */
+  getCurrentBillingMonthYear(): { month: number, year: number } {
+    const today = new Date();
+    let month = today.getMonth(); // 0-11
+    let year = today.getFullYear();
+    const day = today.getDate();
+
+    if (day > 25) {
+      // Move to next billing period
+      month++;
+      if (month > 11) {
+        month = 0;
+        year++;
+      }
+    }
+
+    return { month, year };
+  }
 }

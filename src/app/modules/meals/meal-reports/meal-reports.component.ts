@@ -254,9 +254,12 @@ export class MealReportsComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   private baseUrl = environment.apiBaseUrl || '/api';
+  
+  // Initialize with current BILLING period (26th rule)
+  private currentPeriod = this.reportPeriodService.getCurrentBillingMonthYear();
 
-  monthControl = new FormControl(new Date().getMonth());
-  yearControl = new FormControl(new Date().getFullYear());
+  monthControl = new FormControl(this.currentPeriod.month);
+  yearControl = new FormControl(this.currentPeriod.year);
 
   // New Controls
   viewModeControl = new FormControl<'sector' | 'employee'>('sector');
