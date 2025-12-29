@@ -184,7 +184,7 @@ import { RouterModule } from '@angular/router';
                 Detalhamento por Setor (Semanas)
               </h3>
 
-              <div class="overflow-x-auto">
+              <div class="overflow-auto max-h-[500px]">
                 <table
                   class="w-full text-sm text-left text-neutral-600 dark:text-neutral-300"
                 >
@@ -320,7 +320,7 @@ import { RouterModule } from '@angular/router';
                 <span>* Feriados não são excluídos automaticamente</span>
               </div>
 
-              <div class="overflow-x-auto max-w-full">
+              <div class="overflow-auto max-h-[500px] max-w-full">
                 <table
                   class="min-w-max w-full text-sm text-center text-neutral-600 dark:text-neutral-300 border-collapse"
                 >
