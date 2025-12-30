@@ -1,59 +1,111 @@
-# ElementarBasic
+# Elementar Admin (SaaS)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.2.
+> **Plataforma Moderna de Gestão de RH e Benefícios**
 
-## Development server
+Este projeto é um fork/clone do repositório original [Elementar Admin](https://github.com/Start-Elementar/elementar-admin.git), que está sendo ativamente evoluído e adaptado para operar como uma plataforma SaaS (Software as a Service) completa e multi-inquilino.
 
-To start a local development server, run:
+O Elementar Admin é uma aplicação robusta projetada para otimizar as operações de Recursos Humanos, focando especificamente na gestão de funcionários, integração com folha de pagamento (sistema Domínio) e controle de benefícios de refeição corporativa. Construído com as mais recentes tecnologias web, oferece uma interface segura, responsiva e intuitiva para profissionais de RH.
+
+---
+
+## 🚀 Principais Funcionalidades
+
+### 👥 Gestão de Funcionários
+
+- **Base Centralizada**: Mantenha registros detalhados de todos os funcionários e seu histórico de alocação.
+- **Importação Inteligente**: Importação em massa de funcionários via CSV/JSON com validação em tempo real e feedback de erros através de componentes de UI modernos.
+- **Gestão de Demissões**: Fluxos automatizados para demissão de funcionários, incluindo tratamento transacional de ativos vinculados e registros de refeição (Excluir, Desvincular ou Ignorar).
+
+### 🍽️ Gestão de Benefícios de Refeição
+
+- **Integração REP**: Importe dados diretamente de Registradores Eletrônicos de Ponto.
+- **Relatórios Detalhados**: Gere matrizes semanais e mensais para análise estratégica de custos.
+- **Integração com Folha**: Exporte dados consolidados compatíveis com sistemas de folha de pagamento Domínio.
+- **Controle de Custos**: Acompanhe custos de refeição diários, semanais e mensais por setor ou funcionário.
+
+### 🛡️ Segurança e Acesso
+
+- **Controle de Acesso Baseado em Função (RBAC)**: Gestão granular de permissões com matriz dinâmica na UI.
+- **Autenticação JWT**: Gestão de sessão segura baseada em tokens.
+- **Multi-Inquilino (Multi-Tenancy)**: Projetado para arquitetura SaaS com isolamento de dados.
+
+---
+
+## 🛠️ Stack Tecnológica
+
+Este projeto é construído usando uma stack moderna e escalável:
+
+- **Framework**: [Angular 19](https://angular.dev/) (Componentes Standalone, Signals)
+- **Sistema de UI**: [Angular Material](https://material.angular.io/) & [ElementarUI](https://elementar-ui.com) (Biblioteca de Componentes Customizada)
+- **Estilização**: [TailwindCSS](https://tailwindcss.com/)
+- **Gráficos**: Apache ECharts
+- **Cliente HTTP**: Angular `HttpClient` com Interceptors (Auth, Tratamento de Erros)
+
+---
+
+## 🏁 Começando
+
+### Pré-requisitos
+
+Certifique-se de ter o seguinte instalado:
+
+- **Node.js** (v18 ou superior)
+- **npm** (v10 ou superior)
+- **Git**
+
+### Instalação
+
+1. **Clone o repositório**
+
+   ```bash
+   git clone https://github.com/guilherme-castelo/elementar-admin.git
+   cd elementar-admin
+   ```
+
+2. **Instale as dependências**
+   ```bash
+   npm install
+   ```
+
+### Executando Localmente
+
+Para iniciar o servidor de desenvolvimento:
 
 ```bash
+npm start
+# ou
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navegue para `http://localhost:4200/`. A aplicação será recarregada automaticamente se você alterar qualquer um dos arquivos de origem.
 
-## Code scaffolding
+> **Nota**: Certifique-se de que a API backend (`backend-elementar`) esteja rodando na porta configurada (padrão: 3000) para funcionalidade completa.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+---
 
-```bash
-ng generate component component-name
-```
+## 🤝 Diretrizes de Contribuição
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Seguimos práticas rigorosas de engenharia para garantir a qualidade e manutenibilidade do código.
 
-```bash
-ng generate --help
-```
+### Padrões de Código
 
-## Building
+- **Conventional Commits**: Todos os commits DEVEM seguir o padrão [Conventional Commits](https://www.conventionalcommits.org/).
+  - `feat(escopo): ...` para novas funcionalidades
+  - `fix(escopo): ...` para correções de bugs
+  - `refactor(escopo): ...` para melhorias de código sem alteração de lógica
+  - `chore(escopo): ...` para tarefas de manutenção
+- **Linting**: Garanta 0 erros de linting antes de enviar.
+- **UI/UX**: Siga o Design System estabelecido. NÃO introduza novos Frameworks CSS ou sobrescreva estilos globais sem aprovação. Use `MatDialog` e `MatSnackBar` para feedback ao usuário.
 
-To build the project run:
+### Fluxo de Trabalho Típico
 
-```bash
-ng build
-```
+1. Crie uma branch de feature a partir da `main`: `git checkout -b feat/minha-feature`
+2. Implemente suas alterações.
+3. Commit com uma mensagem descritiva: `git commit -m "feat(funcionarios): adiciona modal de demissao"`
+4. Push para a origem e abra um Pull Request.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## 📄 Licença
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Software Proprietário. Todos os direitos reservados à **Start Elementar**.
