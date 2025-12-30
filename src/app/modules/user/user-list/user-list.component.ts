@@ -4,8 +4,9 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { ApiService } from '../../../core/services/api.service';
+
 import { PermissionService } from '../../../core/services/permission.service';
+import { UsersService } from '../../../core/services/users.service';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -76,12 +77,12 @@ import { Observable } from 'rxjs';
   `]
 })
 export class UserListComponent implements OnInit {
-  private api = inject(ApiService);
+  private usersService = inject(UsersService);
   public permissionService = inject(PermissionService);
   users$!: Observable<any[]>;
   displayedColumns: string[] = ['id', 'name', 'role', 'actions'];
 
   ngOnInit() {
-    this.users$ = this.api.get<any[]>('/users');
+    this.users$ = this.usersService.getAll();
   }
 }

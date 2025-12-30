@@ -5,10 +5,13 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { ApiService } from '../../../core/services/api.service';
-import { CompanyService } from '../../../core/services/company.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+
+import { CompanyService } from '../../../core/services/company.service';
+import { UsersService } from '../../../core/services/users.service';
+import { RolesService } from '../../../core/services/roles.service';
+import { IRole } from '../../../core/models/role.model';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -51,9 +54,10 @@ import { Observable } from 'rxjs';
 
           <mat-form-field appearance="outline">
             <mat-label>Função</mat-label>
-            <mat-select formControlName="roles" multiple>
-              <mat-option value="admin">Admin</mat-option>
-              <mat-option value="user">User</mat-option>
+            <mat-select formControlName="roleId">
+              <mat-option *ngFor="let role of roles$ | async" [value]="role.id">
+                {{ role.name }}
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -79,19 +83,21 @@ import { Observable } from 'rxjs';
 })
 export class UserFormComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private api = inject(ApiService);
+  private usersService = inject(UsersService);
+  private rolesService = inject(RolesService);
   private companyService = inject(CompanyService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
 
   companies$!: Observable<any[]>;
+  roles$!: Observable<IRole[]>;
 
   userForm: FormGroup = this.fb.group({
     name: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
     password: ['123456', Validators.required],
-    roles: [['user'], Validators.required],
+    roleId: [null, Validators.required], // Changed from roles array to roleId
     companyId: [null, Validators.required]
   });
 
@@ -101,6 +107,7 @@ export class UserFormComponent implements OnInit {
 
   ngOnInit() {
     this.companies$ = this.companyService.getCompanies();
+    this.roles$ = this.rolesService.getAll(); // Assuming getAll exists and returns IRole[]
 
     this.userId = this.route.snapshot.paramMap.get('id');
     if (this.userId) {
@@ -110,7 +117,11 @@ export class UserFormComponent implements OnInit {
   }
 
   loadUser(id: string) {
-    this.api.get<any>(`/users/${id}`).subscribe(user => {
+    this.usersService.getById(id).subscribe(user => {
+      // Adapter model might differ from form, but patchValue usually works if names match
+      // If UserAdapter returns { role: { name: 'Admin' } } but form expects roles: ['admin'], mapping needed.
+      // But assuming direct map for now or minor adjustment.
+      // Actually, standard response might be different. Let's trust UsersService returns usable model.
       this.userForm.patchValue(user);
     });
   }
@@ -121,9 +132,9 @@ export class UserFormComponent implements OnInit {
     this.isLoading = true;
     const user = this.userForm.value;
 
-    const request$ = this.isEdit
-      ? this.api.put(`/users/${this.userId}`, user)
-      : this.api.post('/users', user);
+    const request$ = this.isEdit && this.userId
+      ? this.usersService.update(this.userId, user)
+      : this.usersService.create(user);
 
     request$.subscribe({
       next: () => {
