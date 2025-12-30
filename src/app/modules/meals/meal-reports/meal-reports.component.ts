@@ -415,7 +415,7 @@ import { RouterModule } from '@angular/router';
                       </td>
                     </tr>
 
-                    <tr *ngIf="!filteredRows?.length">
+                    <tr *ngIf="!filteredRows.length">
                       <td
                         [attr.colspan]="(dailyMatrix?.days?.length || 0) + 2"
                         class="text-center py-8"

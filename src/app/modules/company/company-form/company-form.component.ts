@@ -25,11 +25,11 @@ import { CompanyService } from '../../../core/services/company.service';
   template: `
     <div class="p-6 max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">{{ isEdit ? 'Editar Empresa' : 'Nova Empresa' }}</h1>
+        <h1 class="text-2xl font-bold text-neutral-900 dark:text-neutral-50">{{ isEdit ? 'Editar Empresa' : 'Nova Empresa' }}</h1>
         <a mat-button color="basic" routerLink="/companies">Voltar</a>
       </div>
       
-      <form [formGroup]="companyForm" (ngSubmit)="onSubmit()" class="rounded-lg shadow overflow-hidden">
+      <form [formGroup]="companyForm" (ngSubmit)="onSubmit()" class="rounded-lg shadow overflow-hidden bg-white dark:bg-neutral-800">
         <mat-tab-group animationDuration="0ms">
           
           <!-- General Tab -->
@@ -52,8 +52,8 @@ import { CompanyService } from '../../../core/services/company.service';
           <!-- Integrations Tab -->
           <mat-tab label="Integrações">
             <div class="p-6">
-              <h3 class="text-lg font-semibold mb-4">Domínio Sistemas</h3>
-              <p class="text-sm text-gray-500 mb-6">Configure os parâmetros para exportação de dados para a folha de pagamento.</p>
+              <h3 class="text-lg font-semibold mb-4 text-neutral-900 dark:text-neutral-100">Domínio Sistemas</h3>
+              <p class="text-sm text-gray-500 mb-6 dark:text-neutral-400">Configure os parâmetros para exportação de dados para a folha de pagamento.</p>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <mat-form-field appearance="outline">
@@ -73,7 +73,7 @@ import { CompanyService } from '../../../core/services/company.service';
 
         </mat-tab-group>
 
-        <div class="p-6 border-t flex justify-end gap-3">
+        <div class="p-6 border-t border-neutral-200 dark:border-neutral-700 flex justify-end gap-3">
           <a mat-button color="basic" routerLink="/companies">Cancelar</a>
           <button mat-flat-button color="primary" type="submit" [disabled]="companyForm.invalid || isLoading">
             {{ isLoading ? 'Salvando...' : 'Salvar Alterações' }}

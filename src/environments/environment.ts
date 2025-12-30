@@ -7,5 +7,5 @@ export const environment = {
     description: '',
     author: ''
   },
-  apiBaseUrl: 'http://localhost:3000'
+  apiBaseUrl: 'http://localhost:3333'
 };

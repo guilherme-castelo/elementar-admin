@@ -64,7 +64,7 @@ export class ChatService {
 
     import('socket.io-client').then((socketIoModule) => {
       const io = (socketIoModule as any).io || (socketIoModule as any).default;
-      this.socket = io('http://localhost:3000', {
+      this.socket = io('http://localhost:3333', {
         transports: ['websocket', 'polling']
       });
 

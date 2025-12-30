@@ -29,9 +29,9 @@ import { Observable } from 'rxjs';
   ],
   template: `
     <div class="p-6 max-w-2xl mx-auto">
-      <h1 class="text-2xl font-bold mb-6">{{ isEdit ? 'Editar Usuário' : 'Novo Usuário' }}</h1>
+      <h1 class="text-2xl font-bold mb-6 text-neutral-900 dark:text-neutral-50">{{ isEdit ? 'Editar Usuário' : 'Novo Usuário' }}</h1>
       
-      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 p-6 rounded-lg shadow">
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 p-6 rounded-lg shadow bg-white dark:bg-neutral-800">
         
         <mat-form-field appearance="outline">
           <mat-label>Nome Completo</mat-label>
