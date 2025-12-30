@@ -146,7 +146,7 @@ import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
               <th mat-header-cell *matHeaderCellDef>Matrícula</th>
               <td mat-cell *matCellDef="let meal">
                 <span class="font-mono bg-gray-400 px-2 py-1 rounded">
-                  {{ meal.matriculaSnapshot }}
+                  {{ meal.matriculaSnapshot || meal.employee?.matricula }}
                 </span>
               </td>
             </ng-container>

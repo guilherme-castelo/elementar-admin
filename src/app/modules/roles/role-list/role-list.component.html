@@ -1,18 +1,70 @@
 <div class="p-6">
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Gerenciamento de Cargos</h1>
-    <a
-      *ngIf="permissionService.hasPermission('role:manage')"
-      mat-flat-button
-      color="primary"
-      routerLink="new"
-    >
-      <mat-icon>add</mat-icon> Novo Cargo
-    </a>
+    <div class="flex gap-2">
+      <button
+        mat-icon-button
+        (click)="showFilters = !showFilters"
+        [color]="showFilters ? 'primary' : ''"
+        matTooltip="Filtrar"
+      >
+        <mat-icon>filter_list</mat-icon>
+      </button>
+      <a
+        *ngIf="permissionService.hasPermission('role:manage')"
+        mat-flat-button
+        color="primary"
+        routerLink="new"
+      >
+        <mat-icon>add</mat-icon> Novo Cargo
+      </a>
+    </div>
   </div>
 
   <div class="mat-elevation-z2 rounded-lg overflow-hidden bg-white">
-    <table mat-table [dataSource]="roles" class="w-full">
+    <!-- Filters Header -->
+    <div
+      *ngIf="showFilters"
+      class="p-4 bg-gray-50 border-b flex gap-4 overflow-x-auto"
+      [formGroup]="filterForm"
+    >
+      <mat-form-field
+        appearance="outline"
+        class="w-24 dense-form-field"
+        subscriptSizing="dynamic"
+      >
+        <mat-label>ID</mat-label>
+        <input matInput formControlName="id" />
+      </mat-form-field>
+
+      <mat-form-field
+        appearance="outline"
+        class="flex-1 dense-form-field"
+        subscriptSizing="dynamic"
+      >
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+
+      <mat-form-field
+        appearance="outline"
+        class="w-1/3 dense-form-field"
+        subscriptSizing="dynamic"
+      >
+        <mat-label>Descrição</mat-label>
+        <input matInput formControlName="description" />
+      </mat-form-field>
+
+      <button
+        mat-icon-button
+        (click)="clearFilters()"
+        matTooltip="Limpar filtros"
+      >
+        <mat-icon>filter_alt_off</mat-icon>
+      </button>
+    </div>
+
+    <table mat-table [dataSource]="dataSource" class="w-full">
       <!-- ID Column -->
       <ng-container matColumnDef="id">
         <th mat-header-cell *matHeaderCellDef>ID</th>
@@ -66,9 +118,14 @@
           class="mat-cell text-center py-8 text-gray-500"
           [attr.colspan]="displayedColumns.length"
         >
-          Nenhum cargo encontrado.
+          Nenhum cargo encontrado com os filtros atuais.
         </td>
       </tr>
     </table>
+
+    <mat-paginator
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      aria-label="Selecione a página de cargos"
+    ></mat-paginator>
   </div>
 </div>
