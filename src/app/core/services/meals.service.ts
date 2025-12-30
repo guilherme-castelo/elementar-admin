@@ -181,6 +181,18 @@ export class MealsService {
     );
   }
 
+  getMealsInDateRange(startDate: string, endDate: string): Observable<IMeal[]> {
+    const user = this.authService.getUser();
+    const companyQuery = user?.companyId ? `companyId=${user.companyId}&` : '';
+    // Basic date range filter for JSON Server
+    // Ensure we are comparing 'YYYY-MM-DD' strings if stored that way, or ISO strings.
+    // The previous implementation used split('T')[0] for storage.
+    // Let's assume strict string comparison on the date field.
+    return this.api.get<IMeal[]>(
+      `/meals?${companyQuery}date_gte=${startDate}&date_lte=${endDate}`
+    );
+  }
+
   getWeeklySummary(start: string, end: string): Observable<any> {
     return this.getMealsByPeriod(start, end).pipe(
       map((meals) => {

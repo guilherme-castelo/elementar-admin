@@ -36,44 +36,118 @@
     <!-- Meals Stats -->
     <ng-container *ngIf="canViewMeals">
       <mat-card
-        class="dashboard-card bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+        class="dashboard-card col-span-1 md:col-span-2 relative overflow-hidden"
       >
-        <mat-card-content class="relative overflow-hidden p-6">
-          <div class="absolute right-[-10px] top-[-10px] opacity-20">
-            <mat-icon style="transform: scale(4); width: 48px; height: 48px"
-              >restaurant</mat-icon
-            >
-          </div>
-          <div class="text-blue-100 text-sm font-medium mb-1">
-            Refeições Hoje
-          </div>
-          <div class="text-4xl font-bold mb-2">
-            {{ stats?.todayMealsQty || 0 }}
-          </div>
-          <div class="text-blue-100 text-xs">Registros processados hoje</div>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-card class="dashboard-card">
-        <mat-card-content class="p-6">
-          <div class="flex justify-between items-start mb-4">
-            <div class="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-              <mat-icon class="text-green-600 dark:text-green-400"
-                >monetization_on</mat-icon
-              >
-            </div>
-            <span
-              class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full"
-              >Mensal</span
-            >
-          </div>
-          <div
-            class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
+        <div
+          class="absolute right-[-20px] top-[-20px] opacity-10 pointer-events-none"
+        >
+          <mat-icon
+            style="transform: scale(8); width: 120px; height: 120px"
+            class="text-blue-500"
+            >restaurant</mat-icon
           >
-            Custo Estimado
-          </div>
-          <div class="text-2xl font-bold dark:text-gray-100">
-            {{ stats?.monthlyMealsValue || 0 | currency : "BRL" }}
+        </div>
+
+        <mat-card-content class="p-6 relative z-10">
+          <div class="flex flex-col h-full justify-between">
+            <!-- Header with Filter -->
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                  <mat-icon class="text-blue-600 dark:text-blue-400"
+                    >restaurant</mat-icon
+                  >
+                </div>
+                <div>
+                  <h3 class="font-bold text-lg dark:text-gray-100">
+                    Refeições & Custos
+                  </h3>
+                  <div
+                    class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400"
+                  >
+                    <span>{{ mealFilterLabel }}</span>
+                    <button
+                      mat-icon-button
+                      class="w-6 h-6 !p-0"
+                      [matMenuTriggerFor]="filterMenu"
+                    >
+                      <mat-icon class="text-base">expand_more</mat-icon>
+                    </button>
+                  </div>
+                  <mat-menu #filterMenu="matMenu">
+                    <button mat-menu-item (click)="setMealFilter('day')">
+                      Hoje
+                    </button>
+                    <button mat-menu-item (click)="setMealFilter('week')">
+                      Semana Atual
+                    </button>
+                    <button mat-menu-item (click)="setMealFilter('prev_week')">
+                      Semana Anterior
+                    </button>
+                    <button mat-menu-item (click)="setMealFilter('month')">
+                      Mês Atual
+                    </button>
+                    <button mat-menu-item (click)="setMealFilter('prev_month')">
+                      Mês Anterior
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+
+              <div class="flex gap-2">
+                <button
+                  mat-stroked-button
+                  class="discrete-btn"
+                  routerLink="/meals/register"
+                >
+                  <mat-icon>add</mat-icon> Registrar
+                </button>
+                <button
+                  mat-stroked-button
+                  class="discrete-btn"
+                  routerLink="/meals/reports"
+                >
+                  <mat-icon>bar_chart</mat-icon> Relatórios
+                </button>
+              </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div
+              class="grid grid-cols-2 gap-8 items-center"
+              *ngIf="!isMealLoading; else spinner"
+            >
+              <div>
+                <div
+                  class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1"
+                >
+                  Total de Refeições
+                </div>
+                <div
+                  class="text-4xl font-bold text-gray-900 dark:text-gray-100"
+                >
+                  {{ mealStats.qty }}
+                </div>
+              </div>
+              <div>
+                <div
+                  class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1"
+                >
+                  Custo Estimado
+                </div>
+                <div
+                  class="text-4xl font-bold text-green-600 dark:text-green-400"
+                >
+                  {{ mealStats.value | currency : "BRL" }}
+                </div>
+              </div>
+            </div>
+
+            <ng-template #spinner>
+              <div class="flex justify-center items-center h-24">
+                <mat-spinner diameter="30"></mat-spinner>
+              </div>
+            </ng-template>
           </div>
         </mat-card-content>
       </mat-card>
@@ -82,21 +156,52 @@
     <!-- Employees Stats -->
     <ng-container *ngIf="canViewEmployees">
       <mat-card class="dashboard-card">
-        <mat-card-content class="p-6">
+        <mat-card-content class="p-6 h-full flex flex-col justify-between">
           <div class="flex justify-between items-start mb-4">
             <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
               <mat-icon class="text-purple-600 dark:text-purple-400"
                 >groups</mat-icon
               >
             </div>
+            <div class="flex gap-1">
+              <button
+                mat-icon-button
+                class="w-8 h-8 !p-0"
+                routerLink="/employees/new"
+                matTooltip="Novo"
+              >
+                <mat-icon class="text-base">add</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                class="w-8 h-8 !p-0"
+                routerLink="/employees"
+                matTooltip="Listar"
+              >
+                <mat-icon class="text-base">list</mat-icon>
+              </button>
+            </div>
           </div>
-          <div
-            class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
-          >
-            Funcionários Ativos
-          </div>
-          <div class="text-2xl font-bold dark:text-gray-100">
-            {{ stats?.employeesCount || 0 }}
+
+          <div>
+            <div
+              class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
+            >
+              Funcionários
+            </div>
+            <div class="text-3xl font-bold dark:text-gray-100 mb-2">
+              {{ stats?.employeesCount || 0 }}
+            </div>
+            <div class="flex gap-4 text-xs font-medium">
+              <div class="flex items-center gap-1 text-green-600">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                {{ stats?.activeEmployeesCount || 0 }} Ativos
+              </div>
+              <div class="flex items-center gap-1 text-red-500">
+                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                {{ stats?.inactiveEmployeesCount || 0 }} Inativos
+              </div>
+            </div>
           </div>
         </mat-card-content>
       </mat-card>
@@ -105,21 +210,41 @@
     <!-- Shared/System Stats -->
     <ng-container *ngIf="stats?.usersCount !== undefined">
       <mat-card class="dashboard-card">
-        <mat-card-content class="p-6">
+        <mat-card-content class="p-6 h-full flex flex-col justify-between">
           <div class="flex justify-between items-start mb-4">
             <div class="p-2 bg-gray-100 dark:bg-gray-700/30 rounded-lg">
               <mat-icon class="text-gray-600 dark:text-gray-400"
                 >person</mat-icon
               >
             </div>
+            <div class="flex gap-1">
+              <button
+                mat-icon-button
+                class="w-8 h-8 !p-0"
+                routerLink="/users/new"
+                matTooltip="Novo"
+              >
+                <mat-icon class="text-base">add</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                class="w-8 h-8 !p-0"
+                routerLink="/users"
+                matTooltip="Listar"
+              >
+                <mat-icon class="text-base">list</mat-icon>
+              </button>
+            </div>
           </div>
-          <div
-            class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
-          >
-            Usuários do Sistema
-          </div>
-          <div class="text-2xl font-bold dark:text-gray-100">
-            {{ stats?.usersCount || 0 }}
+          <div>
+            <div
+              class="text-neutral-500 dark:text-neutral-400 text-sm font-medium mb-1"
+            >
+              Usuários do Sistema
+            </div>
+            <div class="text-2xl font-bold dark:text-gray-100">
+              {{ stats?.usersCount || 0 }}
+            </div>
           </div>
         </mat-card-content>
       </mat-card>
