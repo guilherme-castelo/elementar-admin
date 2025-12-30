@@ -10,6 +10,9 @@ import { RouterLink } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import {
   MatPaginatorModule,
   MatPaginator,
@@ -50,6 +53,8 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
 export class RoleListComponent implements OnInit, AfterViewInit {
   private rolesService = inject(RolesService);
   public permissionService = inject(PermissionService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   dataSource = new MatTableDataSource<IRole>([]);
   displayedColumns: string[] = ['id', 'name', 'description', 'actions'];
@@ -120,14 +125,34 @@ export class RoleListComponent implements OnInit, AfterViewInit {
   }
 
   deleteRole(id: number) {
-    if (confirm('Tem certeza que deseja excluir este cargo?')) {
-      this.rolesService.delete(id).subscribe({
-        next: () => this.loadRoles(),
-        error: (err) =>
-          alert(
-            'Erro ao excluir cargo. Verifique se existem usuários vinculados.'
-          ),
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Excluir Cargo',
+        message: 'Tem certeza que deseja excluir este cargo?',
+        confirmText: 'Excluir',
+        color: 'warn',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.rolesService.delete(id).subscribe({
+          next: () => {
+            this.loadRoles();
+            this.snackBar.open('Cargo excluído com sucesso', 'OK', {
+              duration: 3000,
+            });
+          },
+          error: (err) => {
+            console.error(err);
+            this.snackBar.open(
+              'Erro ao excluir cargo. Verifique se existem usuários vinculados.',
+              'Fechar',
+              { duration: 5000, panelClass: ['bg-red-600', 'text-white'] }
+            );
+          },
+        });
+      }
+    });
   }
 }

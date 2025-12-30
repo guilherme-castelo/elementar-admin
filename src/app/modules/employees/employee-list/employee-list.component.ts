@@ -26,6 +26,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { EmployeeImportDialogComponent } from '../employee-import-dialog/employee-import-dialog.component';
 import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
+import { DismissalMealsDialogComponent } from '../dismissal-meals-dialog/dismissal-meals-dialog.component';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { switchMap, of, filter } from 'rxjs';
 
 @Component({
   selector: 'app-employee-list',
@@ -322,20 +325,65 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
   }
 
   deleteEmployee(id: string) {
-    if (confirm('Tem certeza que deseja excluir este funcionário?')) {
-      this.employeesService.delete(id).subscribe({
-        next: () => {
-          this.snackBar.open('Funcionário excluído com sucesso', 'OK', {
-            duration: 3000,
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Excluir Funcionário',
+        message:
+          'Tem certeza que deseja excluir este funcionário? Esta ação não pode ser desfeita.',
+        confirmText: 'Excluir',
+        color: 'warn',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        // Confirmed, now check for linked meals
+        this.employeesService
+          .countLinkedMeals(id)
+          .pipe(
+            switchMap((res) => {
+              if (res.count > 0) {
+                const dismissalDialogRef = this.dialog.open(
+                  DismissalMealsDialogComponent,
+                  {
+                    data: { count: res.count },
+                    disableClose: true,
+                    width: '600px',
+                  }
+                );
+                return dismissalDialogRef.afterClosed();
+              }
+              return of(null); // No meals, proceed with null action (standard delete)
+            })
+          )
+          .subscribe((mealsAction) => {
+            // If undefined, dialog was cancelled/closed without choice (if allowed, but here we expect choice or check cancellation)
+            // With disableClose: true, user picks or we handle close.
+            // If we strictly want to stop if cancelled:
+            if (mealsAction === undefined) return;
+
+            // Perform delete
+            this.employeesService
+              .delete(id, (mealsAction as string) || undefined)
+              .subscribe({
+                next: () => {
+                  this.snackBar.open('Funcionário excluído com sucesso', 'OK', {
+                    duration: 3000,
+                  });
+                  this.initialLoad();
+                },
+                error: (err) => {
+                  console.error(err);
+                  const msg =
+                    err.error?.message || 'Erro ao excluir funcionário';
+                  this.snackBar.open(msg, 'OK', {
+                    duration: 3000,
+                  });
+                },
+              });
           });
-          this.initialLoad();
-        },
-        error: () =>
-          this.snackBar.open('Erro ao excluir funcionário', 'OK', {
-            duration: 3000,
-          }),
-      });
-    }
+      }
+    });
   }
 
   openImportDialog() {

@@ -25,6 +25,7 @@ import { IEmployee } from '../../../core/models/employee.model';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MealImportDialogComponent } from '../meal-import-dialog/meal-import-dialog.component';
 import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
+import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 
 @Component({
   selector: 'app-meal-register',
@@ -363,15 +364,27 @@ export class MealRegisterComponent implements OnInit {
       (meal.employee
         ? `${meal.employee.firstName} ${meal.employee.lastName}`
         : 'Sem Nome');
-    if (confirm(`Deseja realmente excluir a refeição de ${name}?`)) {
-      this.mealsService.delete(meal.id).subscribe({
-        next: () => {
-          this.showFeedback('Refeição excluída com sucesso', 'success');
-          this.loadMeals();
-        },
-        error: () => this.showFeedback('Erro ao excluir refeição', 'error'),
-      });
-    }
+
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Excluir Refeição',
+        message: `Deseja realmente excluir a refeição de ${name}?`,
+        confirmText: 'Excluir',
+        color: 'warn',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.mealsService.delete(meal.id).subscribe({
+          next: () => {
+            this.showFeedback('Refeição excluída com sucesso', 'success');
+            this.loadMeals();
+          },
+          error: () => this.showFeedback('Erro ao excluir refeição', 'error'),
+        });
+      }
+    });
   }
 
   private clearInput() {

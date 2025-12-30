@@ -152,6 +152,16 @@ export class MealsService {
     return this.api.delete<void>(`/meals/${id}`);
   }
 
+  deletePending(matricula: string): Observable<void> {
+    return this.api.delete<void>(`/meals/pending/${matricula}`);
+  }
+
+  toggleIgnorePending(matricula: string, ignore: boolean): Observable<void> {
+    return this.api.patch<void>(`/meals/pending/${matricula}/ignore`, {
+      ignore,
+    });
+  }
+
   getDailyMeals(dateIso: string): Observable<IMeal[]> {
     // Ensuring basic filter by date.
     // In production this should also filter by companyId.

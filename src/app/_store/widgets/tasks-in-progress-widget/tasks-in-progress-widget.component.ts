@@ -31,7 +31,7 @@ export class TasksInProgressWidgetComponent implements OnInit {
 
   // Pagination
   length = 0;
-  pageSize = 3;
+  pageSize = 2;
   pageIndex = 0;
 
   ngOnInit() {

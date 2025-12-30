@@ -1,6 +1,15 @@
 import { Component, Inject, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -16,6 +25,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { CommentsService } from '../../core/services/comments.service';
 import { Comment } from '../../core/models/comment.interface';
 import { CommonModule } from '@angular/common';
+import { ConfirmationDialogComponent } from '../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-task-dialog',
@@ -32,8 +43,8 @@ import { CommonModule } from '@angular/common';
     MatSlideToggleModule,
     MatIconModule,
     MatTabsModule,
-    MatListModule
-  ]
+    MatListModule,
+  ],
 })
 export class TaskDialogComponent implements OnInit {
   form: FormGroup;
@@ -46,6 +57,7 @@ export class TaskDialogComponent implements OnInit {
   private _userService = inject(UserService);
   private _authService = inject(AuthService);
   private _commentsService = inject(CommentsService);
+  private _dialog = inject(MatDialog);
 
   comments: Comment[] = [];
   newCommentControl = this._fb.control('', Validators.required);
@@ -55,9 +67,18 @@ export class TaskDialogComponent implements OnInit {
 
   task: Task | null = null;
 
-  constructor(@Inject(MAT_DIALOG_DATA) public dialogData: Task | { task: Task | null, initialTabIndex?: number }) {
-    const taskData = (dialogData && 'task' in dialogData) ? (dialogData as any).task : dialogData;
-    this.selectedTabIndex = (dialogData && 'initialTabIndex' in dialogData) ? (dialogData as any).initialTabIndex : 0;
+  constructor(
+    @Inject(MAT_DIALOG_DATA)
+    public dialogData: Task | { task: Task | null; initialTabIndex?: number }
+  ) {
+    const taskData =
+      dialogData && 'task' in dialogData
+        ? (dialogData as any).task
+        : dialogData;
+    this.selectedTabIndex =
+      dialogData && 'initialTabIndex' in dialogData
+        ? (dialogData as any).initialTabIndex
+        : 0;
 
     this.isEditMode = !!taskData;
     this.form = this._fb.group({
@@ -65,7 +86,7 @@ export class TaskDialogComponent implements OnInit {
       description: [taskData?.description || ''],
       priority: [taskData?.priority || 'medium', Validators.required],
       isPublic: [taskData?.isPublic ?? true], // Default to public
-      collaboratorUserIds: [taskData?.collaboratorUserIds || []]
+      collaboratorUserIds: [taskData?.collaboratorUserIds || []],
     });
 
     // Normalize data property to be just the task for internal usage
@@ -73,7 +94,7 @@ export class TaskDialogComponent implements OnInit {
   }
 
   ngOnInit() {
-    this._userService.getUsers().subscribe(users => {
+    this._userService.getUsers().subscribe((users) => {
       this.users = users;
     });
 
@@ -98,13 +119,14 @@ export class TaskDialogComponent implements OnInit {
 
   loadComments() {
     if (!this.task) return;
-    this._commentsService.getComments(this.task.id).subscribe(comments => {
+    this._commentsService.getComments(this.task.id).subscribe((comments) => {
       this.comments = comments;
     });
   }
 
   addComment() {
-    if (this.newCommentControl.invalid || !this.canComment || !this.task) return;
+    if (this.newCommentControl.invalid || !this.canComment || !this.task)
+      return;
 
     const user = this._authService.getUser();
     if (!user) return;
@@ -114,7 +136,7 @@ export class TaskDialogComponent implements OnInit {
       authorId: user.id,
       authorName: user.name,
       content: this.newCommentControl.value!,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
 
     this._commentsService.addComment(newComment).subscribe(() => {
@@ -126,12 +148,23 @@ export class TaskDialogComponent implements OnInit {
   delete() {
     if (!this.task?.id) return;
 
-    if (confirm('Are you sure you want to delete this task?')) {
-      this._tasksService.deleteTask(this.task.id).subscribe({
-        next: () => this._dialogRef.close(true),
-        error: (err) => console.error(err)
-      });
-    }
+    const dialogRef = this._dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Delete Task', // Using English as original code used English for confirmation
+        message: 'Are you sure you want to delete this task?',
+        confirmText: 'Delete',
+        color: 'warn',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this._tasksService.deleteTask(this.task!.id).subscribe({
+          next: () => this._dialogRef.close(true),
+          error: (err) => console.error(err),
+        });
+      }
+    });
   }
 
   save() {
@@ -151,12 +184,12 @@ export class TaskDialogComponent implements OnInit {
         ...formValue,
         // Ensure we don't overwrite owner unless intended. Usually owner doesn't change on edit.
         ownerUserId: this.task.ownerUserId,
-        collaboratorUserIds: formValue.collaboratorUserIds
+        collaboratorUserIds: formValue.collaboratorUserIds,
       };
 
       this._tasksService.updateTask(updatedTask).subscribe({
         next: (result) => this._dialogRef.close(result),
-        error: (err) => console.error(err)
+        error: (err) => console.error(err),
       });
     } else {
       const newTask: Omit<Task, 'id'> = {
@@ -168,12 +201,12 @@ export class TaskDialogComponent implements OnInit {
         collaboratorUserIds: formValue.collaboratorUserIds,
         priority: formValue.priority,
         comments: [], // Initialize empty
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       this._tasksService.createTask(newTask).subscribe({
         next: (result) => this._dialogRef.close(result),
-        error: (err) => console.error(err)
+        error: (err) => console.error(err),
       });
     }
   }

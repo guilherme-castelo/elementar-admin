@@ -10,6 +10,8 @@ import { HorizontalDividerComponent } from '@elementar-ui/components/divider';
 import { LogoComponent } from '@elementar-ui/components/logo';
 import { NgOptimizedImage } from '@angular/common';
 
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 @Component({
   imports: [
     MatButton,
@@ -20,19 +22,24 @@ import { NgOptimizedImage } from '@angular/common';
     ReactiveFormsModule,
     HorizontalDividerComponent,
     LogoComponent,
-    NgOptimizedImage
+    NgOptimizedImage,
+    MatSnackBarModule,
   ],
   templateUrl: './signup.component.html',
-  styleUrl: './signup.component.scss'
+  styleUrl: './signup.component.scss',
 })
 export class SignupComponent {
   private _formBuilder = inject(FormBuilder);
   private _authService = inject(AuthService);
   private _router = inject(Router);
+  private _snackBar = inject(MatSnackBar);
 
   form = this._formBuilder.group({
     name: this._formBuilder.control('', [Validators.required]),
-    email: this._formBuilder.control('', [Validators.required, Validators.email]),
+    email: this._formBuilder.control('', [
+      Validators.required,
+      Validators.email,
+    ]),
     password: this._formBuilder.control('', [Validators.required]),
   });
 
@@ -45,8 +52,11 @@ export class SignupComponent {
       },
       error: (err) => {
         console.error(err);
-        alert('Erro ao criar conta. Tente novamente.');
-      }
+        this._snackBar.open('Erro ao criar conta. Tente novamente.', 'Fechar', {
+          duration: 5000,
+          panelClass: ['bg-red-600', 'text-white'],
+        });
+      },
     });
   }
 }

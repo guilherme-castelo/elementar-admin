@@ -9,6 +9,8 @@ import { MatIcon } from '@angular/material/icon';
 import { LogoComponent } from '@elementar-ui/components/logo';
 import { NgOptimizedImage } from '@angular/common';
 
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
 @Component({
   selector: 'app-forgot-password',
   imports: [
@@ -20,14 +22,16 @@ import { NgOptimizedImage } from '@angular/common';
     ReactiveFormsModule,
     MatIcon,
     LogoComponent,
-    NgOptimizedImage
+    NgOptimizedImage,
+    MatSnackBarModule,
   ],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.scss'
+  styleUrl: './forgot-password.component.scss',
 })
 export class ForgotPasswordComponent {
   private _router = inject(Router);
   private _authService = inject(AuthService);
+  private _snackBar = inject(MatSnackBar);
 
   email = new FormControl('', [Validators.required, Validators.email]);
 
@@ -41,8 +45,11 @@ export class ForgotPasswordComponent {
         this._router.navigateByUrl('/auth/set-new-password'); // Changed to set-new-password as it sounds more like the "Enter new password" screen
       },
       error: (err) => {
-        alert('Email not found');
-      }
+        this._snackBar.open('Email not found', 'Close', {
+          duration: 3000,
+          panelClass: ['bg-red-600', 'text-white'],
+        });
+      },
     });
   }
 }

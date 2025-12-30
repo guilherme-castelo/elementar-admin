@@ -4,12 +4,12 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
   private baseUrl = environment.apiBaseUrl || '/api';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   get<T>(endpoint: string, params?: any): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${endpoint}`, { params });
@@ -23,8 +23,8 @@ export class ApiService {
     return this.http.put<T>(`${this.baseUrl}${endpoint}`, body);
   }
 
-  delete<T>(endpoint: string): Observable<T> {
-    return this.http.delete<T>(`${this.baseUrl}${endpoint}`);
+  delete<T>(endpoint: string, params?: any): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}${endpoint}`, { params });
   }
 
   patch<T>(endpoint: string, body: any): Observable<T> {

@@ -2,13 +2,21 @@ import { Component, inject } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
 import { MatIcon } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
-import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
 import { PasswordStrengthComponent } from '@elementar-ui/components/password-strength';
 import { LogoComponent } from '@elementar-ui/components/logo';
 import { NgOptimizedImage } from '@angular/common';
+
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-set-new-password',
@@ -23,14 +31,16 @@ import { NgOptimizedImage } from '@angular/common';
     ReactiveFormsModule,
     PasswordStrengthComponent,
     LogoComponent,
-    NgOptimizedImage
+    NgOptimizedImage,
+    MatSnackBarModule,
   ],
   templateUrl: './set-new-password.component.html',
-  styleUrl: './set-new-password.component.scss'
+  styleUrl: './set-new-password.component.scss',
 })
 export class SetNewPasswordComponent {
   private _router = inject(Router);
   private _authService = inject(AuthService);
+  private _snackBar = inject(MatSnackBar);
 
   form = new FormGroup({
     password: new FormControl('', [Validators.required]),
@@ -44,8 +54,13 @@ export class SetNewPasswordComponent {
   resetPassword() {
     if (this.form.invalid) return;
 
-    if (this.form.get('password')?.value !== this.form.get('confirmPassword')?.value) {
-      alert('Passwords do not match');
+    if (
+      this.form.get('password')?.value !==
+      this.form.get('confirmPassword')?.value
+    ) {
+      this._snackBar.open('Passwords do not match', 'Close', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -56,8 +71,15 @@ export class SetNewPasswordComponent {
       },
       error: (err) => {
         console.error(err);
-        alert('Error resetting password: ' + err.message);
-      }
+        this._snackBar.open(
+          'Error resetting password: ' + err.message,
+          'Close',
+          {
+            duration: 5000,
+            panelClass: ['bg-red-600', 'text-white'],
+          }
+        );
+      },
     });
   }
 }
