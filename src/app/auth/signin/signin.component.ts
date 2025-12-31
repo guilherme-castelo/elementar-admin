@@ -35,8 +35,8 @@ export class SigninComponent {
   private router = inject(Router);
 
   loginForm: FormGroup = this.fb.group({
-    email: ['admin@empresa.test', [Validators.required, Validators.email]],
-    password: ['admin', [Validators.required]]
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]]
   });
 
   isLoading = false;

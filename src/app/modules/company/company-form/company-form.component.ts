@@ -119,7 +119,7 @@ import { IUser } from '../../../core/models/user.model';
                   <input
                     matInput
                     formControlName="dominioRubric"
-                    placeholder="Ex: 297"
+                    placeholder="Ex: 287"
                     maxlength="9"
                   />
                   <mat-hint>Código da rubrica na folha de pagamento</mat-hint>
