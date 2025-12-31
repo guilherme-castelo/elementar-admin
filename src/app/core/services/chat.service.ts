@@ -1,6 +1,19 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from './api.service';
-import { BehaviorSubject, Observable, combineLatest, map, switchMap, tap, of, catchError, take, merge, filter, fromEvent } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  map,
+  switchMap,
+  tap,
+  of,
+  catchError,
+  take,
+  merge,
+  filter,
+  fromEvent,
+} from 'rxjs';
 import { AuthService } from './auth.service';
 import { UsersService } from './users.service';
 import { NotificationService } from './notification.service';
@@ -8,7 +21,7 @@ import { Conversation, ChatMessage, ChatUser } from '../models/chat.interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ChatService {
   private _api = inject(ApiService);
@@ -54,7 +67,7 @@ export class ChatService {
     if (!user) return;
     this._api.get<{ count: number }>('/chat/unread-count').subscribe({
       next: (res) => this._totalUnreadCount$.next(res.count),
-      error: () => this._totalUnreadCount$.next(0)
+      error: () => this._totalUnreadCount$.next(0),
     });
   }
 
@@ -65,7 +78,7 @@ export class ChatService {
     import('socket.io-client').then((socketIoModule) => {
       const io = (socketIoModule as any).io || (socketIoModule as any).default;
       this.socket = io('http://localhost:3333', {
-        transports: ['websocket', 'polling']
+        transports: ['websocket', 'polling'],
       });
 
       this.socket.on('connect', () => {
@@ -77,7 +90,7 @@ export class ChatService {
           ...msg,
           senderName: msg.sender?.name || 'Unknown',
           senderAvatar: msg.sender?.avatar || '',
-          senderId: msg.senderId
+          senderId: msg.senderId,
         };
         this._handleIncomingMessage(mapped);
       });
@@ -131,16 +144,22 @@ export class ChatService {
     this._updateLocalConversationPreview(msg.conversationId, msg);
   }
 
-  private _handleStatusUpdate(payload: { conversationId: string, status: 'delivered' | 'read', actorId: number }) {
+  private _handleStatusUpdate(payload: {
+    conversationId: string;
+    status: 'delivered' | 'read';
+    actorId: number;
+  }) {
     const currentMsgs = this._messages$.value;
-    const updated = currentMsgs.map(m => {
+    const updated = currentMsgs.map((m) => {
       if (m.conversationId !== payload.conversationId) return m;
 
       // If I sent it, update its status
       const user = this._authService.getUser();
       if (user && m.senderId === user.id) {
-        if (payload.status === 'read') return { ...m, status: 'read' } as ChatMessage;
-        if (payload.status === 'delivered' && m.status !== 'read') return { ...m, status: 'delivered' } as ChatMessage;
+        if (payload.status === 'read')
+          return { ...m, status: 'read' } as ChatMessage;
+        if (payload.status === 'delivered' && m.status !== 'read')
+          return { ...m, status: 'delivered' } as ChatMessage;
       }
       return m;
     });
@@ -149,47 +168,58 @@ export class ChatService {
   }
 
   private _markAsDelivered(conversationId: string) {
-    this._api.post(`/chat/conversations/${conversationId}/delivered`, {}).subscribe();
+    this._api
+      .post(`/chat/conversations/${conversationId}/delivered`, {})
+      .subscribe();
   }
 
   private _appendMessage(msg: ChatMessage) {
     const currentMsgs = this._messages$.value;
     // Dedupe
-    if (!currentMsgs.find(m => m.id === msg.id)) {
+    if (!currentMsgs.find((m) => m.id === msg.id)) {
       this._messages$.next([...currentMsgs, msg]);
     }
   }
 
   private _showToast(msg: ChatMessage) {
-    this._snackBar.open(`${msg.senderName}: ${msg.content}`, 'VIEW', {
-      duration: 4000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top',
-      panelClass: ['bg-white', 'text-neutral-900', 'shadow-lg', 'border-l-4', 'border-blue-500']
-    }).onAction().subscribe(() => {
-      // Navigate to messenger?
-      // For now, usage assumes we are in the app.
-      // Router navigate could be added if needed, but 'VIEW' is just partial.
-    });
+    this._snackBar
+      .open(`${msg.senderName}: ${msg.content}`, 'VIEW', {
+        duration: 4000,
+        horizontalPosition: 'end',
+        verticalPosition: 'top',
+        panelClass: [
+          'bg-white',
+          'text-neutral-900',
+          'shadow-lg',
+          'border-l-4',
+          'border-blue-500',
+        ],
+      })
+      .onAction()
+      .subscribe(() => {
+        // Navigate to messenger?
+        // For now, usage assumes we are in the app.
+        // Router navigate could be added if needed, but 'VIEW' is just partial.
+      });
   }
 
   private _handleConversationUpdate(payload: any) {
     const currentConvs = this._conversations$.value;
-    const index = currentConvs.findIndex(c => c.id === payload.id);
+    const index = currentConvs.findIndex((c) => c.id === payload.id);
     if (index !== -1) {
       const updated = {
         ...currentConvs[index],
         lastMessageAt: payload.lastMessageAt,
-        lastMessagePreview: payload.lastMessagePreview
+        lastMessagePreview: payload.lastMessagePreview,
       };
-      const others = currentConvs.filter(c => c.id !== payload.id);
+      const others = currentConvs.filter((c) => c.id !== payload.id);
       this._conversations$.next([updated, ...others]);
     }
   }
 
   private _handleConversationCreated(conv: Conversation) {
     const current = this._conversations$.value;
-    if (!current.some(c => c.id === conv.id)) {
+    if (!current.some((c) => c.id === conv.id)) {
       this._conversations$.next([conv, ...current]);
     }
   }
@@ -210,16 +240,21 @@ export class ChatService {
   private _loadConversations() {
     const user = this._authService.getUser();
     if (!user) return;
-    this._api.get<Conversation[]>('/chat/conversations').pipe(
-      map(convs => convs.filter(c => c.participantIds.includes(user.id))),
-      map(convs => convs.sort((a, b) => {
-        const timeA = new Date(a.lastMessageAt || a.createdAt).getTime();
-        const timeB = new Date(b.lastMessageAt || b.createdAt).getTime();
-        return timeB - timeA;
-      }))
-    ).subscribe(convs => {
-      this._conversations$.next(convs);
-    });
+    this._api
+      .get<Conversation[]>('/chat/conversations')
+      .pipe(
+        map((convs) => convs.filter((c) => c.participantIds.includes(user.id))),
+        map((convs) =>
+          convs.sort((a, b) => {
+            const timeA = new Date(a.lastMessageAt || a.createdAt).getTime();
+            const timeB = new Date(b.lastMessageAt || b.createdAt).getTime();
+            return timeB - timeA;
+          })
+        )
+      )
+      .subscribe((convs) => {
+        this._conversations$.next(convs);
+      });
   }
 
   selectConversation(conversationId: string) {
@@ -235,20 +270,26 @@ export class ChatService {
       next: () => {
         // Re-fetch unread count to be accurate
         this._loadUnreadCount();
-      }
+      },
     });
   }
 
   private _reloadMessages(conversationId: string) {
-    this._api.get<any[]>(`/chat/messages?conversationId=${conversationId}`)
+    this._api
+      .get<any[]>(`/chat/messages?conversationId=${conversationId}`)
       .pipe(
-        map(msgs => msgs.map(m => ({
-          ...m,
-          senderName: m.sender?.name || 'Unknown',
-          senderAvatar: m.sender?.avatar || ''
-        } as ChatMessage)))
+        map((msgs) =>
+          msgs.map(
+            (m) =>
+              ({
+                ...m,
+                senderName: m.sender?.name || 'Unknown',
+                senderAvatar: m.sender?.avatar || '',
+              } as ChatMessage)
+          )
+        )
       )
-      .subscribe(msgs => {
+      .subscribe((msgs) => {
         this._messages$.next(msgs);
       });
   }
@@ -269,7 +310,7 @@ export class ChatService {
       createdAt: new Date().toISOString(),
       status: 'sent',
       isTemp: true,
-      readAt: undefined
+      readAt: undefined,
     };
 
     // Optimistic Update
@@ -284,9 +325,41 @@ export class ChatService {
       tap(() => {
         // Success
       }),
-      catchError(err => {
+      catchError((err) => {
         console.error('Failed to send message', err);
         return of(null);
+      })
+    );
+  }
+
+  deleteMessage(messageId: string): Observable<void> {
+    // Optimistic Update
+    const currentMessages = this._messages$.value;
+    this._messages$.next(currentMessages.filter((m) => m.id !== messageId));
+
+    return this._api.delete<void>(`/chat/messages/${messageId}`).pipe(
+      catchError((err) => {
+        console.error('Failed to delete message', err);
+        // Revert on error? Or just notify.
+        return of(void 0);
+      })
+    );
+  }
+
+  deleteConversation(conversationId: string): Observable<void> {
+    const currentConvs = this._conversations$.value;
+    this._conversations$.next(
+      currentConvs.filter((c) => c.id !== conversationId)
+    );
+    if (this._activeConversationId$.value === conversationId) {
+      this._activeConversationId$.next(null);
+      this._messages$.next([]);
+    }
+
+    return this._api.delete<void>(`/chat/conversations/${conversationId}`).pipe(
+      catchError((err) => {
+        console.error('Failed to delete conversation', err);
+        return of(void 0);
       })
     );
   }
@@ -295,8 +368,10 @@ export class ChatService {
     const currentUser = this._authService.getUser();
     if (!currentUser) return of('');
 
-    const existing = this._conversations$.value.find(c =>
-      c.participantIds.includes(targetUserId) && c.participantIds.includes(currentUser.id)
+    const existing = this._conversations$.value.find(
+      (c) =>
+        c.participantIds.includes(targetUserId) &&
+        c.participantIds.includes(currentUser.id)
     );
 
     if (existing) {
@@ -304,42 +379,51 @@ export class ChatService {
       return of(existing.id);
     }
 
-    return this._api.post<Conversation>('/chat/conversations', { recipientId: targetUserId }).pipe(
-      tap(conv => {
-        this._conversations$.next([conv, ...this._conversations$.value]);
-        this.selectConversation(conv.id);
-      }),
-      map(conv => conv.id)
-    );
+    return this._api
+      .post<Conversation>('/chat/conversations', { recipientId: targetUserId })
+      .pipe(
+        tap((conv) => {
+          this._conversations$.next([conv, ...this._conversations$.value]);
+          this.selectConversation(conv.id);
+        }),
+        map((conv) => conv.id)
+      );
   }
 
   getUsersToChat(): Observable<ChatUser[]> {
     const currentUserId = this._authService.getUser()?.id;
     return this._usersService.getAll().pipe(
-      map(users => users
-        .filter(u => u.id !== currentUserId)
-        .map(u => ({
-          id: Number(u.id),
-          name: u.name,
-          avatar: u.avatar || '',
-          status: 'offline'
-        }))
+      map((users) =>
+        users
+          .filter((u) => u.id !== currentUserId)
+          .map((u) => ({
+            id: Number(u.id),
+            name: u.name,
+            avatar: u.avatar || '',
+            status: 'offline',
+          }))
       )
     );
   }
 
-  private _updateLocalConversationPreview(conversationId: string, msg: ChatMessage) {
+  private _updateLocalConversationPreview(
+    conversationId: string,
+    msg: ChatMessage
+  ) {
     const currentConvs = this._conversations$.value;
-    const convIndex = currentConvs.findIndex(c => c.id === conversationId);
+    const convIndex = currentConvs.findIndex((c) => c.id === conversationId);
     if (convIndex > -1) {
       const updatedConv = {
         ...currentConvs[convIndex],
         lastMessageAt: msg.createdAt,
         lastMessagePreview: msg.content,
         lastMessageSenderId: msg.senderId,
-        lastMessageStatus: msg.status
+        lastMessageStatus: msg.status,
       };
-      const newConvs = [updatedConv, ...currentConvs.filter(c => c.id !== conversationId)];
+      const newConvs = [
+        updatedConv,
+        ...currentConvs.filter((c) => c.id !== conversationId),
+      ];
       this._conversations$.next(newConvs);
     }
   }

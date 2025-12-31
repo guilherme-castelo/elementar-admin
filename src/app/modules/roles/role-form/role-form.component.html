@@ -36,6 +36,29 @@
       </mat-card-content>
     </mat-card>
 
+    <!-- Scope Card -->
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Escopo de Acesso (Empresas)</mat-card-title>
+        <mat-card-subtitle
+          >Selecione as empresas onde este cargo é válido. Deixe vazio para
+          acesso global (se aplicável).</mat-card-subtitle
+        >
+      </mat-card-header>
+      <mat-card-content class="pt-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <mat-checkbox
+            *ngFor="let company of companies"
+            [checked]="isCompanySelected(company.id)"
+            (change)="toggleCompany(company.id)"
+            color="primary"
+          >
+            {{ company.name }}
+          </mat-checkbox>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
     <!-- Permissions Matrix -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div

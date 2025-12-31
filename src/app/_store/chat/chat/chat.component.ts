@@ -1,4 +1,14 @@
-import { Component, ElementRef, OnInit, WritableSignal, effect, inject, signal, viewChild, output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  WritableSignal,
+  effect,
+  inject,
+  signal,
+  viewChild,
+  output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDivider } from '@angular/material/divider';
@@ -10,7 +20,7 @@ import {
   PanelBodyComponent,
   PanelComponent,
   PanelFooterComponent,
-  PanelHeaderComponent
+  PanelHeaderComponent,
 } from '@elementar-ui/components/panel';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { ChatService } from '../../../core/services/chat.service';
@@ -35,10 +45,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
     PanelHeaderComponent,
     PanelFooterComponent,
     MatSuffix,
-    DicebearComponent
+    DicebearComponent,
   ],
   templateUrl: './chat.component.html',
-  styleUrl: './chat.component.scss'
+  styleUrl: './chat.component.scss',
 })
 export class ChatComponent implements OnInit {
   private _chatService = inject(ChatService);
@@ -52,9 +62,15 @@ export class ChatComponent implements OnInit {
   newMessage = signal('');
 
   // Data Signals
-  conversations = toSignal(this._chatService.conversations$, { initialValue: [] });
-  activeMessages = toSignal(this._chatService.activeMessages$, { initialValue: [] });
-  activeConversationId = toSignal(this._chatService.activeConversationId$, { initialValue: null });
+  conversations = toSignal(this._chatService.conversations$, {
+    initialValue: [],
+  });
+  activeMessages = toSignal(this._chatService.activeMessages$, {
+    initialValue: [],
+  });
+  activeConversationId = toSignal(this._chatService.activeConversationId$, {
+    initialValue: null,
+  });
 
   availableUsers: WritableSignal<ChatUser[]> = signal([]);
 
@@ -75,7 +91,7 @@ export class ChatComponent implements OnInit {
   }
 
   loadAvailableUsers() {
-    this._chatService.getUsersToChat().subscribe(users => {
+    this._chatService.getUsersToChat().subscribe((users) => {
       this.availableUsers.set(users);
     });
   }
@@ -89,13 +105,22 @@ export class ChatComponent implements OnInit {
       next: (convId) => {
         this.viewMode.set('CHAT');
       },
-      error: (err) => console.error(err)
+      error: (err) => console.error(err),
     });
   }
 
   openConversation(convId: string) {
     this._chatService.selectConversation(convId);
     this.viewMode.set('CHAT');
+  }
+
+  deleteConversation() {
+    const id = this.activeConversationId();
+    if (id && confirm('Tem certeza que deseja apagar esta conversa?')) {
+      this._chatService.deleteConversation(id).subscribe(() => {
+        this.backToList();
+      });
+    }
   }
 
   backToList() {
@@ -110,11 +135,18 @@ export class ChatComponent implements OnInit {
     this.scrollToBottom();
   }
 
+  deleteMessage(messageId: string) {
+    if (confirm('Deletar mensagem?')) {
+      this._chatService.deleteMessage(messageId).subscribe();
+    }
+  }
+
   scrollToBottom(): void {
     const container = this.chatMessagesContainerRef();
     if (container) {
       try {
-        container.nativeElement.scrollTop = container.nativeElement.scrollHeight;
+        container.nativeElement.scrollTop =
+          container.nativeElement.scrollHeight;
       } catch (err) {
         console.error('Scroll error', err);
       }
@@ -125,19 +157,26 @@ export class ChatComponent implements OnInit {
   getConversationName(conv: Conversation): string {
     // Simple logic: find 'other' participant name
     // In a real app, we'd map IDs to User objects more robustly or store names in Conversation
-    // For now, let's use a placeholder or derived if possible. 
+    // For now, let's use a placeholder or derived if possible.
     // Since we don't store names in Conversation, let's assume it's a 1:1 and we might need to look it up from availableUsers
     // optimization: Store participant names in conversation or robust user cache
     // Let's rely on availableUsers for now if loaded, or "Chat"
-    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
-    const user = this.availableUsers().find(u => u.id === otherId);
+    const otherId = conv.participantIds.find(
+      (id) => id !== this.currentUser?.id
+    );
+    const user = this.availableUsers().find((u) => u.id === otherId);
 
     return user ? user.name : 'Unknown User';
   }
 
   getConversationAvatar(conv: Conversation): string {
-    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
-    const user = this.availableUsers().find(u => u.id === otherId);
-    return user?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${otherId}`;
+    const otherId = conv.participantIds.find(
+      (id) => id !== this.currentUser?.id
+    );
+    const user = this.availableUsers().find((u) => u.id === otherId);
+    return (
+      user?.avatar ||
+      `https://api.dicebear.com/7.x/initials/svg?seed=${otherId}`
+    );
   }
 }

@@ -1,16 +1,26 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, tap, map, catchError, of, throwError, switchMap } from 'rxjs';
+import {
+  Observable,
+  tap,
+  map,
+  catchError,
+  of,
+  throwError,
+  switchMap,
+} from 'rxjs';
 import { Router } from '@angular/router';
 import { ApiService } from './api.service';
 import { PermissionService } from './permission.service';
+import { SessionService } from './session.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private api = inject(ApiService);
   private router = inject(Router);
   private permissionService = inject(PermissionService);
+  private sessionService = inject(SessionService);
   private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
 
@@ -23,6 +33,9 @@ export class AuthService {
           if (response.permissions) {
             this.permissionService.setPermissions(response.permissions);
           }
+          if (response.memberships) {
+            this.sessionService.setMemberships(response.memberships);
+          }
         }
       }),
       map((response: any) => response.user)
@@ -34,6 +47,7 @@ export class AuthService {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_KEY);
       this.permissionService.setPermissions([]);
+      this.sessionService.clearSession();
       this.router.navigate(['/auth/signin']);
     });
   }
@@ -60,6 +74,9 @@ export class AuthService {
           if (response.permissions) {
             this.permissionService.setPermissions(response.permissions);
           }
+          if (response.memberships) {
+            this.sessionService.setMemberships(response.memberships);
+          }
         }
       })
     );
@@ -76,13 +93,14 @@ export class AuthService {
     // Returing true to allow UI to show "Reset link sent".
     // We store the email in local storage to simulate the "token" verification flow later if needed.
     localStorage.setItem('reset_pending_email', email);
-    return of(true).pipe(
+    return of(true)
+      .pipe
       // delay(1000) // optional delay simulation
-    );
+      ();
   }
 
   resetPassword(token: string, newPassword: string): Observable<any> {
-    // Token is fake. 
+    // Token is fake.
     // For MVP, if we want to actually change the password of a user, we need to know WHICH user.
     // Since we don't have a real backend token validation, we can:
     // A) Ask for Email again on the Reset Page (common in some flows)
@@ -97,14 +115,28 @@ export class AuthService {
     }
 
     return this.api.get<any[]>(`/users?email=${pendingEmail}`).pipe(
-      switchMap(users => {
-        if (users.length === 0) return throwError(() => new Error('User not found'));
+      switchMap((users) => {
+        if (users.length === 0)
+          return throwError(() => new Error('User not found'));
         const user = users[0];
         const updatedUser = { ...user, password: newPassword };
         return this.api.put(`/users/${user.id}`, updatedUser);
       }),
       tap(() => {
         localStorage.removeItem('reset_pending_email'); // Cleanup
+      })
+    );
+  }
+
+  refreshSession(): Observable<any> {
+    return this.api.get('/auth/me').pipe(
+      tap((response: any) => {
+        if (response.permissions) {
+          this.permissionService.setPermissions(response.permissions);
+        }
+        if (response.memberships) {
+          this.sessionService.setMemberships(response.memberships);
+        }
       })
     );
   }

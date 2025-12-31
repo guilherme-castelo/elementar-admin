@@ -9,22 +9,27 @@ import { RouterLink } from '@angular/router';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { SoundEffectDirective } from '@elementar-ui/components/core';
 import { LayoutApiService } from '@elementar-ui/components/layout';
-import { AssistantSearchComponent, NotificationsPopoverComponent } from '../../_store/header';
+import {
+  AssistantSearchComponent,
+  NotificationsPopoverComponent,
+} from '../../_store/header';
 import { DrawerComponent } from '@elementar-ui/components/drawer';
 import { ChatComponent } from '../../_store/chat/chat/chat.component';
 import {
   ColorSchemeDarkDirective,
   ColorSchemeLightDirective,
-  ColorSchemeSwitcherComponent
+  ColorSchemeSwitcherComponent,
 } from '@elementar-ui/components/color-scheme';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { ChatService } from '../../core/services/chat.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { CompanySwitcherComponent } from './company-switcher/company-switcher.component';
 
 @Component({
   selector: 'app-header',
+  standalone: true,
   imports: [
     CommonModule,
     MatIcon,
@@ -44,13 +49,14 @@ import { CommonModule } from '@angular/common';
     ChatComponent,
     ColorSchemeDarkDirective,
     ColorSchemeLightDirective,
-    ColorSchemeSwitcherComponent
+    ColorSchemeSwitcherComponent,
+    CompanySwitcherComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
   host: {
-    'class': 'block w-full'
-  }
+    class: 'block w-full',
+  },
 })
 export class HeaderComponent implements OnInit {
   private _layoutApi = inject(LayoutApiService);
@@ -61,14 +67,20 @@ export class HeaderComponent implements OnInit {
   email = '';
 
   private _chatService = inject(ChatService);
-  unreadChatCount = toSignal(this._chatService.totalUnreadCount$, { initialValue: 0 });
+  unreadChatCount = toSignal(this._chatService.totalUnreadCount$, {
+    initialValue: 0,
+  });
 
-  unreadNotificationsCount = toSignal(this._notificationService.unreadCount$, { initialValue: 0 });
-  recentNotifications = toSignal(this._notificationService.activeNotifications$, { initialValue: [] });
-
+  unreadNotificationsCount = toSignal(this._notificationService.unreadCount$, {
+    initialValue: 0,
+  });
+  recentNotifications = toSignal(
+    this._notificationService.activeNotifications$,
+    { initialValue: [] }
+  );
 
   sidebarShown = computed(() => {
-    return this._layoutApi.isSidebarShown('root')
+    return this._layoutApi.isSidebarShown('root');
   });
 
   ngOnInit() {

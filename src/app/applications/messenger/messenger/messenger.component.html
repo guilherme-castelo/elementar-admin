@@ -1,66 +1,96 @@
-<section class="flex flex-col gap-4">
+<section class="flex flex-col gap-4" [class.hidden]="!leftSidebarActive">
   <div class="flex justify-between">
     <h2 class="text-3xl">Messages</h2>
     <div class="border border-default rounded-full w-max">
-      <button mat-icon-button [matMenuTriggerFor]="messengerMenu">
-        <mat-icon>more_horiz</mat-icon>
+      <button
+        mat-icon-button
+        (click)="toggleLeftSidebar()"
+        matTooltip="Hide Sidebar"
+      >
+        <mat-icon>dock_to_right</mat-icon>
       </button>
-      <mat-menu #messengerMenu="matMenu">
-        <!-- New Chat Menu for Available Users -->
-        @for (user of availableUsers(); track user.id) {
-          <button mat-menu-item (click)="startChat(user.id)">
-            <span>Chat with {{ user.name }}</span>
-          </button>
-        } @empty {
-          <button mat-menu-item disabled>No contacts available</button>
-        }
-      </mat-menu>
     </div>
   </div>
   <div class="grow bg-surface-container-low flex flex-col rounded-3xl p-4">
-    <div class="flex flex-none items-center border-b border-b-default pb-3.5 gap-2">
+    <div
+      class="flex flex-none items-center border-b border-b-default pb-3.5 gap-2"
+    >
       <div class="relative grow">
-        <mat-icon class="absolute start-2.5 top-1/2 -translate-y-1/2">search</mat-icon>
-        <input type="text" matInput placeholder="Search"
-               class="bg-surface-container-low w-full border border-default outline-none ps-10 h-10 pe-3 focus-visible:border-primary rounded-full">
+        <mat-icon class="absolute start-2.5 top-1/2 -translate-y-1/2"
+          >search</mat-icon
+        >
+        <input
+          type="text"
+          matInput
+          placeholder="Search to chat..."
+          [matAutocomplete]="usersAuto"
+          class="bg-surface-container-low w-full border border-default outline-none ps-10 h-10 pe-3 focus-visible:border-primary rounded-full"
+        />
+        <mat-autocomplete
+          #usersAuto="matAutocomplete"
+          (optionSelected)="startChat($event.option.value)"
+        >
+          @for (user of availableUsers(); track user.id) {
+          <mat-option [value]="user.id">
+            <div class="flex items-center gap-2">
+              <emr-dicebear class="size-6" [key]="user.name" />
+              <span>{{ user.name }}</span>
+            </div>
+          </mat-option>
+          }
+        </mat-autocomplete>
       </div>
     </div>
     <div class="grow relative">
       <div class="py-4 absolute inset-0 flex flex-col gap-3 overflow-y-auto">
         @for (conv of conversations(); track conv.id) {
-          <div class="border border-default relative rounded-2xl p-2 cursor-pointer hover:bg-surface-bright [&.selected]:bg-surface-bright group"
-               [class.selected]="isConversationSelected(conv)" (click)="selectConversation(conv)">
-            
-            <div class="flex items-center gap-3">
-              <emr-dicebear class="size-11"
-                            [key]="getConversationName(conv)"
-                            />
-              <div class="min-w-0 leading-4">
-                <div class="font-bold whitespace-nowrap text-ellipsis overflow-hidden">{{ getConversationName(conv) }}</div>
-                <time class="block text-xs text-neutral-600 mt-1">{{ conv.lastMessageAt | date:'short' }}</time>
+        <div
+          class="border border-default relative rounded-2xl p-2 cursor-pointer hover:bg-surface-bright [&.selected]:bg-surface-bright group"
+          [class.selected]="isConversationSelected(conv)"
+          (click)="selectConversation(conv)"
+        >
+          <div class="flex items-center gap-3">
+            <emr-dicebear class="size-11" [key]="getConversationName(conv)" />
+            <div class="min-w-0 leading-4">
+              <div
+                class="font-bold whitespace-nowrap text-ellipsis overflow-hidden"
+              >
+                {{ getConversationName(conv) }}
               </div>
+              <time class="block text-xs text-neutral-600 mt-1">{{
+                conv.lastMessageAt | date : "short"
+              }}</time>
             </div>
-            <div class="flex mt-2">
-              <div class="min-w-0 flex items-center gap-1">
-                @if (conv.lastMessageSenderId === currentUser?.id) {
-                   @if (conv.lastMessageStatus === 'sent') {
-                     <mat-icon class="text-[14px] !w-3.5 !h-3.5 text-neutral-400 relative top-[1px]">check</mat-icon>
-                   }
-                   @if (conv.lastMessageStatus === 'delivered') {
-                     <mat-icon class="text-[14px] !w-3.5 !h-3.5 text-neutral-400 relative top-[1px]">done_all</mat-icon>
-                   }
-                   @if (conv.lastMessageStatus === 'read') {
-                     <mat-icon class="text-[14px] !w-3.5 !h-3.5 text-blue-500 relative top-[1px]">done_all</mat-icon>
-                   }
-                }
-                <div class="text-tiny whitespace-nowrap text-ellipsis mt-0.5 overflow-hidden text-neutral-500">
-                  {{ conv.lastMessagePreview || 'No messages' }}
-                </div>
+          </div>
+          <div class="flex mt-2">
+            <div class="min-w-0 flex items-center gap-1">
+              @if (conv.lastMessageSenderId === currentUser?.id) { @if
+              (conv.lastMessageStatus === 'sent') {
+              <mat-icon
+                class="text-[14px] !w-3.5 !h-3.5 text-neutral-400 relative top-[1px]"
+                >check</mat-icon
+              >
+              } @if (conv.lastMessageStatus === 'delivered') {
+              <mat-icon
+                class="text-[14px] !w-3.5 !h-3.5 text-neutral-400 relative top-[1px]"
+                >done_all</mat-icon
+              >
+              } @if (conv.lastMessageStatus === 'read') {
+              <mat-icon
+                class="text-[14px] !w-3.5 !h-3.5 text-blue-500 relative top-[1px]"
+                >done_all</mat-icon
+              >
+              } }
+              <div
+                class="text-tiny whitespace-nowrap text-ellipsis mt-0.5 overflow-hidden text-neutral-500"
+              >
+                {{ conv.lastMessagePreview || "No messages" }}
               </div>
             </div>
           </div>
+        </div>
         } @empty {
-          <div class="text-center p-4 text-gray-500">No conversations yet.</div>
+        <div class="text-center p-4 text-gray-500">No conversations yet.</div>
         }
       </div>
     </div>
@@ -70,18 +100,43 @@
 <main class="flex flex-col">
   <!-- Top Bar -->
   <div class="max-w-full min-w-0 px-10">
-    <div class="border-b border-b-default pb-4 flex justify-between gap-4">
-      <div class="overflow-hidden min-w-0 w-[400px]">
-        @if(getSelectedConversationUser(); as user) {
-           <div class="font-bold min-w-0 text-2xl whitespace-nowrap text-ellipsis overflow-hidden">{{ user.name }}</div>
+    <div
+      class="border-b border-b-default pb-4 flex justify-between gap-4 items-center"
+    >
+      <div class="overflow-hidden min-w-0 w-[400px] flex items-center gap-3">
+        @if(!leftSidebarActive) {
+        <div
+          class="border border-default rounded-full w-max h-max cursor-pointer"
+          (click)="toggleLeftSidebar()"
+          matTooltip="Show Sidebar"
+        >
+          <button mat-icon-button>
+            <mat-icon>dock_to_right</mat-icon>
+          </button>
+        </div>
+        } @if(getSelectedConversationUser(); as user) {
+        <div
+          class="font-bold min-w-0 text-2xl whitespace-nowrap text-ellipsis overflow-hidden"
+        >
+          {{ user.name }}
+        </div>
         } @else {
-           <div class="font-bold min-w-0 text-2xl whitespace-nowrap text-ellipsis overflow-hidden">Select a chat</div>
+        <div
+          class="font-bold min-w-0 text-2xl whitespace-nowrap text-ellipsis overflow-hidden"
+        >
+          Select a chat
+        </div>
         }
       </div>
       <div class="flex gap-3 flex-start">
-        <div class="border border-default rounded-full w-max h-max [&.sidebar-active]:border-on-surface"
-             [class.sidebar-active]="sidebarActive" (click)="toggleSidebar()"
-             [matTooltip]="sidebarActive ? 'Hide conversation info' : 'Show conversation info'">
+        <div
+          class="border border-default rounded-full w-max h-max [&.sidebar-active]:border-on-surface"
+          [class.sidebar-active]="sidebarActive"
+          (click)="toggleSidebar()"
+          [matTooltip]="
+            sidebarActive ? 'Hide conversation info' : 'Show conversation info'
+          "
+        >
           <button mat-icon-button>
             <mat-icon>dock_to_left</mat-icon>
           </button>
@@ -91,104 +146,149 @@
   </div>
 
   <!-- Messages Area -->
-  <div class="grow relative chat-scroll-container overflow-y-auto" emrImageViewer>
+  <div
+    class="grow relative chat-scroll-container overflow-y-auto"
+    emrImageViewer
+  >
     <div class="py-10 min-h-full px-7 absolute inset-0">
       @for (message of activeMessages(); track message.id; let index = $index) {
-        @let isInner = isInnerMessage(activeMessages(), index);
-        @let showTimeSeparator = isNeedToShowTimeSeparator(activeMessages(), index);
+      @let isInner = isInnerMessage(activeMessages(), index); @let
+      showTimeSeparator = isNeedToShowTimeSeparator(activeMessages(), index);
+      @if (showTimeSeparator) {
+      <div class="px-3 py-6">
+        <emr-h-divider>{{
+          message.createdAt | date : "longDate"
+        }}</emr-h-divider>
+      </div>
+      } @let isMine = message.senderId === currentUser?.id;
 
-        @if (showTimeSeparator) {
-          <div class="px-3 py-6">
-            <emr-h-divider>{{ message.createdAt | date:'longDate' }}</emr-h-divider>
-          </div>
+      <!-- Message Container -->
+      <div
+        class="flex items-start gap-3 p-3 rounded-3xl relative group"
+        [class.flex-row-reverse]="isMine"
+        [class.hover:bg-surface-container-low]="!isMine"
+      >
+        <!-- Avatar (Only for received messages or always? User requested distinction. -->
+        <!-- Usually chat apps show avatar for partner, but maybe not self. -->
+
+        @if (!isInner) {
+        <!-- Show Avatar -->
+        <emr-dicebear class="size-11" [key]="message.senderName" />
+        } @else {
+        <div class="size-11"></div>
+        <!-- Spacer -->
         }
 
-        @let isMine = message.senderId === currentUser?.id;
-
-        <!-- Message Container -->
-        <div class="flex items-start gap-3 p-3 rounded-3xl relative group"
-             [class.flex-row-reverse]="isMine"
-             [class.hover:bg-surface-container-low]="!isMine">
-          
-          <!-- Avatar (Only for received messages or always? User requested distinction. -->
-          <!-- Usually chat apps show avatar for partner, but maybe not self. -->
-          
+        <div
+          class="flex flex-col max-w-[70%] leading-1.5"
+          [class.items-end]="isMine"
+        >
           @if (!isInner) {
-             <!-- Show Avatar -->
-             <emr-dicebear class="size-11" [key]="message.senderName" />
-          } @else {
-             <div class="size-11"></div> <!-- Spacer -->
+          <div
+            class="flex items-center gap-2 mb-1"
+            [class.flex-row-reverse]="isMine"
+          >
+            <span class="text-sm font-semibold">{{ message.senderName }}</span>
+            <span class="text-sm text-neutral">{{
+              message.createdAt | date : "shortTime"
+            }}</span>
+          </div>
           }
 
-          <div class="flex flex-col max-w-[70%] leading-1.5" [class.items-end]="isMine">
-            @if (!isInner) {
-              <div class="flex items-center gap-2 mb-1" [class.flex-row-reverse]="isMine">
-                <span class="text-sm font-semibold">{{ message.senderName }}</span>
-                <span class="text-sm text-neutral">{{ message.createdAt | date:'shortTime' }}</span>
+          <div
+            class="text-sm font-normal py-2.5 px-4 rounded-2xl"
+            [class.bg-primary-container]="isMine"
+            [class.text-on-primary-container]="isMine"
+            [class.rounded-tr-none]="isMine && !isInner"
+            [class.bg-surface-container-highest]="!isMine"
+            [class.text-on-surface]="!isMine"
+            [class.rounded-tl-none]="!isMine && !isInner"
+          >
+            {{ message.content }}
+            @if (isMine) {
+            <div class="flex justify-end gap-2 mt-1 -mb-1 -me-2 items-center">
+              <div class="flex gap-0.5">
+                @if (message.status === 'sent') {
+                <mat-icon class="text-[16px] !w-4 !h-4 text-neutral-400"
+                  >check</mat-icon
+                >
+                } @if (message.status === 'delivered') {
+                <mat-icon class="text-[16px] !w-4 !h-4 text-neutral-400"
+                  >done_all</mat-icon
+                >
+                } @if (message.status === 'read') {
+                <mat-icon class="text-[16px] !w-4 !h-4 text-blue-500"
+                  >done_all</mat-icon
+                >
+                }
               </div>
-            }
-
-            <div class="text-sm font-normal py-2.5 px-4 rounded-2xl"
-                 [class.bg-primary-container]="isMine"
-                 [class.text-on-primary-container]="isMine"
-                 [class.rounded-tr-none]="isMine && !isInner"
-                 [class.bg-surface-container-highest]="!isMine"
-                 [class.text-on-surface]="!isMine"
-                 [class.rounded-tl-none]="!isMine && !isInner">
-               {{ message.content }}
-               @if (isMine) {
-                 <div class="flex justify-end gap-0.5 mt-1 -mb-1 -me-2">
-                   @if (message.status === 'sent') {
-                     <mat-icon class="text-[16px] !w-4 !h-4 text-neutral-400">check</mat-icon>
-                   }
-                   @if (message.status === 'delivered') {
-                     <mat-icon class="text-[16px] !w-4 !h-4 text-neutral-400">done_all</mat-icon>
-                   }
-                   @if (message.status === 'read') {
-                     <mat-icon class="text-[16px] !w-4 !h-4 text-blue-500">done_all</mat-icon>
-                   }
-                 </div>
-               }
+              <!-- Delete Btn -->
+              <button
+                mat-icon-button
+                class="!w-6 !h-6 !leading-6 text-neutral-400 hover:text-red-500"
+                (click)="deleteMessage(message)"
+              >
+                <mat-icon class="!text-[16px]">delete</mat-icon>
+              </button>
             </div>
+            }
           </div>
         </div>
+      </div>
       }
     </div>
   </div>
 
   <!-- Input Area -->
   <div class="px-10 pb-5 pt-2">
-     <div class="flex gap-2 items-center border border-default rounded-2xl p-2 bg-surface-container-lowest">
-       <input class="grow bg-transparent outline-none px-2" placeholder="Type a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()">
-       <button mat-icon-button color="primary" (click)="sendMessage()">
-         <mat-icon>send</mat-icon>
-       </button>
-     </div>
+    <div
+      class="flex gap-2 items-center border border-default rounded-2xl p-2 bg-surface-container-lowest"
+    >
+      <input
+        class="grow bg-transparent outline-none px-2"
+        placeholder="Type a message..."
+        [(ngModel)]="newMessage"
+        (keyup.enter)="sendMessage()"
+      />
+      <button mat-icon-button color="primary" (click)="sendMessage()">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
   </div>
 </main>
 
 <!-- Sidebar Details -->
 @if (sidebarActive && getSelectedConversationUser(); as user) {
-  <aside class="sidebar">
-    <div class="h-full rounded-3xl bg-surface-container-low p-5 relative">
-      <div class="rounded-full w-max absolute end-2 top-2">
-        <button mat-icon-button (click)="toggleSidebar()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <div class="flex items-center flex-col justify-center gap-4 py-5">
-        <emr-dicebear class="size-32"
-                      [key]="user.name"
-                      />
-        <div class="text-center">
-          <div class="font-bold whitespace-nowrap text-ellipsis overflow-hidden">{{ user.name }}</div>
-          <div class="text-xs text-neutral-600">ID: {{ user.id }}</div>
-        </div>
-      </div>
-      
-       <div class="mt-5">
-          <button mat-stroked-button class="w-full">View Profile</button>
-       </div>
+<aside class="sidebar">
+  <div class="h-full rounded-3xl bg-surface-container-low p-5 relative">
+    <div class="rounded-full w-max absolute end-2 top-2">
+      <button mat-icon-button (click)="toggleSidebar()">
+        <mat-icon>close</mat-icon>
+      </button>
     </div>
-  </aside>
+    <div class="flex items-center flex-col justify-center gap-4 py-5">
+      <emr-dicebear class="size-32" [key]="user.name" />
+      <div class="text-center">
+        <div class="font-bold whitespace-nowrap text-ellipsis overflow-hidden">
+          {{ user.name }}
+        </div>
+        <div class="text-xs text-neutral-600">ID: {{ user.id }}</div>
+      </div>
+    </div>
+
+    <div class="mt-5 flex flex-col gap-2">
+      <button mat-stroked-button class="w-full">View Profile</button>
+      @if (activeConversationId()) {
+      <button
+        mat-stroked-button
+        (click)="deleteConversation()"
+        class="!text-red-500 w-full"
+      >
+        <mat-icon class="!text-red-500">delete_forever</mat-icon>
+        <span>Apagar Chat</span>
+      </button>
+      }
+    </div>
+  </div>
+</aside>
 }

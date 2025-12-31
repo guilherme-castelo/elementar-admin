@@ -7,39 +7,49 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    canMatch: [() => {
-      const router = inject(Router);
-      const authService = inject(AuthService);
-      if (authService.isAuthenticated()) {
-        return new Promise<boolean>(resolve => {
-           router.navigate(['/dashboard']);
-           resolve(false); 
-        });
-      }
-      return true;
-    }],
-    loadComponent: () => import('./landing/landing.component').then(c => c.LandingComponent)
+    canMatch: [
+      () => {
+        const router = inject(Router);
+        const authService = inject(AuthService);
+        if (authService.isAuthenticated()) {
+          return new Promise<boolean>((resolve) => {
+            router.navigate(['/dashboard']);
+            resolve(false);
+          });
+        }
+        return true;
+      },
+    ],
+    loadComponent: () =>
+      import('./landing/landing.component').then((c) => c.LandingComponent),
   },
   {
     path: 'landing',
-    loadComponent: () => import('./landing/landing.component').then(c => c.LandingComponent)
+    loadComponent: () =>
+      import('./landing/landing.component').then((c) => c.LandingComponent),
   },
   {
     path: 'auth',
-    loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule)
+    loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule),
   },
   {
     path: 'error',
-    loadChildren: () => import('./error/error.module').then(m => m.ErrorModule)
+    loadChildren: () =>
+      import('./error/error.module').then((m) => m.ErrorModule),
   },
   {
     path: 'onboarding',
-    loadChildren: () => import('./onboarding/onboarding.module').then(m => m.OnboardingModule)
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./onboarding/onboarding.module').then((m) => m.OnboardingModule),
   },
   {
     path: '',
     canActivate: [authGuard],
-    loadComponent: () => import('./layouts/admin-layout/admin-layout.component').then(c => c.AdminLayoutComponent),
+    loadComponent: () =>
+      import('./layouts/admin-layout/admin-layout.component').then(
+        (c) => c.AdminLayoutComponent
+      ),
     children: [
       {
         path: '',
@@ -48,74 +58,106 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
-        loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule)
+        loadChildren: () =>
+          import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
       },
       {
         path: 'user-profile',
-        loadChildren: () => import('./user-profile/user-profile.module').then(m => m.UserProfileModule)
+        loadChildren: () =>
+          import('./user-profile/user-profile.module').then(
+            (m) => m.UserProfileModule
+          ),
       },
       {
         path: 'account/notifications',
-        loadComponent: () => import('./account/notifications/notifications.component').then(m => m.NotificationsComponent)
+        loadComponent: () =>
+          import('./account/notifications/notifications.component').then(
+            (m) => m.NotificationsComponent
+          ),
       },
       {
         path: 'account/settings',
-        loadChildren: () => import('./account/settings/settings.module').then(m => m.SettingsModule)
+        loadChildren: () =>
+          import('./account/settings/settings.module').then(
+            (m) => m.SettingsModule
+          ),
       },
       {
         path: 'store',
-        loadChildren: () => import('./store/store.module').then(m => m.StoreModule)
+        loadChildren: () =>
+          import('./store/store.module').then((m) => m.StoreModule),
       },
       {
         path: 'pricing',
-        loadChildren: () => import('./pricing/pricing.module').then(m => m.PricingModule)
+        loadChildren: () =>
+          import('./pricing/pricing.module').then((m) => m.PricingModule),
       },
       {
         path: 'applications',
-        loadChildren: () => import('./applications/applications.module').then(m => m.ApplicationsModule)
+        loadChildren: () =>
+          import('./applications/applications.module').then(
+            (m) => m.ApplicationsModule
+          ),
       },
       {
         path: 'content',
-        loadChildren: () => import('./content/content.module').then(m => m.ContentModule)
+        loadChildren: () =>
+          import('./content/content.module').then((m) => m.ContentModule),
       },
       {
         path: 'service-pages',
-        loadChildren: () => import('./service-pages/service-pages.module').then(m => m.ServicePagesModule)
+        loadChildren: () =>
+          import('./service-pages/service-pages.module').then(
+            (m) => m.ServicePagesModule
+          ),
       },
       {
         path: 'themes',
-        loadChildren: () => import('./themes/themes.module').then(m => m.ThemesModule)
+        loadChildren: () =>
+          import('./themes/themes.module').then((m) => m.ThemesModule),
       },
       {
         path: 'users',
         canActivate: [authGuard],
-        loadChildren: () => import('./modules/user/user.module').then(m => m.UserModule)
+        loadChildren: () =>
+          import('./modules/user/user.module').then((m) => m.UserModule),
       },
       {
         path: 'companies',
         canActivate: [authGuard],
-        loadChildren: () => import('./modules/company/company.module').then(m => m.CompanyModule)
+        loadChildren: () =>
+          import('./modules/company/company.module').then(
+            (m) => m.CompanyModule
+          ),
       },
       {
         path: 'employees',
         canActivate: [authGuard],
-        loadChildren: () => import('./modules/employees/employees.module').then(m => m.EmployeesModule)
+        loadChildren: () =>
+          import('./modules/employees/employees.module').then(
+            (m) => m.EmployeesModule
+          ),
       },
       {
         path: 'meals',
-        loadChildren: () => import('./modules/meals/meals.module').then(m => m.MealsModule),
-        canActivate: [authGuard]
+        loadChildren: () =>
+          import('./modules/meals/meals.module').then((m) => m.MealsModule),
+        canActivate: [authGuard],
       },
       {
         path: 'roles',
         canActivate: [authGuard],
-        loadChildren: () => import('./modules/roles/roles.module').then(m => m.RolesModule)
+        loadChildren: () =>
+          import('./modules/roles/roles.module').then((m) => m.RolesModule),
       },
-    ]
+    ],
   },
   {
     path: '**',
     title: 'Page Not Found',
-    loadComponent: () => import('./error/not-found/not-found.component').then(c => c.NotFoundComponent)
+    loadComponent: () =>
+      import('./error/not-found/not-found.component').then(
+        (c) => c.NotFoundComponent
+      ),
   },
 ];

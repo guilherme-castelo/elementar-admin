@@ -1,19 +1,32 @@
-import { Component, inject, OnInit, WritableSignal, signal, effect, ElementRef, viewChild, OnDestroy } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  WritableSignal,
+  signal,
+  effect,
+  ElementRef,
+  viewChild,
+  OnDestroy,
+} from '@angular/core';
 import { MatInput } from '@angular/material/input';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { DatePipe, CommonModule } from '@angular/common';
 import { MatTooltip } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
-
-import { MatMenu, MatMenuItem, MatMenuTrigger } from '@angular/material/menu';
 import { ImageViewerDirective } from '@elementar-ui/components/image-viewer';
 import { HorizontalDividerComponent } from '@elementar-ui/components/divider';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
 import { ChatService } from '../../../core/services/chat.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ChatMessage, ChatUser, Conversation } from '../../../core/models/chat.interface';
+import {
+  ChatMessage,
+  ChatUser,
+  Conversation,
+} from '../../../core/models/chat.interface';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-messenger',
@@ -28,14 +41,15 @@ import { toSignal } from '@angular/core/rxjs-interop';
     DatePipe,
     MatTooltip,
     MatButton,
-    MatMenu,
-    MatMenuItem,
-    MatMenuTrigger,
     ImageViewerDirective,
-    HorizontalDividerComponent
+    HorizontalDividerComponent,
+    MatAutocompleteModule,
   ],
   templateUrl: './messenger.component.html',
-  styleUrl: './messenger.component.scss'
+  styleUrl: './messenger.component.scss',
+  host: {
+    '[class.left-sidebar-hidden]': '!leftSidebarActive',
+  },
 })
 export class MessengerComponent implements OnInit, OnDestroy {
   private _chatService = inject(ChatService);
@@ -44,12 +58,19 @@ export class MessengerComponent implements OnInit, OnDestroy {
   currentUser = this._authService.getUser();
 
   // Signals from Service
-  conversations = toSignal(this._chatService.conversations$, { initialValue: [] });
-  activeMessages = toSignal(this._chatService.activeMessages$, { initialValue: [] });
-  activeConversationId = toSignal(this._chatService.activeConversationId$, { initialValue: null });
+  conversations = toSignal(this._chatService.conversations$, {
+    initialValue: [],
+  });
+  activeMessages = toSignal(this._chatService.activeMessages$, {
+    initialValue: [],
+  });
+  activeConversationId = toSignal(this._chatService.activeConversationId$, {
+    initialValue: null,
+  });
 
   availableUsers: WritableSignal<ChatUser[]> = signal([]);
 
+  leftSidebarActive = true;
   sidebarActive = true;
   newMessage = signal('');
 
@@ -76,7 +97,7 @@ export class MessengerComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this._chatService.setMessengerActive(true);
-    this._chatService.getUsersToChat().subscribe(users => {
+    this._chatService.getUsersToChat().subscribe((users) => {
       this.availableUsers.set(users);
     });
   }
@@ -101,10 +122,33 @@ export class MessengerComponent implements OnInit, OnDestroy {
     this.sidebarActive = !this.sidebarActive;
   }
 
+  toggleLeftSidebar() {
+    this.leftSidebarActive = !this.leftSidebarActive;
+  }
+
   sendMessage() {
     if (!this.newMessage().trim()) return;
     this._chatService.sendMessage(this.newMessage()).subscribe();
     this.newMessage.set('');
+    this.newMessage.set('');
+  }
+
+  deleteMessage(message: ChatMessage) {
+    if (confirm('Deletar mensagem?')) {
+      this._chatService.deleteMessage(message.id).subscribe();
+    }
+  }
+
+  deleteConversation() {
+    const id = this.activeConversationId();
+    if (
+      id &&
+      confirm(
+        'Tem certeza que deseja apagar esta conversa? Esta ação não pode ser desfeita.'
+      )
+    ) {
+      this._chatService.deleteConversation(id).subscribe();
+    }
   }
 
   scrollToBottom() {
@@ -117,13 +161,17 @@ export class MessengerComponent implements OnInit, OnDestroy {
 
   // Helpers
   getConversationName(conv: Conversation): string {
-    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
-    const user = this.availableUsers().find(u => u.id === otherId);
+    const otherId = conv.participantIds.find(
+      (id) => id !== this.currentUser?.id
+    );
+    const user = this.availableUsers().find((u) => u.id === otherId);
     return user ? user.name : 'User ' + otherId;
   }
 
   getConversationAvatar(conv: Conversation): string {
-    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
+    const otherId = conv.participantIds.find(
+      (id) => id !== this.currentUser?.id
+    );
     // Use Dicebear seed
     return `https://api.dicebear.com/7.x/initials/svg?seed=${otherId}`;
   }
@@ -147,10 +195,12 @@ export class MessengerComponent implements OnInit, OnDestroy {
   getSelectedConversationUser(): ChatUser | undefined {
     const convId = this.activeConversationId();
     if (!convId) return undefined;
-    const conv = this.conversations().find(c => c.id === convId);
+    const conv = this.conversations().find((c) => c.id === convId);
     if (!conv) return undefined;
 
-    const otherId = conv.participantIds.find(id => id !== this.currentUser?.id);
-    return this.availableUsers().find(u => u.id === otherId);
+    const otherId = conv.participantIds.find(
+      (id) => id !== this.currentUser?.id
+    );
+    return this.availableUsers().find((u) => u.id === otherId);
   }
 }

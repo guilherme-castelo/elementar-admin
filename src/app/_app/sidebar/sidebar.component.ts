@@ -19,7 +19,8 @@ import {
   SidebarNavItemBadgeDirective,
   SidebarNavGroupToggleComponent,
   SidebarNavGroupMenuComponent,
-  SidebarNavItemIconDirective, SidebarNavGroupToggleIconDirective
+  SidebarNavItemIconDirective,
+  SidebarNavGroupToggleIconDirective,
 } from '@elementar-ui/components/sidebar';
 import { LogoComponent } from '@elementar-ui/components/logo';
 import { DicebearComponent } from '@elementar-ui/components/avatar';
@@ -51,14 +52,14 @@ import { PermissionService } from '../../core/services/permission.service';
     SidebarNavGroupToggleComponent,
     SidebarNavGroupMenuComponent,
     SidebarNavItemIconDirective,
-    OrderByPipe
+    OrderByPipe,
   ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
   host: {
-    'class': 'sidebar',
-    '[class.compact]': 'compact'
-  }
+    class: 'sidebar',
+    '[class.compact]': 'compact',
+  },
 })
 export class SidebarComponent implements OnInit {
   router = inject(Router);
@@ -82,23 +83,23 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'Users',
           link: '/users',
-          permissions: ['user:read']
+          permissions: ['user:read'],
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Companies',
           link: '/companies',
-          permissions: ['company:read']
+          permissions: ['company:read'],
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Roles',
           link: '/roles',
-          permissions: ['role:manage']
-        }
-      ]
+          permissions: ['role:manage'],
+        },
+      ],
     },
     {
       type: 'group',
@@ -110,23 +111,23 @@ export class SidebarComponent implements OnInit {
           type: 'link',
           name: 'Funcionários',
           link: '/employees',
-          permissions: ['employee:read']
+          permissions: ['employee:read'],
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Refeições',
           link: '/meals/register',
-          permissions: ['meal:read', 'meal:create']
+          permissions: ['meal:read', 'meal:create'],
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Relatórios',
           link: '/meals/reports',
-          permissions: ['meal:read']
-        }
-      ]
+          permissions: ['meal:read'],
+        },
+      ],
     },
     /** 
      
@@ -177,9 +178,9 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Prebuilt Themes',
-          link: '/themes/prebuilt-themes'
-        }
-      ]
+          link: '/themes/prebuilt-themes',
+        },
+      ],
     },
     //{
     //  type: 'heading',
@@ -234,7 +235,8 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Messenger',
-          link: '/applications/messenger'
+          link: '/applications/messenger',
+          permissions: ['chat:read'],
         },
         //{
         //  key: uuid(),
@@ -246,9 +248,10 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Kanban Board',
-          link: '/applications/kanban-board'
-        }
-      ]
+          link: '/applications/kanban-board',
+          permissions: ['task:read'],
+        },
+      ],
     },
     /**
     {
@@ -322,15 +325,15 @@ export class SidebarComponent implements OnInit {
           key: uuid(),
           type: 'link',
           name: 'Settings',
-          link: '/account/settings'
+          link: '/account/settings',
         },
         {
           key: uuid(),
           type: 'link',
           name: 'Notifications',
-          link: '/account/notifications'
-        }
-      ]
+          link: '/account/notifications',
+        },
+      ],
     },
     /**
      * 
@@ -438,21 +441,25 @@ export class SidebarComponent implements OnInit {
 
   ngOnInit() {
     // Filter items based on permissions
-    this.navItems = this._allNavItems.map(group => {
-      if (group.children) {
-        const filteredChildren = group.children.filter((child: any) => {
-          if (!child.permissions) return true;
-          return child.permissions.some((p: string) => this._permissionService.hasPermission(p));
-        });
-        if (filteredChildren.length > 0) {
-          return { ...group, children: filteredChildren };
+    this.navItems = this._allNavItems
+      .map((group) => {
+        if (group.children) {
+          const filteredChildren = group.children.filter((child: any) => {
+            if (!child.permissions) return true;
+            return child.permissions.some((p: string) =>
+              this._permissionService.hasPermission(p)
+            );
+          });
+          if (filteredChildren.length > 0) {
+            return { ...group, children: filteredChildren };
+          }
+          return null; // Remove group if no children
         }
-        return null; // Remove group if no children
-      }
-      return group; // Return group/heading if no children (assuming headings don't permissions for now, or we can add logic)
-    }).filter(group => group !== null);
+        return group; // Return group/heading if no children (assuming headings don't permissions for now, or we can add logic)
+      })
+      .filter((group) => group !== null);
 
-    this.navItems.forEach(navItem => {
+    this.navItems.forEach((navItem) => {
       this.navItemLinks.push(navItem);
 
       if (navItem.children) {
@@ -461,25 +468,23 @@ export class SidebarComponent implements OnInit {
     });
     this._activateLink();
     this.router.events
-      .pipe(
-        filter(event => event instanceof NavigationEnd)
-      )
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe(() => {
         this._activateLink();
-      })
-      ;
+      });
   }
 
   private _activateLink() {
-    const activeLink = this.navItemLinks.find(
-      navItem => {
-        if (navItem.link === this.location.path()) {
-          return true;
-        }
-
-        return (this.location.path() !== '/' || this.location.path() !== '') && this.location.path().includes(navItem.link as string);
+    const activeLink = this.navItemLinks.find((navItem) => {
+      if (navItem.link === this.location.path()) {
+        return true;
       }
-    );
+
+      return (
+        (this.location.path() !== '/' || this.location.path() !== '') &&
+        this.location.path().includes(navItem.link as string)
+      );
+    });
 
     if (activeLink) {
       this.activeKey = activeLink.key;

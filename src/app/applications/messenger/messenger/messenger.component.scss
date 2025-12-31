@@ -5,8 +5,16 @@
   gap: calc(var(--spacing) * 2);
   grid-template-columns: 312px 1fr;
 
+  &.left-sidebar-hidden {
+    grid-template-columns: 1fr;
+  }
+
   &:has(.sidebar) {
     grid-template-columns: 312px 1fr 312px;
+  }
+
+  &.left-sidebar-hidden:has(.sidebar) {
+    grid-template-columns: 1fr 312px;
   }
 
   emr-comment-editor {
