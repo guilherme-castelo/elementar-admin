@@ -4,28 +4,23 @@ import {
   OnInit,
   ViewChild,
   AfterViewInit,
+  TemplateRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
-import {
-  MatPaginatorModule,
-  MatPaginator,
-  MatPaginatorIntl,
-} from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
 import { RolesService } from '../../../core/services/roles.service';
 import { IRole } from '../../../core/models/role.model';
 import { PermissionService } from '../../../core/services/permission.service';
-import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
+import {
+  DataTableComponent,
+  TableColumn,
+  FilterConfig,
+} from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-role-list',
@@ -33,16 +28,10 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
   imports: [
     CommonModule,
     RouterLink,
-    MatTableModule,
-    MatSortModule,
     MatButtonModule,
     MatIconModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
+    DataTableComponent,
   ],
-  providers: [{ provide: MatPaginatorIntl, useValue: getPtBrPaginatorIntl() }],
   templateUrl: './role-list.component.html',
   styles: [
     `
@@ -58,74 +47,64 @@ export class RoleListComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
 
-  dataSource = new MatTableDataSource<IRole>([]);
-  displayedColumns: string[] = ['id', 'name', 'description', 'actions'];
+  data: IRole[] = [];
+  tableColumns: TableColumn[] = [];
   showFilters = false;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  filterConfig: FilterConfig[] = [
+    { key: 'id', label: 'ID', widthClass: 'w-24' },
+    { key: 'name', label: 'Nome', widthClass: 'flex-1' },
+    { key: 'description', label: 'Descrição', widthClass: 'w-1/3' },
+  ];
 
-  filterForm = new FormGroup({
-    id: new FormControl(''),
-    name: new FormControl(''),
-    description: new FormControl(''),
-  });
+  @ViewChild('actionsTemplate') actionsTemplate!: TemplateRef<any>;
+
+  // Predicate
+  filterPredicate = (data: IRole, filter: string) => {
+    const filters = JSON.parse(filter);
+    const matchId = !filters.id || data.id.toString().includes(filters.id);
+    const matchName =
+      !filters.name || data.name.toLowerCase().includes(filters.name);
+    const description = data.description ? data.description.toLowerCase() : '';
+    const matchDescription =
+      !filters.description || description.includes(filters.description);
+    return matchId && matchName && matchDescription;
+  };
 
   ngOnInit() {
-    this.setupFilterPredicate();
     this.loadRoles();
-
-    this.filterForm.valueChanges.subscribe(() => {
-      this.applyFilters();
-    });
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    setTimeout(() => {
+      this.tableColumns = [
+        { def: 'id', header: 'ID', content: (row) => `#${row.id}` },
+        {
+          def: 'name',
+          header: 'Nome',
+          content: (row) => `<div class="font-medium">${row.name}</div>`,
+        },
+        {
+          def: 'description',
+          header: 'Descrição',
+          content: (row) =>
+            `<span class="text-gray-500">${row.description || '-'}</span>`,
+        },
+        {
+          def: 'actions',
+          header: 'Ações',
+          template: this.actionsTemplate,
+          sortable: false,
+        },
+      ];
+    });
   }
 
   loadRoles() {
     this.rolesService.getAll().subscribe({
-      next: (data) => (this.dataSource.data = data),
+      next: (data) => (this.data = data),
       error: (err) => console.error('Error loading roles', err),
     });
-  }
-
-  setupFilterPredicate() {
-    this.dataSource.filterPredicate = (data: IRole, filter: string) => {
-      const filters = JSON.parse(filter);
-
-      const matchId = !filters.id || data.id.toString().includes(filters.id);
-      const matchName =
-        !filters.name || data.name.toLowerCase().includes(filters.name);
-
-      const description = data.description
-        ? data.description.toLowerCase()
-        : '';
-      const matchDescription =
-        !filters.description || description.includes(filters.description);
-
-      return matchId && matchName && matchDescription;
-    };
-  }
-
-  applyFilters() {
-    const filters = this.filterForm.value;
-    const filterString = JSON.stringify({
-      id: filters.id || '',
-      name: filters.name?.toLowerCase() || '',
-      description: filters.description?.toLowerCase() || '',
-    });
-    this.dataSource.filter = filterString;
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
-  clearFilters() {
-    this.filterForm.reset();
   }
 
   deleteRole(id: number) {

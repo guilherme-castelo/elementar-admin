@@ -1,0 +1,84 @@
+<div
+  class="mat-elevation-z2 rounded-lg overflow-hidden bg-white dark:bg-neutral-800"
+>
+  <!-- Filters Header -->
+  <div
+    *ngIf="showFilters && filters.length > 0"
+    class="p-4 bg-gray-50 dark:bg-neutral-900 border-b dark:border-neutral-700 flex gap-4 overflow-x-auto"
+    [formGroup]="filterForm"
+  >
+    <ng-container *ngFor="let filter of filters">
+      <mat-form-field
+        appearance="outline"
+        class="dense-form-field"
+        [ngClass]="filter.widthClass || 'flex-1'"
+        subscriptSizing="dynamic"
+      >
+        <mat-label>{{ filter.label }}</mat-label>
+        <input matInput [formControlName]="filter.key" />
+      </mat-form-field>
+    </ng-container>
+
+    <button
+      mat-icon-button
+      (click)="clearFilters()"
+      matTooltip="Limpar filtros"
+    >
+      <mat-icon>filter_alt_off</mat-icon>
+    </button>
+  </div>
+
+  <table
+    mat-table
+    [dataSource]="dataSource"
+    matSort
+    [matSortActive]="defaultSortActive"
+    [matSortDirection]="defaultSortDirection"
+    class="w-full"
+  >
+    <ng-container *ngFor="let col of columns" [matColumnDef]="col.def">
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        mat-sort-header
+        [disabled]="col.sortable === false"
+        class="dark:bg-neutral-800 dark:text-neutral-200"
+      >
+        {{ col.header }}
+      </th>
+      <td mat-cell *matCellDef="let row" class="dark:text-neutral-300">
+        <!-- Template Cell -->
+        <ng-container *ngIf="col.template; else textContent">
+          <ng-container
+            *ngTemplateOutlet="col.template; context: { $implicit: row }"
+          ></ng-container>
+        </ng-container>
+
+        <!-- Standard Text Cell -->
+        <ng-template #textContent>
+          <div
+            [innerHTML]="col.content ? col.content(row) : row[col.def]"
+          ></div>
+        </ng-template>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data Row -->
+    <tr class="mat-row" *matNoDataRow>
+      <td
+        class="mat-cell text-center py-6 text-neutral-500 dark:text-neutral-400"
+        [attr.colspan]="displayedColumns.length"
+      >
+        Nenhum registro encontrado para os filtros informados.
+      </td>
+    </tr>
+  </table>
+
+  <mat-paginator
+    [pageSizeOptions]="pageSizeOptions"
+    aria-label="Selecione a página"
+  ></mat-paginator>
+</div>

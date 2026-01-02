@@ -4,21 +4,12 @@ import {
   OnInit,
   ViewChild,
   AfterViewInit,
+  TemplateRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import {
-  MatPaginatorModule,
-  MatPaginator,
-  MatPaginatorIntl,
-} from '@angular/material/paginator';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { EmployeesService } from '../../../core/services/employees.service';
 import { PermissionService } from '../../../core/services/permission.service';
@@ -26,28 +17,26 @@ import { IEmployee } from '../../../core/models/employee.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { EmployeeImportDialogComponent } from '../employee-import-dialog/employee-import-dialog.component';
-import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
 import { DismissalMealsDialogComponent } from '../dismissal-meals-dialog/dismissal-meals-dialog.component';
 import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
-import { switchMap, of, filter } from 'rxjs';
+import { switchMap, of } from 'rxjs';
+import {
+  DataTableComponent,
+  TableColumn,
+  FilterConfig,
+} from '../../../shared/components/data-table/data-table.component';
 
 @Component({
   selector: 'app-employee-list',
   standalone: true,
   imports: [
     CommonModule,
-    MatTableModule,
-    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
-    MatPaginatorModule,
-    MatFormFieldModule,
-    MatInputModule,
-    ReactiveFormsModule,
     RouterLink,
+    DataTableComponent,
   ],
-  providers: [{ provide: MatPaginatorIntl, useValue: getPtBrPaginatorIntl() }],
   template: `
     <div class="p-6">
       <div class="flex justify-between items-center mb-6">
@@ -85,156 +74,34 @@ import { switchMap, of, filter } from 'rxjs';
         </div>
       </div>
 
-      <div class="mat-elevation-z2 rounded-lg overflow-hidden bg-white">
-        <!-- Filters Header -->
-        <div
-          *ngIf="showFilters"
-          class="p-4 bg-gray-50 border-b flex gap-4 overflow-x-auto"
-          [formGroup]="filterForm"
+      <app-data-table
+        [data]="data"
+        [columns]="tableColumns"
+        [filters]="filterConfig"
+        [showFilters]="showFilters"
+        [filterPredicate]="filterPredicate"
+        defaultSortActive="name"
+        defaultSortDirection="asc"
+      ></app-data-table>
+
+      <ng-template #actionsTemplate let-employee>
+        <button
+          *ngIf="permissionService.hasPermission('employee:update')"
+          mat-icon-button
+          color="primary"
+          [routerLink]="[employee.id, 'edit']"
         >
-          <mat-form-field
-            appearance="outline"
-            class="w-40 dense-form-field"
-            subscriptSizing="dynamic"
-          >
-            <mat-label>Matrícula</mat-label>
-            <input matInput formControlName="matricula" />
-          </mat-form-field>
-
-          <mat-form-field
-            appearance="outline"
-            class="flex-1 dense-form-field"
-            subscriptSizing="dynamic"
-          >
-            <mat-label>Nome</mat-label>
-            <input matInput formControlName="name" />
-          </mat-form-field>
-
-          <mat-form-field
-            appearance="outline"
-            class="w-48 dense-form-field"
-            subscriptSizing="dynamic"
-          >
-            <mat-label>Cargo / Setor</mat-label>
-            <input matInput formControlName="role" />
-          </mat-form-field>
-
-          <mat-form-field
-            appearance="outline"
-            class="w-40 dense-form-field"
-            subscriptSizing="dynamic"
-          >
-            <mat-label>Status</mat-label>
-            <input matInput formControlName="status" placeholder="Ex: Ativo" />
-          </mat-form-field>
-
-          <button
-            mat-icon-button
-            (click)="clearFilters()"
-            matTooltip="Limpar filtros"
-          >
-            <mat-icon>filter_alt_off</mat-icon>
-          </button>
-        </div>
-
-        <table
-          mat-table
-          [dataSource]="dataSource"
-          matSort
-          matSortActive="name"
-          matSortDirection="asc"
-          class="w-full"
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button
+          *ngIf="permissionService.hasPermission('employee:delete')"
+          mat-icon-button
+          color="warn"
+          (click)="deleteEmployee(employee.id)"
         >
-          <!-- Matricula -->
-          <ng-container matColumnDef="matricula">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Matrícula</th>
-            <td mat-cell *matCellDef="let employee">
-              {{ employee.matricula }}
-            </td>
-          </ng-container>
-
-          <!-- Nome -->
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome</th>
-            <td mat-cell *matCellDef="let employee">
-              <div class="font-medium">
-                {{ employee.firstName }} {{ employee.lastName }}
-              </div>
-              <div class="text-xs text-neutral-400">
-                CPF: {{ employee.cpf }}
-              </div>
-            </td>
-          </ng-container>
-
-          <!-- Função/Setor -->
-          <ng-container matColumnDef="role">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>
-              Cargo / Setor
-            </th>
-            <td mat-cell *matCellDef="let employee">
-              <div>{{ employee.funcao }}</div>
-              <div class="text-xs text-neutral-400">{{ employee.setor }}</div>
-            </td>
-          </ng-container>
-
-          <!-- Status -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-            <td mat-cell *matCellDef="let employee">
-              <span
-                class="px-2 py-1 rounded text-xs font-semibold"
-                [ngClass]="
-                  employee.dataDemissao
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-green-100 text-green-700'
-                "
-              >
-                {{ employee.dataDemissao ? 'Demitido' : 'Ativo' }}
-              </span>
-            </td>
-          </ng-container>
-
-          <!-- Ações -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Ações</th>
-            <td mat-cell *matCellDef="let employee">
-              <button
-                *ngIf="permissionService.hasPermission('employee:update')"
-                mat-icon-button
-                color="primary"
-                [routerLink]="[employee.id, 'edit']"
-              >
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button
-                *ngIf="permissionService.hasPermission('employee:delete')"
-                mat-icon-button
-                color="warn"
-                (click)="deleteEmployee(employee.id)"
-              >
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-          <tr class="mat-row" *matNoDataRow>
-            <td
-              class="mat-cell text-center py-6 text-neutral-500"
-              [attr.colspan]="displayedColumns.length"
-            >
-              Nenhum funcionário encontrado com os filtros atuais.
-            </td>
-          </tr>
-        </table>
-
-        <mat-paginator
-          [pageSizeOptions]="[10, 25, 50, 100]"
-          aria-label="Selecione a página de funcionários"
-        ></mat-paginator>
-      </div>
+          <mat-icon>delete</mat-icon>
+        </button>
+      </ng-template>
     </div>
   `,
   styles: [
@@ -251,62 +118,87 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
 
-  dataSource = new MatTableDataSource<IEmployee>([]);
-  displayedColumns: string[] = [
-    'matricula',
-    'name',
-    'role',
-    'status',
-    'actions',
-  ];
+  data: IEmployee[] = [];
+  tableColumns: TableColumn[] = [];
   showFilters = false;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+  filterConfig: FilterConfig[] = [
+    { key: 'matricula', label: 'Matrícula', widthClass: 'w-40' },
+    { key: 'name', label: 'Nome', widthClass: 'flex-1' },
+    { key: 'role', label: 'Cargo / Setor', widthClass: 'w-48' },
+    { key: 'status', label: 'Status', widthClass: 'w-40' },
+  ];
 
-  filterForm = new FormGroup({
-    matricula: new FormControl(''),
-    name: new FormControl(''),
-    role: new FormControl(''),
-    status: new FormControl(''),
-  });
+  @ViewChild('actionsTemplate') actionsTemplate!: TemplateRef<any>;
+
+  filterPredicate = (data: IEmployee, filter: string) => {
+    const filters = JSON.parse(filter);
+    const matchMatricula =
+      !filters.matricula ||
+      data.matricula?.toLowerCase().includes(filters.matricula);
+    const fullName = (data.firstName + ' ' + data.lastName).toLowerCase();
+    const matchName = !filters.name || fullName.includes(filters.name);
+    const roleSector = (data.funcao + ' ' + data.setor).toLowerCase();
+    const matchRole = !filters.role || roleSector.includes(filters.role);
+    const status = data.dataDemissao ? 'demitido' : 'ativo';
+    const matchStatus = !filters.status || status.includes(filters.status);
+    return matchMatricula && matchName && matchRole && matchStatus;
+  };
 
   ngOnInit() {
-    this.setupFilterPredicate();
-    this.setupSortingAccessor();
     this.initialLoad();
-
-    this.filterForm.valueChanges.subscribe(() => {
-      this.applyFilters();
-    });
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-  }
-
-  setupSortingAccessor() {
-    this.dataSource.sortingDataAccessor = (item, property) => {
-      switch (property) {
-        case 'name':
-          return (item.firstName + ' ' + item.lastName).toLowerCase();
-        case 'role':
-          return (item.funcao + ' ' + item.setor).toLowerCase();
-        case 'status':
-          return item.dataDemissao ? 'demitido' : 'ativo';
-        case 'matricula':
-          return item.matricula ? item.matricula.toLowerCase() : '';
-        default:
-          return (item as any)[property];
-      }
-    };
+    setTimeout(() => {
+      this.tableColumns = [
+        { def: 'matricula', header: 'Matrícula' },
+        {
+          def: 'name',
+          header: 'Nome',
+          content: (row) => `
+                <div class="font-medium">${row.firstName} ${row.lastName}</div>
+                <div class="text-xs text-neutral-400">CPF: ${row.cpf}</div>
+               `,
+          sortAccessor: (row) =>
+            (row.firstName + ' ' + row.lastName).toLowerCase(),
+        },
+        {
+          def: 'role',
+          header: 'Cargo / Setor',
+          content: (row) => `
+                <div>${row.funcao}</div>
+                <div class="text-xs text-neutral-400">${row.setor}</div>
+               `,
+          sortAccessor: (row) => (row.funcao + ' ' + row.setor).toLowerCase(),
+        },
+        {
+          def: 'status',
+          header: 'Status',
+          content: (row) => {
+            const isDismissed = !!row.dataDemissao;
+            const classes = isDismissed
+              ? 'bg-red-100 text-red-700'
+              : 'bg-green-100 text-green-700';
+            const label = isDismissed ? 'Demitido' : 'Ativo';
+            return `<span class="px-2 py-1 rounded text-xs font-semibold ${classes}">${label}</span>`;
+          },
+          sortAccessor: (row) => (row.dataDemissao ? 'demitido' : 'ativo'),
+        },
+        {
+          def: 'actions',
+          header: 'Ações',
+          template: this.actionsTemplate,
+          sortable: false,
+        },
+      ];
+    });
   }
 
   initialLoad() {
     this.employeesService.getAll().subscribe({
       next: (data) => {
-        this.dataSource.data = data;
+        this.data = data;
       },
       error: () => {
         this.snackBar.open('Erro ao carregar funcionários', 'Fechar', {
@@ -314,45 +206,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
         });
       },
     });
-  }
-
-  setupFilterPredicate() {
-    this.dataSource.filterPredicate = (data: IEmployee, filter: string) => {
-      const filters = JSON.parse(filter);
-
-      const matchMatricula =
-        !filters.matricula ||
-        data.matricula?.toLowerCase().includes(filters.matricula);
-      const fullName = (data.firstName + ' ' + data.lastName).toLowerCase();
-      const matchName = !filters.name || fullName.includes(filters.name);
-
-      const roleSector = (data.funcao + ' ' + data.setor).toLowerCase();
-      const matchRole = !filters.role || roleSector.includes(filters.role);
-
-      const status = data.dataDemissao ? 'demitido' : 'ativo';
-      const matchStatus = !filters.status || status.includes(filters.status);
-
-      return matchMatricula && matchName && matchRole && matchStatus;
-    };
-  }
-
-  applyFilters() {
-    const filters = this.filterForm.value;
-    const filterString = JSON.stringify({
-      matricula: filters.matricula?.toLowerCase() || '',
-      name: filters.name?.toLowerCase() || '',
-      role: filters.role?.toLowerCase() || '',
-      status: filters.status?.toLowerCase() || '',
-    });
-    this.dataSource.filter = filterString;
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
-  clearFilters() {
-    this.filterForm.reset();
   }
 
   deleteEmployee(id: string) {
@@ -368,7 +221,6 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((confirmed) => {
       if (confirmed) {
-        // Confirmed, now check for linked meals
         this.employeesService
           .countLinkedMeals(id)
           .pipe(
@@ -384,16 +236,11 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
                 );
                 return dismissalDialogRef.afterClosed();
               }
-              return of(null); // No meals, proceed with null action (standard delete)
+              return of(null);
             })
           )
           .subscribe((mealsAction) => {
-            // If undefined, dialog was cancelled/closed without choice (if allowed, but here we expect choice or check cancellation)
-            // With disableClose: true, user picks or we handle close.
-            // If we strictly want to stop if cancelled:
             if (mealsAction === undefined) return;
-
-            // Perform delete
             this.employeesService
               .delete(id, (mealsAction as string) || undefined)
               .subscribe({
@@ -407,9 +254,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
                   console.error(err);
                   const msg =
                     err.error?.message || 'Erro ao excluir funcionário';
-                  this.snackBar.open(msg, 'OK', {
-                    duration: 3000,
-                  });
+                  this.snackBar.open(msg, 'OK', { duration: 3000 });
                 },
               });
           });
