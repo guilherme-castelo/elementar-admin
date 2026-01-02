@@ -24,6 +24,13 @@ export const routes: Routes = [
       import('./landing/landing.component').then((c) => c.LandingComponent),
   },
   {
+    path: 'print/report',
+    loadComponent: () =>
+      import('./modules/meals/print-report/print-report.component').then(
+        (m) => m.PrintReportComponent
+      ),
+  },
+  {
     path: 'landing',
     loadComponent: () =>
       import('./landing/landing.component').then((c) => c.LandingComponent),

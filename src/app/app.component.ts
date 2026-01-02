@@ -3,7 +3,8 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { PageLoadingBarComponent } from '@elementar-ui/components/page-loading-bar';
 import {
-  AnalyticsService, EnvironmentService,
+  AnalyticsService,
+  EnvironmentService,
   InactivityTrackerService,
   SeoService,
 } from '@elementar-ui/components/core';
@@ -16,10 +17,10 @@ import { TextLogoComponent } from '@elementar-ui/components/logo';
     RouterOutlet,
     PageLoadingBarComponent,
     SplashScreenComponent,
-    TextLogoComponent
+    TextLogoComponent,
   ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   private _analyticsService = inject(AnalyticsService);
@@ -28,32 +29,32 @@ export class AppComponent implements OnInit {
   private _envService = inject(EnvironmentService);
   private _router = inject(Router);
 
+  isPrintRoute = false;
+
   constructor() {
     afterNextRender(() => {
       // Scroll a page to top if url changed
       this._router.events
-        .pipe(
-          filter(event=> event instanceof NavigationEnd)
-        )
-        .subscribe(() => {
+        .pipe(filter((event) => event instanceof NavigationEnd))
+        .subscribe((event: any) => {
+          this.isPrintRoute = event.url.includes('/print/report');
           window.scrollTo({
             top: 0,
-            left: 0
+            left: 0,
           });
-        })
-      ;
+        });
 
       this._analyticsService.trackPageViews();
-      this._inactivityTracker.setupInactivityTimer()
-        .subscribe(() => {
-          // console.log('Inactive mode has been activated!');
-          // this._inactivityTracker.reset();
-        })
-      ;
+      this._inactivityTracker.setupInactivityTimer().subscribe(() => {
+        // console.log('Inactive mode has been activated!');
+        // this._inactivityTracker.reset();
+      });
     });
   }
 
   ngOnInit(): void {
-    this._seoService.trackCanonicalChanges(this._envService.getValue('siteUrl'));
+    this._seoService.trackCanonicalChanges(
+      this._envService.getValue('siteUrl')
+    );
   }
 }

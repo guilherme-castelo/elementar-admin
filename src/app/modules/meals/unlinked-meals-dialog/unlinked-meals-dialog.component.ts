@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MealsService } from '../../../core/services/meals.service';
 import { IMeal } from '../../../core/models/meal.model';
 import { RouterModule } from '@angular/router';
@@ -24,6 +26,8 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
     MatIconModule,
     MatTableModule,
     MatTooltipModule,
+    MatSnackBarModule,
+    MatProgressBarModule,
     RouterModule,
   ],
   template: `
@@ -32,21 +36,46 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
       Refeições sem Vínculo
     </h2>
 
-    <mat-dialog-content class="mat-typography max-h-[80vh] min-w-[800px]">
-      <p class="mb-4 text-neutral-600">
-        As seguintes refeições foram importadas mas não estão vinculadas a
-        nenhum funcionário cadastrado. Cadastre os funcionários com as
-        matrículas correspondentes para regularizar.
-      </p>
+    <!-- Loading Indicator -->
+    <mat-progress-bar
+      *ngIf="isLoading"
+      mode="indeterminate"
+      class="mb-[-4px]"
+    ></mat-progress-bar>
 
-      <div class="border rounded-lg overflow-hidden">
+    <mat-dialog-content class="mat-typography max-h-[80vh]">
+      <div class="mt-4 mb-6 text-neutral-600 text-sm">
+        <p class="mb-2">
+          Existem refeições sem vínculo com nenhum funcionário. Para
+          regularizar:
+        </p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Cadastre os funcionários com as matrículas correspondentes;</li>
+          <li>
+            Ou <strong>ignore</strong> as refeições para não exportar para a
+            folha (ícone de olho);
+          </li>
+          <li>Ou <strong>exclua</strong> os registros definitivamente.</li>
+        </ul>
+        <p
+          class="mt-3 text-xs text-neutral-500 bg-blue-50 p-2 rounded border border-blue-100"
+        >
+          <mat-icon class="icon-xs align-middle text-blue-500 mr-1"
+            >info</mat-icon
+          >
+          <strong>Nota:</strong> Refeições ignoradas são mantidas no sistema mas
+          não aparecem na exportação da folha.
+        </p>
+      </div>
+
+      <div class="border rounded-lg overflow-hidden relative min-h-[100px]">
         <table mat-table [dataSource]="groupedDataSource" class="w-full">
           <!-- Matricula -->
           <ng-container matColumnDef="matricula">
             <th mat-header-cell *matHeaderCellDef>Matrícula</th>
             <td mat-cell *matCellDef="let item">
               <span
-                class="font-mono bg-amber-100 text-amber-800 px-2 py-1 rounded font-bold"
+                class="font-mono bg-amber-100 text-amber-800 p-1 rounded font-bold text-xs"
               >
                 {{ item.matricula }}
               </span>
@@ -55,22 +84,34 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
 
           <!-- Nome no Funcionário -->
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Funcionário</th>
-            <td mat-cell *matCellDef="let item">{{ item.originalName }}</td>
+            <th mat-header-cell *matHeaderCellDef>Funcionário (Importado)</th>
+            <td mat-cell *matCellDef="let item" class="text-neutral-700">
+              {{ item.originalName }}
+              <span
+                *ngIf="item.ignoredInExport"
+                class="ml-2 text-xs text-neutral-400 italic"
+                >(Ignorado)</span
+              >
+            </td>
           </ng-container>
 
           <!-- Qtd -->
           <ng-container matColumnDef="count">
-            <th mat-header-cell *matHeaderCellDef>Refeições</th>
-            <td mat-cell *matCellDef="let item">{{ item.count }}</td>
+            <th mat-header-cell *matHeaderCellDef>Qtd.</th>
+            <td mat-cell *matCellDef="let item" class="font-medium text-center">
+              {{ item.count }}
+            </td>
           </ng-container>
 
           <!-- Actions -->
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Ações</th>
+            <th mat-header-cell *matHeaderCellDef class="text-right pr-6">
+              Ações
+            </th>
             <td mat-cell *matCellDef="let item" class="text-right">
+              <!-- Register User -->
               <a
-                mat-stroked-button
+                mat-icon-button
                 color="primary"
                 [routerLink]="['/employees/new']"
                 [queryParams]="{
@@ -78,32 +119,32 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
                   name: item.originalName
                 }"
                 (click)="close()"
+                matTooltip="Cadastrar Funcionário"
               >
-                <mat-icon>person_add</mat-icon> Cadastrar
+                <mat-icon>person_add</mat-icon>
               </a>
 
+              <!-- Toggle Ignore -->
               <button
-                mat-stroked-button
-                [color]="item.ignoredInExport ? 'warn' : ''"
-                class="ml-2"
+                mat-icon-button
+                [color]="item.ignoredInExport ? 'warn' : 'accent'"
                 (click)="toggleIgnore(item)"
                 [matTooltip]="
                   item.ignoredInExport
-                    ? 'Voltar a incluir na exportação'
-                    : 'Ignorar na exportação (Folha)'
+                    ? 'Reativar para exportação'
+                    : 'Ignorar na exportação'
                 "
               >
                 <mat-icon>{{
-                  item.ignoredInExport ? 'visibility' : 'visibility_off'
+                  item.ignoredInExport ? 'visibility_off' : 'visibility'
                 }}</mat-icon>
-                {{ item.ignoredInExport ? 'Incluir' : 'Ignorar' }}
               </button>
 
+              <!-- Delete -->
               <button
                 mat-icon-button
                 color="warn"
-                class="ml-2"
-                matTooltip="Excluir registros definitivamente"
+                matTooltip="Excluir definitivamente"
                 (click)="deleteGroup(item)"
               >
                 <mat-icon>delete</mat-icon>
@@ -114,33 +155,51 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
           <tr
             mat-header-row
             *matHeaderRowDef="displayedColumns; sticky: true"
+            class="bg-gray-50"
           ></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            class="hover:bg-gray-50 transition-colors"
+            [class.opacity-50]="row.ignoredInExport"
+            [class.grayscale]="row.ignoredInExport"
+          ></tr>
         </table>
-      </div>
 
-      <div *ngIf="isLoading" class="p-4 text-center text-neutral-500">
-        Carregando...
-      </div>
-
-      <div
-        *ngIf="!isLoading && groupedDataSource.length === 0"
-        class="p-8 text-center text-neutral-500 bg-gray-50 rounded mt-4"
-      >
-        <mat-icon class="text-4xl mb-2 text-green-500">check_circle</mat-icon>
-        <p>Tudo certo! Nenhuma refeição pendente.</p>
+        <!-- Empty State inside container -->
+        <div
+          *ngIf="!isLoading && groupedDataSource.length === 0"
+          class="p-8 text-center"
+        >
+          <mat-icon class="text-5xl text-green-200 mb-2">check_circle</mat-icon>
+          <p class="text-neutral-500 font-medium">Tudo certo!</p>
+          <p class="text-sm text-neutral-400">Nenhuma refeição pendente.</p>
+        </div>
       </div>
     </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions align="end" class="mr-4 mb-2">
       <button mat-button (click)="close()">Fechar</button>
     </mat-dialog-actions>
   `,
+  styles: [
+    `
+      /* Custom scrollbar for dialog content */
+      mat-dialog-content::-webkit-scrollbar {
+        width: 8px;
+      }
+      mat-dialog-content::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 4px;
+      }
+    `,
+  ],
 })
 export class UnlinkedMealsDialogComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<UnlinkedMealsDialogComponent>);
   private dialog = inject(MatDialog);
   private mealsService = inject(MealsService);
+  private snackBar = inject(MatSnackBar);
 
   displayedColumns = ['matricula', 'name', 'count', 'actions'];
   groupedDataSource: any[] = [];
@@ -160,6 +219,9 @@ export class UnlinkedMealsDialogComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.isLoading = false;
+        this.snackBar.open('Erro ao carregar pendências.', 'Fechar', {
+          duration: 3000,
+        });
       },
     });
   }
@@ -210,22 +272,17 @@ export class UnlinkedMealsDialogComponent implements OnInit {
         this.isLoading = true;
         this.mealsService.deletePending(item.matricula).subscribe({
           next: () => {
+            this.snackBar.open('Registros excluídos com sucesso.', 'OK', {
+              duration: 3000,
+            });
             this.loadPending();
           },
           error: (err) => {
             console.error(err);
             this.isLoading = false;
-            // Use existing logic for error reporting? It used alert.
-            // Better to use SnackBar or just console inside this component if SnackBar is not available.
-            // But I should probably inject SnackBar too?
-            // For now, I'll allow "alert" for error reporting if SnackBar is not injected, or console error.
-            // But request said "verifique onde esta sendo utilizado o alert".
-            // So I should replace error alerts too.
-            // I'll leave a TODO or add SnackBar if easy.
-            // There is no SnackBar injected. I will stick to console.error + simple alert or better, inject SnackBar.
-            // I'll skip injecting SnackBar for now to keep diff small, assume error handling logic improvement is separate or standard.
-            // Actually I should clean up alert. I will try to use console.error only for now or inject SnackBar in next step if critical.
-            console.error('Erro ao excluir registros');
+            this.snackBar.open('Erro ao excluir registros.', 'Fechar', {
+              duration: 3000,
+            });
           },
         });
       }
@@ -237,12 +294,18 @@ export class UnlinkedMealsDialogComponent implements OnInit {
     this.isLoading = true;
     this.mealsService.toggleIgnorePending(item.matricula, newStatus).subscribe({
       next: () => {
+        const msg = newStatus
+          ? 'Registros ignorados na exportação.'
+          : 'Registros reativados para exportação.';
+        this.snackBar.open(msg, 'OK', { duration: 2000 });
         this.loadPending();
       },
       error: (err) => {
         console.error(err);
         this.isLoading = false;
-        alert('Erro ao atualizar status.');
+        this.snackBar.open('Erro ao atualizar status.', 'Fechar', {
+          duration: 3000,
+        });
       },
     });
   }

@@ -1,5 +1,7 @@
-<emr-page-loading-bar fixed/>
+<emr-page-loading-bar fixed />
+@if (!isPrintRoute) {
 <emr-splash-screen>
   <emr-text-logo>ELEMENTAR</emr-text-logo>
 </emr-splash-screen>
-<router-outlet/>
+}
+<router-outlet />

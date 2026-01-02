@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
@@ -8,12 +8,13 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MealsService } from '../../../core/services/meals.service';
 import { ReportPeriodService } from '../../../core/services/report-period.service';
+import { PrintService } from '../../../core/services/print.service';
 import { forkJoin } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -77,7 +78,8 @@ export class MealReportsComponent implements OnInit {
   monthControl = new FormControl(this.currentPeriod.month);
   yearControl = new FormControl(this.currentPeriod.year);
 
-  // New Controls
+  // Controls
+  granularityControl = new FormControl<'daily' | 'weekly'>('daily');
   viewModeControl = new FormControl<'sector' | 'employee'>('sector');
   filterControl = new FormControl('');
 
@@ -115,7 +117,12 @@ export class MealReportsComponent implements OnInit {
 
     // Subscribe to control changes to trigger refresh or filter
     this.viewModeControl.valueChanges.subscribe(() => this.refresh());
+    this.granularityControl.valueChanges.subscribe(() =>
+      this.onGranularityChange()
+    );
     this.filterControl.valueChanges.subscribe(() => this.applyFilter());
+    this.monthControl.valueChanges.subscribe(() => this.refresh());
+    this.yearControl.valueChanges.subscribe(() => this.refresh());
 
     this.refresh();
   }
@@ -131,10 +138,16 @@ export class MealReportsComponent implements OnInit {
     this.refresh();
   }
 
+  onGranularityChange() {
+    // We no longer need to force sector for weekly
+    this.refresh();
+  }
+
   refresh() {
     const month = this.monthControl.value!;
     const year = this.yearControl.value!;
     const viewMode = this.viewModeControl.value || 'sector';
+    const granularity = this.granularityControl.value || 'daily';
 
     // Using new service
     const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(
@@ -149,7 +162,7 @@ export class MealReportsComponent implements OnInit {
 
     forkJoin({
       summary: this.mealsService.getWeeklySummary(startIso, endIso),
-      matrix: this.mealsService.getSectorWeeklyMatrix(startIso, endIso),
+      matrix: this.mealsService.getWeeklyReport(startIso, endIso, viewMode),
       dailyMatrix: this.mealsService.getDailyReport(refDate, viewMode),
       pendingCount: this.mealsService.getPendingCount(),
     }).subscribe((data) => {
@@ -163,16 +176,29 @@ export class MealReportsComponent implements OnInit {
 
   applyFilter() {
     const filter = (this.filterControl.value || '').toLowerCase().trim();
-    if (!this.dailyMatrix?.rows) {
+    const granularity = this.granularityControl.value;
+
+    let sourceRows: any[] = [];
+    if (granularity === 'weekly') sourceRows = this.matrix.rows;
+    else sourceRows = this.dailyMatrix.rows;
+
+    if (!sourceRows) {
       this.filteredRows = [];
       return;
     }
 
     if (!filter) {
-      this.filteredRows = this.dailyMatrix.rows;
+      this.filteredRows = sourceRows;
     } else {
-      this.filteredRows = this.dailyMatrix.rows.filter((row: any) => {
-        const labelMatch = (row.label || '').toLowerCase().includes(filter);
+      this.filteredRows = sourceRows.filter((row: any) => {
+        // Now all rows have 'label' and 'secondaryLabel' (except maybe legacy sector matrix if not fully aligned, but we fixed service)
+        // Service now returns standardized { label, secondaryLabel } even for generic calls.
+
+        // Wait, did I update getWeeklyReport to use new structure? YES.
+
+        const labelMatch = (row.label || row.sector || '')
+          .toLowerCase()
+          .includes(filter); // row.sector as fallback
         const subLabelMatch = (row.secondaryLabel || '')
           .toLowerCase()
           .includes(filter);
@@ -254,4 +280,63 @@ export class MealReportsComponent implements OnInit {
   navigateToRegister() {
     this.router.navigate(['/meals/register']);
   }
+
+  // --- Print Logic ---
+  private printService = inject(PrintService);
+
+  // Shortcut Listener
+  @HostListener('window:keydown.control.p', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    event.preventDefault();
+    this.onPrint();
+  }
+
+  onPrint() {
+    // Check which tab is active (0 = Weekly Summary, 1 = Daily Report)
+    // We can infer logic from available data or user selection if we track tab index
+    // For now, let's assume we want to print what is visible.
+    // MatTabGroup API is needed to check selectedIndex if we want automatic detection.
+    // Simpler: Just print the current view context.
+
+    // However, I need to know which dataset to send.
+    // Let's rely on a view state property.
+    // Since I don't track selectedTab explicitly in a variable, I will add it or guess based on viewMode.
+    // Actually, matrix vs dailyMatrix depends on the visual tab.
+    // Let's add a variable `selectedTabIndex` binding to the tab group.
+
+    // Defaulting to print logic:
+    const isWeekly = this.granularityControl.value === 'weekly';
+
+    const printPayload = {
+      type: isWeekly ? 'weekly' : 'daily',
+      companyName: 'Minha Empresa', // TODO: Get from CompanyService
+      title: isWeekly
+        ? 'Relatório Semanal de Custos'
+        : 'Relatório Diário de Refeições',
+      periodStart: this.periodStart,
+      periodEnd: this.periodEnd,
+      summary: this.summary,
+
+      // Weekly Data
+      matrix: this.matrix,
+
+      // Daily Data
+      dailyMatrix: this.dailyMatrix,
+      rows: this.filteredRows, // Respect filters
+      viewMode: this.viewModeControl.value,
+    };
+
+    this.printService.setPrintData(printPayload);
+
+    // Open in new tab
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/print/report'])
+    );
+    window.open(url, '_blank');
+  }
+
+  // selectedTabIndex = 0; // Removed as we use unified view
+  // onTabChange(event: MatTabChangeEvent) {
+  //   this.selectedTabIndex = event.index;
+  // }
 }
