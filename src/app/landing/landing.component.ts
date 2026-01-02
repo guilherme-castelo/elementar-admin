@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../core/services/auth.service';
+import { landingPageConfig } from './landing.config';
 
 @Component({
   selector: 'app-landing',
@@ -12,16 +13,18 @@ import { AuthService } from '../core/services/auth.service';
   styleUrl: './landing.component.scss',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
-    MatButtonModule, 
-    MatCardModule, 
-    MatIconModule
-  ]
+    CommonModule,
+    RouterModule,
+    MatButtonModule,
+    MatCardModule,
+    MatIconModule,
+  ],
 })
 export class LandingComponent {
   private authService = inject(AuthService);
-  
+
+  readonly config = landingPageConfig;
+
   get isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
   }
