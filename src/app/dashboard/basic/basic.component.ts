@@ -61,7 +61,7 @@ export class BasicComponent implements OnInit {
           qty: data.todayMealsQty,
           value: data.todayMealsQty * 3.0,
         }; // Fallback calc if not provided
-        this.setMealFilter('day'); // Ensure valid state
+        this.setMealFilter('month'); // Ensure valid state
         this.isLoading = false;
       },
       error: (err) => {
