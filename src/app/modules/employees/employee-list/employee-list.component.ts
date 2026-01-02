@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -36,6 +37,7 @@ import { switchMap, of, filter } from 'rxjs';
   imports: [
     CommonModule,
     MatTableModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatChipsModule,
@@ -135,10 +137,17 @@ import { switchMap, of, filter } from 'rxjs';
           </button>
         </div>
 
-        <table mat-table [dataSource]="dataSource" class="w-full">
+        <table
+          mat-table
+          [dataSource]="dataSource"
+          matSort
+          matSortActive="name"
+          matSortDirection="asc"
+          class="w-full"
+        >
           <!-- Matricula -->
           <ng-container matColumnDef="matricula">
-            <th mat-header-cell *matHeaderCellDef>Matrícula</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Matrícula</th>
             <td mat-cell *matCellDef="let employee">
               {{ employee.matricula }}
             </td>
@@ -146,7 +155,7 @@ import { switchMap, of, filter } from 'rxjs';
 
           <!-- Nome -->
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Nome</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome</th>
             <td mat-cell *matCellDef="let employee">
               <div class="font-medium">
                 {{ employee.firstName }} {{ employee.lastName }}
@@ -159,7 +168,9 @@ import { switchMap, of, filter } from 'rxjs';
 
           <!-- Função/Setor -->
           <ng-container matColumnDef="role">
-            <th mat-header-cell *matHeaderCellDef>Cargo / Setor</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              Cargo / Setor
+            </th>
             <td mat-cell *matCellDef="let employee">
               <div>{{ employee.funcao }}</div>
               <div class="text-xs text-neutral-400">{{ employee.setor }}</div>
@@ -168,7 +179,7 @@ import { switchMap, of, filter } from 'rxjs';
 
           <!-- Status -->
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
             <td mat-cell *matCellDef="let employee">
               <span
                 class="px-2 py-1 rounded text-xs font-semibold"
@@ -251,6 +262,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
   showFilters = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   filterForm = new FormGroup({
     matricula: new FormControl(''),
@@ -261,6 +273,7 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.setupFilterPredicate();
+    this.setupSortingAccessor();
     this.initialLoad();
 
     this.filterForm.valueChanges.subscribe(() => {
@@ -270,6 +283,24 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
+  setupSortingAccessor() {
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'name':
+          return (item.firstName + ' ' + item.lastName).toLowerCase();
+        case 'role':
+          return (item.funcao + ' ' + item.setor).toLowerCase();
+        case 'status':
+          return item.dataDemissao ? 'demitido' : 'ativo';
+        case 'matricula':
+          return item.matricula ? item.matricula.toLowerCase() : '';
+        default:
+          return (item as any)[property];
+      }
+    };
   }
 
   initialLoad() {

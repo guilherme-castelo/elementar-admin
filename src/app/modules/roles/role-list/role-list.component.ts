@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
@@ -33,6 +34,7 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
     CommonModule,
     RouterLink,
     MatTableModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
@@ -61,6 +63,7 @@ export class RoleListComponent implements OnInit, AfterViewInit {
   showFilters = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   filterForm = new FormGroup({
     id: new FormControl(''),
@@ -79,6 +82,7 @@ export class RoleListComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 
   loadRoles() {

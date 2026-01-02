@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -29,6 +30,7 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
   imports: [
     CommonModule,
     MatTableModule,
+    MatSortModule,
     MatButtonModule,
     MatIconModule,
     MatPaginatorModule,
@@ -109,12 +111,20 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
           </button>
         </div>
 
-        <table mat-table [dataSource]="dataSource" class="w-full">
+        <table
+          mat-table
+          [dataSource]="dataSource"
+          matSort
+          matSortActive="name"
+          matSortDirection="asc"
+          class="w-full"
+        >
           <!-- ID Column -->
           <ng-container matColumnDef="id">
             <th
               mat-header-cell
               *matHeaderCellDef
+              mat-sort-header
               class="dark:bg-neutral-800 dark:text-neutral-200"
             >
               ID
@@ -129,6 +139,7 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
             <th
               mat-header-cell
               *matHeaderCellDef
+              mat-sort-header
               class="dark:bg-neutral-800 dark:text-neutral-200"
             >
               Nome
@@ -146,6 +157,7 @@ import { getPtBrPaginatorIntl } from '../../../shared/helpers/paginator-intl';
             <th
               mat-header-cell
               *matHeaderCellDef
+              mat-sort-header
               class="dark:bg-neutral-800 dark:text-neutral-200"
             >
               Função
@@ -218,6 +230,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   showFilters = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   filterForm = new FormGroup({
     id: new FormControl(''),
@@ -228,6 +241,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.setupFilterPredicate();
     this.initialLoad();
+    this.setupSortingAccessor();
 
     this.filterForm.valueChanges.subscribe(() => {
       this.applyFilters();
@@ -236,6 +250,18 @@ export class UserListComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
+  setupSortingAccessor() {
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'name':
+          return (item.name + ' ' + item.email).toLowerCase();
+        default:
+          return (item as any)[property];
+      }
+    };
   }
 
   initialLoad() {
