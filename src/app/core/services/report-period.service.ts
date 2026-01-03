@@ -5,19 +5,20 @@ export interface IPeriod {
   end: Date;
   startIso: string;
   endIso: string;
+  startStr: string;
+  endStr: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ReportPeriodService {
-
   /**
    * Calculates the billing period for a given Month and Year.
    * Rule:
    * - Starts on day 26 of previous month.
    * - Ends on day 25 of current selected month.
-   * 
+   *
    * @param month 0-indexed (0 = Jan, 11 = Dec)
    * @param year Full year (e.g. 2024)
    */
@@ -33,7 +34,9 @@ export class ReportPeriodService {
       start,
       end,
       startIso: start.toISOString(),
-      endIso: end.toISOString()
+      endIso: end.toISOString(),
+      startStr: start.toISOString().split('T')[0],
+      endStr: end.toISOString().split('T')[0],
     };
   }
 
@@ -41,7 +44,7 @@ export class ReportPeriodService {
    * Returns the month and year of the CURRENT billing period based on today's date.
    * If today > 25, it's already the NEXT booking month.
    */
-  getCurrentBillingMonthYear(): { month: number, year: number } {
+  getCurrentBillingMonthYear(): { month: number; year: number } {
     const today = new Date();
     let month = today.getMonth(); // 0-11
     let year = today.getFullYear();

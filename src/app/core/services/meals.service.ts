@@ -91,7 +91,12 @@ export class MealsService {
    * Delegates to ReportPeriodService based on the month of the provided date.
    * Ideally, callers should use ReportPeriodService directly, but kept for compatibility.
    */
-  getPeriod(date: Date): { start: string; end: string } {
+  getPeriod(date: Date): {
+    start: string;
+    end: string;
+    startStr: string;
+    endStr: string;
+  } {
     // Determine target month based on date.
     // If day >= 26, it belongs to NEXT month's period? No.
     // The previous logic was:
@@ -113,11 +118,9 @@ export class MealsService {
       }
     }
 
-    const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(
-      targetMonth,
-      targetYear
-    );
-    return { start: startIso, end: endIso };
+    const { startIso, endIso, startStr, endStr } =
+      this.reportPeriodService.getPeriodByMonth(targetMonth, targetYear);
+    return { start: startIso, end: endIso, startStr, endStr };
   }
 
   /**
@@ -223,8 +226,10 @@ export class MealsService {
     date: Date,
     groupBy: 'sector' | 'employee' = 'sector'
   ): Observable<any> {
-    const { start, end } = this.getPeriod(date);
-    return this.getMealsByPeriod(start, end).pipe(
+    const { start, end, startStr, endStr } = this.getPeriod(date);
+    // Send string dates (with end-of-day for end date) to backend to strictly match Reference Period
+    // disregarding timezone offsets for period comparison.
+    return this.getMealsByPeriod(startStr, endStr + 'T23:59:59.999Z').pipe(
       map((meals) => {
         const startDate = new Date(start);
         const endDate = new Date(end);

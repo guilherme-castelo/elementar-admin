@@ -150,19 +150,20 @@ export class MealReportsComponent implements OnInit {
     const granularity = this.granularityControl.value || 'daily';
 
     // Using new service
-    const { startIso, endIso } = this.reportPeriodService.getPeriodByMonth(
-      month,
-      year
-    );
+    const { startIso, endIso, startStr, endStr } =
+      this.reportPeriodService.getPeriodByMonth(month, year);
     this.periodStart = startIso;
     this.periodEnd = endIso;
 
     // Passing the Month Reference Date for dailyMatrix logic
     const refDate = new Date(year, month, 1);
 
+    // Ensure we use the robust T23:59:59.999Z end date for filtering
+    const apiEnd = endStr + 'T23:59:59.999Z';
+
     forkJoin({
-      summary: this.mealsService.getWeeklySummary(startIso, endIso),
-      matrix: this.mealsService.getWeeklyReport(startIso, endIso, viewMode),
+      summary: this.mealsService.getWeeklySummary(startStr, apiEnd),
+      matrix: this.mealsService.getWeeklyReport(startStr, apiEnd, viewMode),
       dailyMatrix: this.mealsService.getDailyReport(refDate, viewMode),
       pendingCount: this.mealsService.getPendingCount(),
     }).subscribe((data) => {
