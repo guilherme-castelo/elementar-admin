@@ -80,7 +80,7 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
             matInput
             #matriculaInput
             [formControl]="matriculaControl"
-            (keydown.enter)="registerMeal()"
+            (keyup.enter)="registerMeal()"
             placeholder="Ex: 1234"
             autocomplete="off"
           />
@@ -289,11 +289,28 @@ export class MealRegisterComponent implements OnInit {
     const employee = this.allEmployees.find((e) => e.matricula === matricula);
 
     if (!employee) {
-      this.showFeedback(
-        `Funcionário não encontrado (Matrícula: ${matricula})`,
-        'error'
-      );
-      this.clearInput();
+      // Open Confirmation Dialog to Register
+      const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Funcionário não encontrado',
+          message: 'Não existe funcionário cadastrado com esta matricula',
+          confirmText: 'Cadastrar',
+          cancelText: 'Cancelar',
+          color: 'primary',
+        },
+        autoFocus: false,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.router.navigate(['/employees/new'], {
+            queryParams: { matricula: matricula },
+          });
+        } else {
+          // If cancelled, just focus back
+          this.clearInput();
+        }
+      });
       return;
     }
 

@@ -63,6 +63,13 @@ import {
           >
             <mat-icon>cloud_upload</mat-icon> Importar
           </button>
+          <button
+            mat-stroked-button
+            (click)="printList()"
+            matTooltip="Imprimir Lista de Assinatura"
+          >
+            <mat-icon>print</mat-icon> Imprimir Lista
+          </button>
           <a
             *ngIf="permissionService.hasPermission('employee:create')"
             mat-flat-button
@@ -274,6 +281,82 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
           duration: 3000,
         });
         this.initialLoad();
+      }
+    });
+  }
+
+  printList() {
+    this.employeesService.getAll().subscribe((employees) => {
+      // 1. Sort by Name
+      const sorted = employees
+        .filter((e) => !e.dataDemissao) // Optional: filter out dismissed? User said "quadro de colaboradores", likely active.
+        .sort((a, b) => {
+          const nameA = (a.firstName + ' ' + a.lastName).toLowerCase();
+          const nameB = (b.firstName + ' ' + b.lastName).toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
+      // 2. Generate HTML
+      const dateStr = new Date().toLocaleDateString('pt-BR');
+
+      const printContent = `
+        <html>
+        <head>
+          <title>Lista de Assinatura - ${dateStr}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { text-align: center; font-size: 18px; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+            th { background-color: #f0f0f0; }
+            .signature-col { width: 40%; }
+            @media print {
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Lista de Assinatura - ${dateStr}</h1>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 80px;">Matrícula</th>
+                <th>Nome</th>
+                <th class="signature-col">Assinatura</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sorted
+                .map(
+                  (e) => `
+                <tr>
+                  <td>${e.matricula}</td>
+                  <td>${e.firstName} ${e.lastName}</td>
+                  <td></td>
+                </tr>
+              `
+                )
+                .join('')}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() { window.print(); window.close(); }
+          </script>
+        </body>
+        </html>
+      `;
+
+      // 3. Open Window
+      const popup = window.open('', '_blank', 'width=800,height=600');
+      if (popup) {
+        popup.document.open();
+        popup.document.write(printContent);
+        popup.document.close();
+      } else {
+        this.snackBar.open(
+          'Pop-up bloqueado. Permita pop-ups para imprimir.',
+          'OK'
+        );
       }
     });
   }

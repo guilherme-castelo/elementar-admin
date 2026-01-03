@@ -319,7 +319,7 @@ export class MealsService {
         }
 
         // 2. Generate Matrix
-        const { rows } = this.generateMatrix({
+        const { rows, totals } = this.generateMatrix({
           meals,
           buckets: weeks,
           bucketMatcher: (meal, bucket) => {
@@ -331,7 +331,7 @@ export class MealsService {
           groupBy,
         });
 
-        return { weeks, rows };
+        return { weeks, rows, weeklyTotals: totals };
       })
     );
   }

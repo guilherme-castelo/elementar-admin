@@ -284,7 +284,7 @@
                     >
                       {{ row.weeklyValues[i] | currency : "BRL" }}
                     </span>
-                    <span *ngIf="count > 0" class="text-[10px] text-gray-400">
+                    <span *ngIf="count > 0" class="text-[10px] text-gray-600">
                       ({{ count }})
                     </span>
                     <span *ngIf="count === 0" class="text-neutral-300">-</span>
@@ -316,7 +316,7 @@
               <div class="text-green-700 dark:text-green-400 text-base">
                 {{ row.totalValue | currency : "BRL" }}
               </div>
-              <div class="text-xs text-neutral-500 font-normal">
+              <div class="text-xs text-neutral-600 font-semibold">
                 {{ row.totalQty }} ref.
               </div>
             </td>
@@ -339,6 +339,57 @@
             </td>
           </tr>
         </tbody>
+
+        <!-- Footer with Totals -->
+        <tfoot
+          *ngIf="filteredRows?.length"
+          class="bg-gray-100 dark:bg-gray-800 font-bold sticky bottom-0 z-20 shadow-[0_-2px_5px_-2px_rgba(0,0,0,0.1)]"
+        >
+          <tr class="border-t-2 border-neutral-300 dark:border-neutral-600">
+            <!-- Label Column Total -->
+            <td
+              class="p-2 sticky left-0 bg-gray-100 dark:bg-gray-800 z-30 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] text-right pr-4 text-neutral-700 dark:text-neutral-200"
+            >
+              TOTAIS
+            </td>
+
+            <!-- Dynamic Totals -->
+            <ng-container [ngSwitch]="granularityControl.value">
+              <!-- Weekly Totals -->
+              <ng-container *ngSwitchCase="'weekly'">
+                <td
+                  *ngFor="let total of matrix?.weeklyTotals; let i = index"
+                  class="p-2 text-center border-l border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-100"
+                >
+                  <div class="flex flex-col items-center">
+                    <span class="text-xs">{{ total | number }}</span>
+                    <span
+                      class="text-[13px] text-green-600 dark:text-green-400"
+                      >{{ total * 3.0 | currency : "BRL" }}</span
+                    >
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Daily Totals -->
+              <ng-container *ngSwitchCase="'daily'">
+                <td
+                  *ngFor="let total of dailyMatrix?.dailyTotals"
+                  class="p-2 text-center border-l border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-100"
+                >
+                  {{ total }}
+                </td>
+              </ng-container>
+            </ng-container>
+
+            <!-- Grand Total Column -->
+            <td
+              class="p-2 text-right sticky right-0 z-30 bg-gray-100 dark:bg-gray-800 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] text-green-700 dark:text-green-400"
+            >
+              {{ summary?.totalQty }}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>
