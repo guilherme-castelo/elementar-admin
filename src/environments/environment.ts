@@ -1,11 +1,11 @@
 export const environment = {
   siteUrl: 'https://demo.elementarui.com',
-  googleAnalyticsId: 'G-LZYWG6MYJ4',
+  googleAnalyticsId: '',
   pageTitle: 'Elementar Admin',
   pageMeta: {
     keywords: [],
     description: '',
     author: ''
   },
-  apiBaseUrl: 'http://localhost:3333'
+  apiBaseUrl: 'http://localhost:3000'
 };

@@ -19,6 +19,7 @@ import { UsersService } from './users.service';
 import { NotificationService } from './notification.service';
 import { Conversation, ChatMessage, ChatUser } from '../models/chat.interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -77,7 +78,7 @@ export class ChatService {
 
     import('socket.io-client').then((socketIoModule) => {
       const io = (socketIoModule as any).io || (socketIoModule as any).default;
-      this.socket = io('http://localhost:3333', {
+      this.socket = io(`${environment.apiBaseUrl} || http://localhost:3000`, {
         transports: ['websocket', 'polling'],
       });
 
