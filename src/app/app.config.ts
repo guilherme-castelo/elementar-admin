@@ -6,6 +6,8 @@ import {
   provideZoneChangeDetection,
   LOCALE_ID,
 } from '@angular/core';
+import * as echarts from 'echarts';
+import { provideEchartsCore } from 'ngx-echarts';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
 import {
@@ -64,6 +66,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor, companyInterceptor])
     ),
     provideStore(),
+    provideEchartsCore({ echarts }),
     {
       provide: ENVIRONMENT,
       useValue: environment,

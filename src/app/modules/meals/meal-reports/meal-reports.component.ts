@@ -12,6 +12,8 @@ import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { NgxEchartsModule } from 'ngx-echarts';
+import { EChartsOption } from 'echarts';
 import { MealsService } from '../../../core/services/meals.service';
 import { ReportPeriodService } from '../../../core/services/report-period.service';
 import { PrintService } from '../../../core/services/print.service';
@@ -43,7 +45,9 @@ import { RouterModule } from '@angular/router';
     MatButtonToggleModule,
     MatSnackBarModule,
     MatDialogModule,
+    MatDialogModule,
     RouterModule,
+    NgxEchartsModule,
   ],
   templateUrl: './meal-reports.component.html',
   styles: [
@@ -109,6 +113,7 @@ export class MealReportsComponent implements OnInit {
 
   // Filtered rows for display
   filteredRows: any[] = [];
+  chartOptions: EChartsOption = {};
 
   isExporting = false;
 
@@ -263,6 +268,62 @@ export class MealReportsComponent implements OnInit {
         return labelMatch || subLabelMatch;
       });
     }
+
+    this.updateChart();
+  }
+
+  updateChart() {
+    const granularity = this.granularityControl.value;
+    const isDaily = granularity === 'daily';
+    const rows = this.filteredRows || [];
+
+    // 1. Prepare X-Axis
+    let xAxisData: string[] = [];
+    if (isDaily) {
+      xAxisData = this.dailyMatrix.days.map((d: any) => d.label);
+    } else {
+      xAxisData = this.matrix.weeks.map((w: any) => w.label);
+    }
+
+    // 2. Prepare Series
+    const series: any[] = rows.map((row) => {
+      const data = isDaily ? row.dailyCounts : row.weeklyCounts;
+      return {
+        name: row.label,
+        type: 'line',
+        smooth: true,
+        data: data,
+        showSymbol: false,
+      };
+    });
+
+    this.chartOptions = {
+      tooltip: {
+        trigger: 'axis',
+      },
+      legend: {
+        data: rows.map((r) => r.label),
+        bottom: 0,
+        type: 'scroll',
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: xAxisData,
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Refeições',
+        interval: 1,
+      },
+      series: series.length ? series : [],
+    };
   }
 
   openUnlinkedDialog() {
