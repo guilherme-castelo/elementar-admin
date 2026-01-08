@@ -143,6 +143,63 @@ export class MealReportsComponent implements OnInit {
     this.refresh();
   }
 
+  previousMonth() {
+    let m = this.monthControl.value!;
+    let y = this.yearControl.value!;
+
+    m--;
+    if (m < 0) {
+      m = 11;
+      y--;
+    }
+
+    // Ensure year exists in options or add it?
+    // Years array is generated based on current year +/- 2.
+    // If we go beyond range, we should probably add it or regenerate?
+    // For simplicity, let's assume we stay in range or just set the control.
+    // MatSelect might show empty if value not in options.
+    // Let's add the year if missing.
+    if (!this.years.includes(y)) {
+      this.years.push(y);
+      this.years.sort((a, b) => a - b);
+    }
+
+    // Batch updates?
+    // Setting value triggers refresh due to subscription
+    // We should probably silence events or update carefully.
+    // But since we navigate, refreshing is intended.
+    // However, updating year then month might trigger double refresh.
+    // Let's update controls without emitting event, then call refresh manually?
+    // Or just let it happen. Double request is minor but not ideal.
+    // Let's set values with emitEvent: false then refresh.
+
+    this.yearControl.setValue(y, { emitEvent: false });
+    this.monthControl.setValue(m, { emitEvent: false }); // Last one triggers? No, emitEvent: false.
+
+    this.refresh();
+  }
+
+  nextMonth() {
+    let m = this.monthControl.value!;
+    let y = this.yearControl.value!;
+
+    m++;
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+
+    if (!this.years.includes(y)) {
+      this.years.push(y);
+      this.years.sort((a, b) => a - b);
+    }
+
+    this.yearControl.setValue(y, { emitEvent: false });
+    this.monthControl.setValue(m, { emitEvent: false });
+
+    this.refresh();
+  }
+
   refresh() {
     const month = this.monthControl.value!;
     const year = this.yearControl.value!;
