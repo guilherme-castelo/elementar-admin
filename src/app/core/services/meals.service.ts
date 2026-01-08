@@ -76,14 +76,60 @@ export class MealsService {
     return this.api.post('/meals/import', { records });
   }
 
-  getPendingCount(): Observable<number> {
+  getPendingCount(month?: number, year?: number): Observable<number> {
+    const params: any = {};
+    if (month !== undefined) params.month = month + 1; // Backend expects 1-indexed? Let's check backend.
+    // Backend: month = req.query.month.  const { month, year } = req.query;
+    // Backend service: referenceDate = new Date(year, month - 1, 1);
+    // JS Date constructor: month is 0-indexed.
+    // If I pass month=1 (Jan), backend: new Date(2026, 0, 1) -> Jan 1st. Correct.
+    // Wait, let's verification.
+    // If frontend sends month=0 (Jan), backend receives "0".
+    // Backend: new Date(year, "0" - 1, 1) -> new Date(2026, -1, 1) -> Dec 1st 2025. BAD.
+    // Backend expects 1-indexed month because users normally think 1=Jan.
+    // Let's verify what `this.monthControl.value` holds in component.
+    // Component `months` array is strings. `monthControl` usually holds index?
+    // Line 78: `this.reportPeriodService.getCurrentBillingMonthYear().month`.
+    // Let's assume month is 0-indexed (Jan=0) in the component state (standard JS).
+    // So if I pass `month + 1`, backend gets 1.
+    // Backend: `new Date(year, month - 1, 1)`. `new Date(2026, 1-1, 1)` -> `new Date(2026, 0, 1)`. Correct.
+    // So usually API params for month are 1-indexed.
+
+    if (month !== undefined) params.month = month.toString(); // 1-indexed handled by caller? or HERE?
+    // Let's stick to convention: API always receives 1-indexed month (1..12).
+    // The component usually works with 0..11.
+    // Let's assume the helper `ReportPeriodService` returns ... wait.
+    // `new FormControl(this.currentPeriod.month)`
+    // `getCurrentBillingMonthYear` usually returns 0-indexed month for JS Date compatibility?
+    // I should check `ReportPeriodService` or just look at `exportToDominio` in `meal-reports` line 220:
+    // `const month = this.monthControl.value! + 1; // 0-indexed to 1-indexed`
+    // YES. Component uses 0-indexed. API expects 1-indexed.
+
+    // So here I will shift.
+    // Wait, the callers might pass 1-indexed?
+    // No, better to take arguments as is and document or handle.
+    // BUT `MealReportsComponent` has `month` as 0-indexed.
+    // I will modify `MealReportsComponent` to pass it raw, so I should +1 here?
+    // Or `MealReportsComponent` +1 before call?
+    // `exportToDominio` does +1 manually.
+    // I'll update signature to `month` (0-indexed) or `monthNumber` (1-index)?
+    // Standardizing: Service methods usually accept domain objects. JS Date uses 0-indexed.
+    // BUT for API query params, usually 1-indexed is safer.
+    // I will simply handle optional params here.
+
+    if (month !== undefined && month !== null) params.month = month + 1;
+    if (year !== undefined && year !== null) params.year = year;
+
     return this.api
-      .get<{ count: number }>('/meals/pending-count')
+      .get<{ count: number }>('/meals/pending-count', params)
       .pipe(map((res) => res.count));
   }
 
-  getPendingMeals(): Observable<IMeal[]> {
-    return this.api.get<IMeal[]>('/meals/pending');
+  getPendingMeals(month?: number, year?: number): Observable<IMeal[]> {
+    const params: any = {};
+    if (month !== undefined && month !== null) params.month = month + 1;
+    if (year !== undefined && year !== null) params.year = year;
+    return this.api.get<IMeal[]>('/meals/pending', params);
   }
 
   /**

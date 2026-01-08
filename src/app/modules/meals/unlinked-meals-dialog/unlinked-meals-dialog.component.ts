@@ -4,6 +4,7 @@ import {
   MatDialogRef,
   MatDialogModule,
   MatDialog,
+  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -58,7 +59,7 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
           <li>Ou <strong>exclua</strong> os registros definitivamente.</li>
         </ul>
         <p
-          class="mt-3 text-xs text-neutral-500 bg-blue-50 p-2 rounded border border-blue-100"
+          class="mt-3 text-xs text-neutral-700 dark:text-neutral-900 bg-blue-50 p-2 rounded border border-blue-100"
         >
           <mat-icon class="icon-xs align-middle text-blue-500 mr-1"
             >info</mat-icon
@@ -72,10 +73,10 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
         <table mat-table [dataSource]="groupedDataSource" class="w-full">
           <!-- Matricula -->
           <ng-container matColumnDef="matricula">
-            <th mat-header-cell *matHeaderCellDef>Matrícula</th>
+            <th mat-header-cell *matHeaderCellDef>Mat.</th>
             <td mat-cell *matCellDef="let item">
               <span
-                class="font-mono bg-amber-100 text-amber-800 p-1 rounded font-bold text-xs"
+                class="font-mono bg-amber-100 text-neutral-700 dark:bg-amber-900 dark:text-amber-100 p-1 rounded font-bold text-xs"
               >
                 {{ item.matricula }}
               </span>
@@ -85,11 +86,11 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
           <!-- Nome no Funcionário -->
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Funcionário (Importado)</th>
-            <td mat-cell *matCellDef="let item" class="text-neutral-700">
+            <td mat-cell *matCellDef="let item" class="text-neutral-900 dark:text-neutral-100">
               {{ item.originalName }}
               <span
                 *ngIf="item.ignoredInExport"
-                class="ml-2 text-xs text-neutral-400 italic"
+                class="ml-2 text-xs text-neutral-600 dark:text-neutral-400 italic"
                 >(Ignorado)</span
               >
             </td>
@@ -197,6 +198,7 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
 })
 export class UnlinkedMealsDialogComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<UnlinkedMealsDialogComponent>);
+  private data = inject(MAT_DIALOG_DATA);
   private dialog = inject(MatDialog);
   private mealsService = inject(MealsService);
   private snackBar = inject(MatSnackBar);
@@ -211,7 +213,8 @@ export class UnlinkedMealsDialogComponent implements OnInit {
 
   loadPending() {
     this.isLoading = true;
-    this.mealsService.getPendingMeals().subscribe({
+    const { month, year } = this.data || {};
+    this.mealsService.getPendingMeals(month, year).subscribe({
       next: (meals) => {
         this.groupedDataSource = this.groupMealsByMatricula(meals);
         this.isLoading = false;

@@ -165,7 +165,7 @@ export class MealReportsComponent implements OnInit {
       summary: this.mealsService.getWeeklySummary(startStr, apiEnd),
       matrix: this.mealsService.getWeeklyReport(startStr, apiEnd, viewMode),
       dailyMatrix: this.mealsService.getDailyReport(refDate, viewMode),
-      pendingCount: this.mealsService.getPendingCount(),
+      pendingCount: this.mealsService.getPendingCount(month, year),
     }).subscribe((data) => {
       this.summary = data.summary;
       this.matrix = data.matrix;
@@ -212,6 +212,10 @@ export class MealReportsComponent implements OnInit {
     this.dialog.open(UnlinkedMealsDialogComponent, {
       width: '900px',
       disableClose: false,
+      data: {
+        month: this.monthControl.value,
+        year: this.yearControl.value,
+      },
     });
   }
 
