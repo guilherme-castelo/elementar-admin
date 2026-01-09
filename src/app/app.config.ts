@@ -3,10 +3,9 @@ import {
   inject,
   PLATFORM_ID,
   provideAppInitializer,
-  provideZoneChangeDetection,
   LOCALE_ID,
+  provideZoneChangeDetection,
 } from '@angular/core';
-import * as echarts from 'echarts';
 import { provideEchartsCore } from 'ngx-echarts';
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
@@ -58,15 +57,13 @@ export const appConfig: ApplicationConfig = {
     ColorSchemeStore,
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes, withViewTransitions()),
-    provideRouter(routes, withViewTransitions()),
-    provideAnimationsAsync(),
     provideAnimationsAsync(),
     provideHttpClient(
       withFetch(),
       withInterceptors([authInterceptor, companyInterceptor])
     ),
     provideStore(),
-    provideEchartsCore({ echarts }),
+    provideEchartsCore({ echarts: () => import('echarts') }),
     {
       provide: ENVIRONMENT,
       useValue: environment,
