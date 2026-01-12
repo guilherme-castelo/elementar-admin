@@ -5,13 +5,14 @@ import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTabsModule, MatTabChangeEvent } from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { IMeal } from '../../../core/models/meal.model';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { EChartsOption } from 'echarts';
 import { MealsService } from '../../../core/services/meals.service';
@@ -83,7 +84,10 @@ export class MealReportsComponent implements OnInit {
   yearControl = new FormControl(this.currentPeriod.year);
 
   // Controls
-  granularityControl = new FormControl<'daily' | 'weekly'>('daily');
+  granularityControl = new FormControl<'daily' | 'weekly' | 'single-day'>(
+    'daily'
+  );
+  specificDateControl = new FormControl(new Date());
   viewModeControl = new FormControl<'sector' | 'employee'>('sector');
   filterControl = new FormControl('');
 
@@ -109,6 +113,7 @@ export class MealReportsComponent implements OnInit {
   summary: any = {};
   matrix: any = { weeks: [], rows: [] };
   dailyMatrix: any = { days: [], rows: [] };
+  dailyMeals: IMeal[] = [];
   pendingCount = 0;
 
   // Filtered rows for display
@@ -128,6 +133,7 @@ export class MealReportsComponent implements OnInit {
     this.filterControl.valueChanges.subscribe(() => this.applyFilter());
     this.monthControl.valueChanges.subscribe(() => this.refresh());
     this.yearControl.valueChanges.subscribe(() => this.refresh());
+    this.specificDateControl.valueChanges.subscribe(() => this.refresh());
 
     this.refresh();
   }
@@ -206,10 +212,29 @@ export class MealReportsComponent implements OnInit {
   }
 
   refresh() {
+    const granularity = this.granularityControl.value || 'daily';
+
+    if (granularity === 'single-day') {
+      const date = this.specificDateControl.value || new Date();
+      // Adjust to sending ISO string for the day
+      const dateIso = date.toISOString();
+
+      this.mealsService.getDailyMeals(dateIso).subscribe((meals) => {
+        this.dailyMeals = meals;
+        // Calculate simple summary for this day
+        const totalValue = meals.length * 3.0; // Fixed price for now, should come from service/model if variable
+        this.summary = {
+          totalQty: meals.length,
+          totalValue: totalValue,
+        };
+        this.applyFilter();
+      });
+      return;
+    }
+
     const month = this.monthControl.value!;
     const year = this.yearControl.value!;
     const viewMode = this.viewModeControl.value || 'sector';
-    const granularity = this.granularityControl.value || 'daily';
 
     // Using new service
     const { startIso, endIso, startStr, endStr } =
@@ -240,6 +265,33 @@ export class MealReportsComponent implements OnInit {
   applyFilter() {
     const filter = (this.filterControl.value || '').toLowerCase().trim();
     const granularity = this.granularityControl.value;
+
+    if (granularity === 'single-day') {
+      if (!filter) {
+        this.filteredRows = this.dailyMeals;
+      } else {
+        this.filteredRows = this.dailyMeals.filter((meal) => {
+          const empName = (
+            meal.employeeNameSnapshot ||
+            meal.employee?.firstName ||
+            ''
+          ).toLowerCase();
+          const sector = (
+            meal.employeeSectorSnapshot ||
+            meal.employee?.setor ||
+            ''
+          ).toLowerCase();
+          return empName.includes(filter) || sector.includes(filter);
+        });
+      }
+      // Sort by name
+      this.filteredRows.sort((a, b) => {
+        const nameA = a.employeeNameSnapshot || a.employee?.firstName || '';
+        const nameB = b.employeeNameSnapshot || b.employee?.firstName || '';
+        return nameA.localeCompare(nameB);
+      });
+      return; // No chart update for list view yet? or maybe just counts
+    }
 
     let sourceRows: any[] = [];
     if (granularity === 'weekly') sourceRows = this.matrix.rows;
@@ -428,26 +480,43 @@ export class MealReportsComponent implements OnInit {
     // Let's add a variable `selectedTabIndex` binding to the tab group.
 
     // Defaulting to print logic:
-    const isWeekly = this.granularityControl.value === 'weekly';
+    // Defaulting to print logic:
+    const granularity = this.granularityControl.value;
+    const isWeekly = granularity === 'weekly';
+    const isSingleDay = granularity === 'single-day';
 
-    const printPayload = {
-      type: isWeekly ? 'weekly' : 'daily',
-      companyName: 'Minha Empresa', // TODO: Get from CompanyService
-      title: isWeekly
-        ? 'Relatório Semanal de Custos'
-        : 'Relatório Diário de Refeições',
-      periodStart: this.periodStart,
-      periodEnd: this.periodEnd,
-      summary: this.summary,
+    let printPayload: any = {};
 
-      // Weekly Data
-      matrix: this.matrix,
+    if (isSingleDay) {
+      printPayload = {
+        type: 'daily-list',
+        companyName: 'Brasil Super Atacado',
+        title: `Relatório do Dia ${this.specificDateControl.value?.toISOString()}`,
+        periodStart: this.specificDateControl.value?.toISOString(),
+        periodEnd: this.specificDateControl.value?.toISOString(), // Same day
+        summary: this.summary,
+        rows: this.filteredRows, // The list of meals
+      };
+    } else {
+      printPayload = {
+        type: isWeekly ? 'weekly' : 'daily',
+        companyName: 'Brasil Super Atacado', // TODO: Get from CompanyService
+        title: isWeekly
+          ? 'Relatório Semanal de Custos'
+          : 'Relatório Diário de Refeições',
+        periodStart: this.periodStart,
+        periodEnd: this.periodEnd,
+        summary: this.summary,
 
-      // Daily Data
-      dailyMatrix: this.dailyMatrix,
-      rows: this.filteredRows, // Respect filters
-      viewMode: this.viewModeControl.value,
-    };
+        // Weekly Data
+        matrix: this.matrix,
+
+        // Daily Data
+        dailyMatrix: this.dailyMatrix,
+        rows: this.filteredRows, // Respect filters
+        viewMode: this.viewModeControl.value,
+      };
+    }
 
     this.printService.setPrintData(printPayload);
 

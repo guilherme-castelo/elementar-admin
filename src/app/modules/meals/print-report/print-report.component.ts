@@ -133,6 +133,43 @@ import { Router } from '@angular/router';
             </tbody>
           </table>
         </div>
+
+        <!-- Single Day List Report -->
+        <div *ngIf="data.type === 'daily-list'" class="report-section">
+          <h3>Detalhamento Nominal ({{ data.rows.length }} registros)</h3>
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th class="text-left">Funcionário</th>
+                <th class="text-left">Setor</th>
+                <th class="text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of data.rows">
+                <td>
+                  {{ row.employeeNameSnapshot || row.employee?.firstName }}
+                  {{ row.employee?.lastName || '' }} <br /><small
+                    class="text-gray-500"
+                    >{{
+                      row.matriculaSnapshot || row.employee?.matricula
+                    }}</small
+                  >
+                </td>
+                <td>{{ row.employeeSectorSnapshot || row.employee?.setor }}</td>
+                <td class="text-right">
+                  {{ row.price || 3.0 | currency : 'BRL' }}
+                </td>
+              </tr>
+              <tr class="totals-row">
+                <td colspan="2" class="text-right">TOTAL</td>
+                <td class="text-right">
+                  {{ data.summary.totalValue | currency : 'BRL' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </main>
 
       <footer class="print-footer">
