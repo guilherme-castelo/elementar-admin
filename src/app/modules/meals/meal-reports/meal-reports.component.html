@@ -405,7 +405,7 @@
               <!-- Weekly Totals -->
               <ng-container *ngSwitchCase="'weekly'">
                 <td
-                  *ngFor="let total of matrix?.weeklyTotals; let i = index"
+                  *ngFor="let total of displayedWeeklyTotals; let i = index"
                   class="p-2 text-center border-l border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-100"
                 >
                   <div class="flex flex-col items-center">
@@ -421,10 +421,16 @@
               <!-- Daily Totals -->
               <ng-container *ngSwitchCase="'daily'">
                 <td
-                  *ngFor="let total of dailyMatrix?.dailyTotals"
+                  *ngFor="let total of displayedDailyTotals"
                   class="p-2 text-center border-l border-neutral-200 dark:border-neutral-700 text-neutral-800 dark:text-neutral-100"
                 >
-                  {{ total }}
+                  <div class="flex flex-col items-center">
+                    <span class="text-xs">{{ total | number }}</span>
+                    <span
+                      class="text-[13px] text-green-600 dark:text-green-400"
+                      >{{ total * 3.0 | currency : "BRL" }}</span
+                    >
+                  </div>
                 </td>
               </ng-container>
             </ng-container>
@@ -433,7 +439,12 @@
             <td
               class="p-2 text-right sticky right-0 z-30 bg-gray-100 dark:bg-gray-800 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] text-green-700 dark:text-green-400"
             >
-              {{ summary?.totalQty }}
+              <div class="flex flex-col items-center">
+                <span class="text-xs">{{ summary?.totalQty | number }}</span>
+                <span class="text-[13px] text-green-600 dark:text-green-400">{{
+                  summary?.totalValue | currency : "BRL"
+                }}</span>
+              </div>
             </td>
           </tr>
         </tfoot>

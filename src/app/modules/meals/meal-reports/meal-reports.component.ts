@@ -290,6 +290,7 @@ export class MealReportsComponent implements OnInit {
         const nameB = b.employeeNameSnapshot || b.employee?.firstName || '';
         return nameA.localeCompare(nameB);
       });
+      this.calculateTotals();
       return; // No chart update for list view yet? or maybe just counts
     }
 
@@ -321,10 +322,67 @@ export class MealReportsComponent implements OnInit {
       });
     }
 
+    this.calculateTotals();
     this.updateChart();
   }
 
+  displayedWeeklyTotals: number[] = [];
+  displayedDailyTotals: number[] = [];
+
+  calculateTotals() {
+    const granularity = this.granularityControl.value;
+    const isSingleDay = granularity === 'single-day';
+    const rows = this.filteredRows || [];
+
+    if (isSingleDay) {
+      // Single Day Logic (IMeal[])
+      const totalQty = rows.length;
+      // Assuming naive calculation or summing price if available.
+      // Existing logic used fixed 3.0 in refresh(), let's stick to that or use row.price if consistent.
+      // In HTML it uses row.price. Let's sum row.price.
+      const totalValue = rows.reduce((acc, row) => acc + (row.price || 3.0), 0);
+
+      this.summary = { totalQty, totalValue };
+      return;
+    }
+
+    // Matrix Logic
+    let totalQty = 0;
+    let totalValue = 0;
+
+    // Initialize column totals
+    const isWeekly = granularity === 'weekly';
+    const numCols = isWeekly
+      ? this.matrix?.weeks?.length || 0
+      : this.dailyMatrix?.days?.length || 0;
+    const colTotals = new Array(numCols).fill(0);
+
+    rows.forEach((row: any) => {
+      totalQty += row.totalQty || 0;
+      totalValue += row.totalValue || 0;
+
+      const counts = isWeekly ? row.weeklyCounts : row.dailyCounts;
+      if (Array.isArray(counts)) {
+        counts.forEach((c: number, i: number) => {
+          if (i < numCols) {
+            colTotals[i] += c;
+          }
+        });
+      }
+    });
+
+    this.summary = { totalQty, totalValue };
+
+    if (isWeekly) {
+      this.displayedWeeklyTotals = colTotals;
+    } else {
+      this.displayedDailyTotals = colTotals;
+    }
+  }
+
   updateChart() {
+    console.log(this.granularityControl.value);
+
     const granularity = this.granularityControl.value;
     const isDaily = granularity === 'daily';
     const rows = this.filteredRows || [];
