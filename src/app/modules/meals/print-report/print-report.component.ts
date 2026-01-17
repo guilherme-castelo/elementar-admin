@@ -173,7 +173,7 @@ import { Router } from '@angular/router';
       </main>
 
       <footer class="print-footer">
-        <p>Sistema Elementar - Gestão de Refeições</p>
+        <p>Elementar - Gestão de Refeições</p>
       </footer>
     </div>
 

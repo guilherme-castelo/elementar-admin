@@ -87,7 +87,9 @@ export class MealReportsComponent implements OnInit {
   granularityControl = new FormControl<'daily' | 'weekly' | 'single-day'>(
     'daily'
   );
-  specificDateControl = new FormControl(new Date());
+  specificDateControl = new FormControl(
+    new Date(Date.now() - 24 * 60 * 60 * 1000)
+  );
   viewModeControl = new FormControl<'sector' | 'employee'>('sector');
   filterControl = new FormControl('');
 
@@ -340,7 +342,7 @@ export class MealReportsComponent implements OnInit {
       // Assuming naive calculation or summing price if available.
       // Existing logic used fixed 3.0 in refresh(), let's stick to that or use row.price if consistent.
       // In HTML it uses row.price. Let's sum row.price.
-      const totalValue = rows.reduce((acc, row) => acc + (row.price || 3.0), 0);
+      const totalValue = rows.reduce((acc, row) => acc + Number(row.price || 0),0);
 
       this.summary = { totalQty, totalValue };
       return;
@@ -549,7 +551,7 @@ export class MealReportsComponent implements OnInit {
       printPayload = {
         type: 'daily-list',
         companyName: 'Brasil Super Atacado',
-        title: `Relatório do Dia ${this.specificDateControl.value?.toISOString()}`,
+        title: `Relatório do Dia ${this.specificDateControl.value?.toLocaleDateString('pt-BR')}`,
         periodStart: this.specificDateControl.value?.toISOString(),
         periodEnd: this.specificDateControl.value?.toISOString(), // Same day
         summary: this.summary,
