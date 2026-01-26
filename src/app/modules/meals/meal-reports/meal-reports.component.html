@@ -52,7 +52,7 @@
           <div
             class="text-3xl font-extrabold text-green-600 dark:text-green-400"
           >
-            {{ summary?.totalValue || 0 | currency : "BRL" }}
+            {{ summary?.totalValue || 0 | currency: "BRL" }}
           </div>
         </div>
         <div
@@ -139,21 +139,12 @@
       >
         <mat-icon class="icon-xs align-middle mr-1">calendar_today</mat-icon>
         <span class="align-middle">
-          {{ periodStart | date : "dd/MM/yyyy" }} a
-          {{ periodEnd | date : "dd/MM/yyyy" }}
+          {{ periodStart | date: "dd/MM/yyyy" }} a
+          {{ periodEnd | date: "dd/MM/yyyy" }}
         </span>
       </div>
 
       <div class="flex gap-2">
-        <button
-          mat-stroked-button
-          matTooltip="Exportar para Domínio"
-          (click)="exportToDominio()"
-          [disabled]="isExporting"
-        >
-          <mat-icon>file_download</mat-icon> Exportar
-        </button>
-
         <button
           mat-stroked-button
           matTooltip="Imprimir Relatório (Ctrl + P)"
@@ -161,15 +152,13 @@
         >
           <mat-icon>print</mat-icon> Imprimir
         </button>
-
         <button
           mat-flat-button
-          color="primary"
-          (click)="navigateToRegister()"
-          *ngIf="permissionService.hasPermission('meal:create')"
-          matTooltip="Registrar Nova Refeição"
+          matTooltip="Exportar para Domínio"
+          (click)="exportToDominio()"
+          [disabled]="isExporting"
         >
-          <mat-icon>add</mat-icon> Registrar
+          <mat-icon>file_download</mat-icon> Exportar
         </button>
       </div>
     </div>
@@ -273,8 +262,8 @@
                 >
                   {{ week.label }}<br />
                   <span class="text-[10px] lowercase font-normal"
-                    >{{ week.start | date : "dd/MM" }} -
-                    {{ week.end | date : "dd/MM" }}</span
+                    >{{ week.start | date: "dd/MM" }} -
+                    {{ week.end | date: "dd/MM" }}</span
                   >
                 </th>
               </ng-container>
@@ -328,7 +317,7 @@
                       *ngIf="count > 0"
                       class="text-sm font-bold text-green-600 dark:text-green-400"
                     >
-                      {{ row.weeklyValues[i] | currency : "BRL" }}
+                      {{ row.weeklyValues[i] | currency: "BRL" }}
                     </span>
                     <span *ngIf="count > 0" class="text-[10px] text-gray-600">
                       ({{ count }})
@@ -360,7 +349,7 @@
               class="p-2 text-right font-bold text-gray-900 sticky right-0 z-10 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] bg-gray-50 dark:bg-gray-900"
             >
               <div class="text-green-700 dark:text-green-400 text-base">
-                {{ row.totalValue | currency : "BRL" }}
+                {{ row.totalValue | currency: "BRL" }}
               </div>
               <div class="text-xs text-neutral-600 font-semibold">
                 {{ row.totalQty }} ref.
@@ -411,7 +400,7 @@
                     <span class="text-xs">{{ total | number }}</span>
                     <span
                       class="text-[13px] text-green-600 dark:text-green-400"
-                      >{{ total * 3.0 | currency : "BRL" }}</span
+                      >{{ total * 3.0 | currency: "BRL" }}</span
                     >
                   </div>
                 </td>
@@ -427,7 +416,7 @@
                     <span class="text-xs">{{ total | number }}</span>
                     <span
                       class="text-[13px] text-green-600 dark:text-green-400"
-                      >{{ total * 3.0 | currency : "BRL" }}</span
+                      >{{ total * 3.0 | currency: "BRL" }}</span
                     >
                   </div>
                 </td>
@@ -441,7 +430,7 @@
               <div class="flex flex-col items-center">
                 <span class="text-xs">{{ summary?.totalQty | number }}</span>
                 <span class="text-[13px] text-green-600 dark:text-green-400">{{
-                  summary?.totalValue | currency : "BRL"
+                  summary?.totalValue | currency: "BRL"
                 }}</span>
               </div>
             </td>
@@ -479,7 +468,7 @@
               {{ row.employeeSectorSnapshot || row.employee?.setor }}
             </td>
             <td class="p-2 text-right text-green-600 font-bold">
-              {{ row.price | currency : "BRL" }}
+              {{ row.price | currency: "BRL" }}
             </td>
           </tr>
           <tr *ngIf="!filteredRows?.length">
@@ -495,7 +484,7 @@
           <tr>
             <td class="p-2 text-right" colspan="2">TOTAL RECIBO:</td>
             <td class="p-2 text-right text-green-700">
-              {{ summary.totalValue | currency : "BRL" }}
+              {{ summary.totalValue | currency: "BRL" }}
             </td>
           </tr>
         </tfoot>

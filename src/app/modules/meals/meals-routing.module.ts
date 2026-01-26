@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { MealRegisterComponent } from './meal-register/meal-register.component';
 import { MealReportsComponent } from './meal-reports/meal-reports.component';
 import { roleGuard } from '../../core/guards/role.guard';
+import { MealComponent } from './meal.component';
 
 const routes: Routes = [
   {
@@ -18,9 +19,10 @@ const routes: Routes = [
     data: { permission: 'meal:read' }
   },
   {
-    path: '', // Default redirect or landing?
-    redirectTo: 'register',
-    pathMatch: 'full'
+    path: '',
+    component: MealComponent,
+    canActivate: [roleGuard],
+    data: { permission: 'meal:read' }
   }
 ];
 

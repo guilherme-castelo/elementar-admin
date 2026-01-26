@@ -98,16 +98,6 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
         >
           <mat-icon>upload</mat-icon> Importar
         </button>
-
-        <button
-          mat-stroked-button
-          class="h-[56px] text-primary-700 border-primary-700"
-          (click)="navigateToReports()"
-          matTooltip="Visualizar Relatórios"
-          *ngIf="permissionService.hasPermission('meal:read')"
-        >
-          <mat-icon>bar_chart</mat-icon> Relatórios
-        </button>
       </div>
 
       <!-- Main Content / List -->

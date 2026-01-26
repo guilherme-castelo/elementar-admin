@@ -1,0 +1,19 @@
+<mat-tab-group
+  [selectedIndex]="selected.value"
+  (selectedIndexChange)="selected.setValue($event)"
+>
+  @if(hasPermission('meal:create')){
+    <mat-tab label="Registrar" icon="add">
+      <ng-template matTabContent>
+        <app-meal-register></app-meal-register>
+      </ng-template>
+    </mat-tab>
+  }
+  @if(hasPermission('meal:read')){
+    <mat-tab label="Relatórios" icon="restaurant">
+      <ng-template matTabContent>
+        <app-meal-reports></app-meal-reports>
+      </ng-template>
+    </mat-tab>
+  }
+</mat-tab-group>

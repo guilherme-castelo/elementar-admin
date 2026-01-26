@@ -116,15 +116,8 @@ export class SidebarComponent implements OnInit {
         {
           key: uuid(),
           type: 'link',
-          name: 'Refeições',
-          link: '/meals/register',
-          permissions: ['meal:read', 'meal:create'],
-        },
-        {
-          key: uuid(),
-          type: 'link',
-          name: 'Relatórios',
-          link: '/meals/reports',
+          name: 'Refeitório',
+          link: '/meals',
           permissions: ['meal:read'],
         },
       ],
