@@ -84,13 +84,14 @@ export class MealReportsComponent implements OnInit {
   yearControl = new FormControl(this.currentPeriod.year);
 
   // Controls
-  granularityControl = new FormControl<'daily' | 'weekly' | 'single-day'>(
-    'daily'
+  granularityControl = new FormControl<'monthly' | 'weekly' | 'daily' | 'single-day'>(
+    'monthly'
   );
   specificDateControl = new FormControl(
     new Date(Date.now() - 24 * 60 * 60 * 1000)
   );
-  viewModeControl = new FormControl<'sector' | 'employee'>('sector');
+  viewModeControl = new FormControl<'sector' | 'employee'>('employee');
+  sortControl = new FormControl<'alphabetical' | 'matricula'>('alphabetical');
   filterControl = new FormControl('');
 
   months = [
@@ -128,11 +129,15 @@ export class MealReportsComponent implements OnInit {
     this.generateYears();
 
     // Subscribe to control changes to trigger refresh or filter
-    this.viewModeControl.valueChanges.subscribe(() => this.refresh());
+    this.viewModeControl.valueChanges.subscribe(() => {
+      this.sortControl.setValue('alphabetical', { emitEvent: false });
+      this.refresh();
+    });
     this.granularityControl.valueChanges.subscribe(() =>
       this.onGranularityChange()
     );
     this.filterControl.valueChanges.subscribe(() => this.applyFilter());
+    this.sortControl.valueChanges.subscribe(() => this.applyFilter());
     this.monthControl.valueChanges.subscribe(() => this.refresh());
     this.yearControl.valueChanges.subscribe(() => this.refresh());
     this.specificDateControl.valueChanges.subscribe(() => this.refresh());
@@ -214,7 +219,7 @@ export class MealReportsComponent implements OnInit {
   }
 
   refresh() {
-    const granularity = this.granularityControl.value || 'daily';
+    const granularity = this.granularityControl.value || 'monthly';
 
     if (granularity === 'single-day') {
       const date = this.specificDateControl.value || new Date();
@@ -288,9 +293,15 @@ export class MealReportsComponent implements OnInit {
       }
       // Sort by name
       this.filteredRows.sort((a, b) => {
-        const nameA = a.employeeNameSnapshot || a.employee?.firstName || '';
-        const nameB = b.employeeNameSnapshot || b.employee?.firstName || '';
-        return nameA.localeCompare(nameB);
+        if (this.viewModeControl.value === 'employee' && this.sortControl.value === 'matricula') {
+          const matA = a.matriculaSnapshot || a.employee?.matricula || '';
+          const matB = b.matriculaSnapshot || b.employee?.matricula || '';
+          return matA.localeCompare(matB, undefined, { numeric: true });
+        } else {
+          const nameA = a.employeeNameSnapshot || a.employee?.firstName || '';
+          const nameB = b.employeeNameSnapshot || b.employee?.firstName || '';
+          return nameA.localeCompare(nameB);
+        }
       });
       this.calculateTotals();
       return; // No chart update for list view yet? or maybe just counts
@@ -323,6 +334,17 @@ export class MealReportsComponent implements OnInit {
         return labelMatch || subLabelMatch;
       });
     }
+
+    // Apply Sort Control
+    this.filteredRows.sort((a, b) => {
+      if (this.viewModeControl.value === 'employee' && this.sortControl.value === 'matricula') {
+        const matA = a.secondaryLabel || '';
+        const matB = b.secondaryLabel || '';
+        return matA.localeCompare(matB, undefined, { numeric: true });
+      } else {
+        return a.label.localeCompare(b.label);
+      }
+    });
 
     this.calculateTotals();
     this.updateChart();
@@ -386,7 +408,7 @@ export class MealReportsComponent implements OnInit {
     console.log(this.granularityControl.value);
 
     const granularity = this.granularityControl.value;
-    const isDaily = granularity === 'daily';
+    const isDaily = granularity === 'daily' || granularity === 'monthly';
     const rows = this.filteredRows || [];
 
     // 1. Prepare X-Axis
@@ -559,11 +581,11 @@ export class MealReportsComponent implements OnInit {
       };
     } else {
       printPayload = {
-        type: isWeekly ? 'weekly' : 'daily',
+        type: granularity,
         companyName: 'Brasil Super Atacado', // TODO: Get from CompanyService
         title: isWeekly
           ? 'Relatório Semanal de Custos'
-          : 'Relatório Diário de Refeições',
+          : granularity === 'monthly' ? 'Relatório Mensal Consolidado' : 'Relatório Diário de Refeições',
         periodStart: this.periodStart,
         periodEnd: this.periodEnd,
         summary: this.summary,

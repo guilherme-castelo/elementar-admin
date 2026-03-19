@@ -199,8 +199,9 @@
           [formControl]="granularityControl"
           aria-label="Granularidade"
         >
-          <mat-button-toggle value="daily">Mensal</mat-button-toggle>
+          <mat-button-toggle value="monthly">Mensal</mat-button-toggle>
           <mat-button-toggle value="weekly">Semanal</mat-button-toggle>
+          <mat-button-toggle value="daily">Diário</mat-button-toggle>
           <mat-button-toggle value="single-day">Do Dia</mat-button-toggle>
         </mat-button-toggle-group>
 
@@ -221,6 +222,25 @@
             >Por Funcionário</mat-button-toggle
           >
         </mat-button-toggle-group>
+        
+        <!-- Divider -->
+        <div
+          class="h-8 w-px bg-neutral-300 dark:bg-neutral-600 hidden md:block"
+          *ngIf="viewModeControl.value === 'employee'"
+        ></div>
+
+        <!-- Sort Control -->
+        <mat-form-field
+          appearance="outline"
+          class="w-40 hide-subscript density-compact"
+          *ngIf="viewModeControl.value === 'employee'"
+        >
+          <mat-label>Ordenar por</mat-label>
+          <mat-select [formControl]="sortControl">
+            <mat-option value="alphabetical">Alfabética</mat-option>
+            <mat-option value="matricula">Matrícula</mat-option>
+          </mat-select>
+        </mat-form-field>
       </div>
 
       <mat-form-field
@@ -254,6 +274,10 @@
 
             <!-- DYNAMIC HEADERS -->
             <ng-container [ngSwitch]="granularityControl.value">
+              <!-- Mensal -->
+              <ng-container *ngSwitchCase="'monthly'">
+              </ng-container>
+
               <!-- Weekly Headers -->
               <ng-container *ngSwitchCase="'weekly'">
                 <th
@@ -305,6 +329,10 @@
 
             <!-- DATA COLUMNS (Switch) -->
             <ng-container [ngSwitch]="granularityControl.value">
+              <!-- Mensal (Nenhuma Coluna Central) -->
+              <ng-container *ngSwitchCase="'monthly'">
+              </ng-container>
+
               <!-- Weekly Data -->
               <ng-container *ngSwitchCase="'weekly'">
                 <td
@@ -390,6 +418,10 @@
 
             <!-- Dynamic Totals -->
             <ng-container [ngSwitch]="granularityControl.value">
+              <!-- Mensal (Nenhum campo central de Totais) -->
+              <ng-container *ngSwitchCase="'monthly'">
+              </ng-container>
+
               <!-- Weekly Totals -->
               <ng-container *ngSwitchCase="'weekly'">
                 <td

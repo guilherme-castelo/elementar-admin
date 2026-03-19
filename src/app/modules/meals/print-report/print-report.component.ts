@@ -44,8 +44,11 @@ import { Router } from '@angular/router';
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of data.matrix.rows">
-                <td>{{ row.sector }}</td>
+              <tr *ngFor="let row of data.rows">
+                <td>
+                  {{ row.label }}
+                  <span *ngIf="row.secondaryLabel" class="sub-label">({{ row.secondaryLabel }})</span>
+                </td>
                 <td
                   *ngFor="let count of row.weeklyCounts; let i = index"
                   class="text-center"
@@ -79,6 +82,44 @@ import { Router } from '@angular/router';
                     data.summary.totalValue | currency : 'BRL'
                   }}</small>
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Monthly Report Table -->
+        <div *ngIf="data.type === 'monthly'" class="report-section">
+          <h3>
+            Resumo Mensal ({{
+              data.viewMode === 'sector' ? 'Por Setor' : 'Por Funcionário'
+            }})
+          </h3>
+
+          <table class="print-table">
+            <thead>
+              <tr>
+                <th class="text-left">
+                  {{ data.viewMode === 'sector' ? 'Setor' : 'Funcionário' }}
+                </th>
+                <th class="text-right">Quantidade</th>
+                <th class="text-right">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of data.rows">
+                <td>
+                  {{ row.label }}
+                  <span *ngIf="row.secondaryLabel" class="sub-label"
+                    >({{ row.secondaryLabel }})</span
+                  >
+                </td>
+                <td class="text-right font-bold">{{ row.totalQty }}</td>
+                <td class="text-right font-bold">{{ row.totalValue | currency : 'BRL' }}</td>
+              </tr>
+              <tr class="totals-row">
+                <td>TOTAL</td>
+                <td class="text-right">{{ data.summary.totalQty }}</td>
+                <td class="text-right">{{ data.summary.totalValue | currency : 'BRL' }}</td>
               </tr>
             </tbody>
           </table>
