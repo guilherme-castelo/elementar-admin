@@ -19,6 +19,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { EmployeeImportDialogComponent } from '../employee-import-dialog/employee-import-dialog.component';
 import { DismissalMealsDialogComponent } from '../dismissal-meals-dialog/dismissal-meals-dialog.component';
 import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { PrintListDialogComponent } from '../print-list-dialog/print-list-dialog.component';
 import { switchMap, of } from 'rxjs';
 import {
   DataTableComponent,
@@ -286,20 +287,27 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
   }
 
   printList() {
-    this.employeesService.getAll().subscribe((employees) => {
-      // 1. Sort by Name
-      const sorted = employees
-        .filter((e) => !e.dataDemissao) // Optional: filter out dismissed? User said "quadro de colaboradores", likely active.
-        .sort((a, b) => {
-          const nameA = (a.firstName + ' ' + a.lastName).toLowerCase();
-          const nameB = (b.firstName + ' ' + b.lastName).toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
+    const dialogRef = this.dialog.open(PrintListDialogComponent, {
+      width: '400px',
+    });
 
-      // 2. Generate HTML
-      const dateStr = new Date().toLocaleDateString('pt-BR');
+    dialogRef.afterClosed().subscribe((selectedDate: Date | undefined) => {
+      if (!selectedDate) return;
 
-      const printContent = `
+      this.employeesService.getAll().subscribe((employees) => {
+        // 1. Sort by Name
+        const sorted = employees
+          .filter((e) => !e.dataDemissao) // Optional: filter out dismissed? User said "quadro de colaboradores", likely active.
+          .sort((a, b) => {
+            const nameA = (a.firstName + ' ' + a.lastName).toLowerCase();
+            const nameB = (b.firstName + ' ' + b.lastName).toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+
+        // 2. Generate HTML
+        const dateStr = selectedDate.toLocaleDateString('pt-BR');
+
+        const printContent = `
         <html>
         <head>
           <title>Lista de Assinatura - ${dateStr}</title>
@@ -346,18 +354,19 @@ export class EmployeeListComponent implements OnInit, AfterViewInit {
         </html>
       `;
 
-      // 3. Open Window
-      const popup = window.open('', '_blank', 'width=800,height=600');
-      if (popup) {
-        popup.document.open();
-        popup.document.write(printContent);
-        popup.document.close();
-      } else {
-        this.snackBar.open(
-          'Pop-up bloqueado. Permita pop-ups para imprimir.',
-          'OK'
-        );
-      }
+        // 3. Open Window
+        const popup = window.open('', '_blank', 'width=800,height=600');
+        if (popup) {
+          popup.document.open();
+          popup.document.write(printContent);
+          popup.document.close();
+        } else {
+          this.snackBar.open(
+            'Pop-up bloqueado. Permita pop-ups para imprimir.',
+            'OK'
+          );
+        }
+      });
     });
   }
 }

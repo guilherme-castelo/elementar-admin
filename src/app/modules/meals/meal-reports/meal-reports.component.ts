@@ -46,7 +46,6 @@ import { RouterModule } from '@angular/router';
     MatButtonToggleModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatDialogModule,
     RouterModule,
     NgxEchartsModule,
   ],
@@ -543,7 +542,7 @@ export class MealReportsComponent implements OnInit {
 
   // Shortcut Listener
   @HostListener('window:keydown.control.p', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
+  handleKeyboardEvent(event: any) {
     event.preventDefault();
     this.onPrint();
   }

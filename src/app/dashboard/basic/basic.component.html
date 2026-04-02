@@ -92,14 +92,16 @@
                 <button
                   mat-icon-button
                   class="discrete-btn"
-                  routerLink="/meals/register"
+                  routerLink="/meals"
+                  [queryParams]="{ tab: 'register' }"
                 >
                   <mat-icon>add</mat-icon>
                 </button>
                 <button
                   mat-icon-button
                   class="discrete-btn"
-                  routerLink="/meals/reports"
+                  routerLink="/meals"
+                  [queryParams]="{ tab: 'reports' }"
                 >
                   <mat-icon>bar_chart</mat-icon>
                 </button>

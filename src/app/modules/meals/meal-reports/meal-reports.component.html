@@ -222,7 +222,7 @@
             >Por Funcionário</mat-button-toggle
           >
         </mat-button-toggle-group>
-        
+
         <!-- Divider -->
         <div
           class="h-8 w-px bg-neutral-300 dark:bg-neutral-600 hidden md:block"
@@ -275,8 +275,7 @@
             <!-- DYNAMIC HEADERS -->
             <ng-container [ngSwitch]="granularityControl.value">
               <!-- Mensal -->
-              <ng-container *ngSwitchCase="'monthly'">
-              </ng-container>
+              <ng-container *ngSwitchCase="'monthly'"> </ng-container>
 
               <!-- Weekly Headers -->
               <ng-container *ngSwitchCase="'weekly'">
@@ -330,8 +329,7 @@
             <!-- DATA COLUMNS (Switch) -->
             <ng-container [ngSwitch]="granularityControl.value">
               <!-- Mensal (Nenhuma Coluna Central) -->
-              <ng-container *ngSwitchCase="'monthly'">
-              </ng-container>
+              <ng-container *ngSwitchCase="'monthly'"> </ng-container>
 
               <!-- Weekly Data -->
               <ng-container *ngSwitchCase="'weekly'">
@@ -386,7 +384,7 @@
           </tr>
 
           <!-- Empty State -->
-          <tr *ngIf="!filteredRows?.length">
+          <tr *ngIf="!filteredRows.length">
             <td [attr.colspan]="99" class="text-center py-12">
               <div class="flex flex-col items-center justify-center opacity-60">
                 <mat-icon class="text-6xl text-neutral-300 w-16 h-16 mb-2"
@@ -405,7 +403,7 @@
 
         <!-- Footer with Totals -->
         <tfoot
-          *ngIf="filteredRows?.length"
+          *ngIf="filteredRows.length"
           class="bg-gray-100 dark:bg-gray-800 font-bold sticky bottom-0 z-20 shadow-[0_-2px_5px_-2px_rgba(0,0,0,0.1)]"
         >
           <tr class="border-t-2 border-neutral-300 dark:border-neutral-600">
@@ -419,8 +417,7 @@
             <!-- Dynamic Totals -->
             <ng-container [ngSwitch]="granularityControl.value">
               <!-- Mensal (Nenhum campo central de Totais) -->
-              <ng-container *ngSwitchCase="'monthly'">
-              </ng-container>
+              <ng-container *ngSwitchCase="'monthly'"> </ng-container>
 
               <!-- Weekly Totals -->
               <ng-container *ngSwitchCase="'weekly'">
@@ -503,7 +500,7 @@
               {{ row.price | currency: "BRL" }}
             </td>
           </tr>
-          <tr *ngIf="!filteredRows?.length">
+          <tr *ngIf="!filteredRows.length">
             <td colspan="3" class="text-center py-8 text-neutral-400">
               Nenhuma refeição encontrada para esta data.
             </td>
@@ -511,7 +508,7 @@
         </tbody>
         <tfoot
           class="bg-gray-100 dark:bg-gray-800 font-bold sticky bottom-0 z-20"
-          *ngIf="filteredRows?.length"
+          *ngIf="filteredRows.length"
         >
           <tr>
             <td class="p-2 text-right" colspan="2">TOTAL RECIBO:</td>
