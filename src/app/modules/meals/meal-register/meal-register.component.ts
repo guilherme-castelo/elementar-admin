@@ -26,6 +26,9 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MealImportDialogComponent } from '../meal-import-dialog/meal-import-dialog.component';
 import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 import { ConfirmationDialogComponent } from '../../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { SelectionModel } from '@angular/cdk/collections';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MoveMealsDialogComponent } from '../move-meals-dialog/move-meals-dialog.component';
 
 @Component({
   selector: 'app-meal-register',
@@ -44,6 +47,7 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
     MatTableModule,
     MatCardModule,
     MatDialogModule,
+    MatCheckboxModule,
   ],
   template: `
     <div class="p-6 h-[calc(100vh-64px)] flex flex-col">
@@ -104,26 +108,68 @@ import { ConfirmationDialogComponent } from '../../../shared/components/confirma
       <div
         class="flex-1 rounded-lg shadow-sm border border-neutral-200 overflow-hidden flex flex-col"
       >
-        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+        <div class="p-4 border-b flex justify-between items-center bg-gray-50 min-h-[73px]">
           <h2 class="font-bold text-lg text-primary-700">Refeições do Dia</h2>
-          <div class="flex gap-4 text-sm font-medium">
+          
+          <div *ngIf="selection.hasValue()" class="flex items-center gap-2 bg-primary-50 px-3 py-1.5 rounded-lg border border-primary-200 animate-fade-in">
+            <span class="text-sm font-semibold text-primary-800 mr-2">
+              {{ selection.selected.length }} selecionada(s)
+            </span>
+            <button
+              mat-flat-button
+              color="warn"
+              (click)="deleteSelectedMeals()"
+              *ngIf="permissionService.hasPermission('meal:delete')"
+            >
+              <mat-icon>delete</mat-icon> Excluir
+            </button>
+            <button
+              mat-flat-button
+              color="primary"
+              (click)="moveSelectedMeals()"
+            >
+              <mat-icon>edit_calendar</mat-icon> Mover Dia
+            </button>
+          </div>
+
+          <div *ngIf="!selection.hasValue()" class="flex gap-4 text-sm font-medium">
             <span class="text-neutral-600"
               >Qtd:
               <strong class="text-black">{{
-                (meals$ | async)?.length || 0
+                meals.length
               }}</strong></span
             >
             <span class="text-neutral-600"
               >Total:
               <strong class="text-green-600">{{
-                ((meals$ | async)?.length || 0) * 3 | currency : 'BRL'
+                meals.length * 3 | currency : 'BRL'
               }}</strong></span
             >
           </div>
         </div>
 
         <div class="overflow-auto flex-1">
-          <table mat-table [dataSource]="(meals$ | async) || []" class="w-full">
+          <table mat-table [dataSource]="meals" class="w-full">
+            <!-- Checkbox Column -->
+            <ng-container matColumnDef="select">
+              <th mat-header-cell *matHeaderCellDef class="w-[50px]">
+                <mat-checkbox
+                  (change)="$event ? toggleAllRows() : null"
+                  [checked]="selection.hasValue() && isAllSelected()"
+                  [indeterminate]="selection.hasValue() && !isAllSelected()"
+                >
+                </mat-checkbox>
+              </th>
+              <td mat-cell *matCellDef="let row">
+                <mat-checkbox
+                  (click)="$event.stopPropagation()"
+                  (change)="$event ? selection.toggle(row) : null"
+                  [checked]="selection.isSelected(row)"
+                >
+                </mat-checkbox>
+              </td>
+            </ng-container>
+
             <!-- Time Column -->
             <ng-container matColumnDef="time">
               <th mat-header-cell *matHeaderCellDef>Hora</th>
@@ -232,10 +278,11 @@ export class MealRegisterComponent implements OnInit {
   dateControl = new FormControl(new Date());
   matriculaControl = new FormControl('');
 
-  meals$!: Observable<IMeal[]>;
   allEmployees: IEmployee[] = [];
+  meals: IMeal[] = [];
+  selection = new SelectionModel<IMeal>(true, []);
 
-  displayedColumns = ['time', 'matricula', 'name', 'price', 'actions'];
+  displayedColumns = ['select', 'time', 'matricula', 'name', 'price', 'actions'];
 
   ngOnInit() {
     this.loadEmployees(); // Pre-load for fast validation
@@ -250,12 +297,8 @@ export class MealRegisterComponent implements OnInit {
 
   loadMeals() {
     const date = this.dateControl.value || new Date();
-    // Use ISO string but strip time for robust filtering if needed,
-    // but the service handles "date_like" or "date" match.
-    // Ideally we pass local date string YYYY-MM-DD to service.
-    // For now, passing full ISO from Date object.
     const isoDate = date.toISOString().split('T')[0];
-    this.meals$ = this.mealsService.getDailyMeals(isoDate).pipe(
+    this.mealsService.getDailyMeals(isoDate).pipe(
       map((meals) =>
         meals.sort((a, b) => {
           const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -263,7 +306,88 @@ export class MealRegisterComponent implements OnInit {
           return timeB - timeA;
         })
       )
-    );
+    ).subscribe({
+      next: (meals) => {
+        this.meals = meals;
+        this.selection.clear();
+      },
+      error: (err) => {
+        this.showFeedback('Erro ao carregar refeições.', 'error');
+      }
+    });
+  }
+
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.meals.length;
+    return numSelected === numRows;
+  }
+
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+      return;
+    }
+    this.selection.select(...this.meals);
+  }
+
+  deleteSelectedMeals() {
+    if (!this.permissionService.hasPermission('meal:delete')) return;
+    const selectedCount = this.selection.selected.length;
+
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Excluir Refeições',
+        message: `Deseja realmente excluir as ${selectedCount} refeições selecionadas?`,
+        confirmText: 'Excluir',
+        color: 'warn',
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const ids = this.selection.selected.map((m) => m.id);
+        this.mealsService.deleteBulk(ids).subscribe({
+          next: () => {
+            this.showFeedback('Refeições excluídas com sucesso', 'success');
+            this.loadMeals();
+          },
+          error: (err) => {
+            const msg = err.error?.message || 'Erro ao excluir refeições.';
+            this.showFeedback(msg, 'error');
+          },
+        });
+      }
+    });
+  }
+
+  moveSelectedMeals() {
+    const selectedCount = this.selection.selected.length;
+
+    const dialogRef = this.dialog.open(MoveMealsDialogComponent, {
+      data: {
+        count: selectedCount,
+      },
+      width: '350px',
+    });
+
+    dialogRef.afterClosed().subscribe((newDate: Date | null) => {
+      if (newDate) {
+        const isoDate = newDate.toISOString().split('T')[0];
+        const ids = this.selection.selected.map((m) => m.id);
+
+        this.mealsService.moveBulk(ids, isoDate).subscribe({
+          next: () => {
+            this.showFeedback('Refeições movidas com sucesso', 'success');
+            this.loadMeals();
+          },
+          error: (err) => {
+            const msg = err.error?.message || 'Erro ao mover refeições.';
+            this.showFeedback(msg, 'error');
+          },
+        });
+      }
+    });
   }
 
   onDateChange() {

@@ -201,6 +201,14 @@ export class MealsService {
     return this.api.delete<void>(`/meals/${id}`);
   }
 
+  deleteBulk(ids: number[]): Observable<void> {
+    return this.api.post<void>('/meals/bulk-delete', { ids });
+  }
+
+  moveBulk(ids: number[], newDate: string): Observable<any> {
+    return this.api.post<any>('/meals/bulk-move', { ids, newDate });
+  }
+
   deletePending(matricula: string): Observable<void> {
     return this.api.delete<void>(`/meals/pending/${matricula}`);
   }
