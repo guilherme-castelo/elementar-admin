@@ -66,7 +66,7 @@ export class MealsService {
   private authService = inject(AuthService);
   private reportPeriodService = inject(ReportPeriodService);
 
-  private readonly MEAL_PRICE = 3.0;
+  private readonly MEAL_PRICE = 3.5;
 
   analyzeBatch(data: any[]): Observable<any> {
     return this.api.post('/meals/analyze', data);

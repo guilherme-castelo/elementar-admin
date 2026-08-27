@@ -56,11 +56,6 @@ export class BasicComponent implements OnInit {
     this.dashboardService.getDashboardData().subscribe({
       next: (data) => {
         this.stats = data;
-        // Initialize meal stats with "Today"
-        this.mealStats = {
-          qty: data.todayMealsQty,
-          value: data.todayMealsQty * 3.0,
-        }; // Fallback calc if not provided
         this.setMealFilter('month'); // Ensure valid state
         this.isLoading = false;
       },

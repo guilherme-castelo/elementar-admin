@@ -91,6 +91,6 @@ export class DashboardService {
   ): Observable<{ qty: number; value: number }> {
     return this.mealsService
       .getMealsInDateRange(start, end)
-      .pipe(map((meals) => ({ qty: meals.length, value: meals.length * 3.0 })));
+      .pipe(map((meals) => ({ qty: meals.length, value: meals.reduce((total, meal) => total + Number(meal.price || 0), 0) })));
   }
 }
